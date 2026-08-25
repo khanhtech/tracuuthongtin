@@ -1001,6 +1001,18 @@ function renderClassesView() {
   renderClassCards(list, query);
 }
 
+function formatScheduleShort(scheduleStr) {
+  if (!scheduleStr) return 'CN';
+  let s = scheduleStr.trim();
+  s = s.replace(/Chủ\s*Nhật\s*:\s*/gi, '').replace(/Chủ\s*Nhật/gi, 'CN');
+  s = s.replace(/Thứ\s*Bảy\s*:\s*/gi, '').replace(/Thứ\s*Bảy/gi, 'T7');
+  s = s.replace(/Thứ\s*(\d)\s*:\s*/gi, 'T$1 ');
+  if (!s.includes('CN') && !s.includes('T7') && !s.includes('T')) {
+    s = `${s} CN`;
+  }
+  return s.trim();
+}
+
 function renderClassCards(classesList, searchKeyword) {
   if (!classCardsGrid) return;
   classCardsGrid.innerHTML = '';
@@ -1043,7 +1055,7 @@ function renderClassCards(classesList, searchKeyword) {
           </div>
           <div class="class-meta-item" title="Giờ học">
             <i class="fa-regular fa-clock"></i>
-            <span>${cls.schedule || 'Chủ Nhật'}</span>
+            <span>${formatScheduleShort(cls.schedule)}</span>
           </div>
         </div>
 
@@ -1055,8 +1067,10 @@ function renderClassCards(classesList, searchKeyword) {
             ${teachers.length > 0 ? teachers.map(t => `
               <div class="teacher-chip" data-glv-id="${t.id}" title="Bấm để xem hồ sơ ${t.id}">
                 <img src="${getGlvAvatar(t)}" alt="avatar">
-                <span class="chip-holy">${t.holyName || ''}</span>
-                <span>${t.lastName} ${t.firstName}</span>
+                <span class="chip-name-box">
+                  <strong class="chip-holy">${t.holyName || ''}</strong>
+                  <span class="chip-name">${t.lastName} ${t.firstName}</span>
+                </span>
                 <span class="chip-id">${t.id}</span>
               </div>
             `).join('') : '<span style="font-size: 0.78rem; color: #94a3b8; font-style: italic;">Chưa phân công Huynh Trưởng</span>'}
