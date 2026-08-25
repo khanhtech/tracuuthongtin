@@ -63,13 +63,23 @@ const DEFAULT_DATASET = [
 // ==========================================================================
 const DEFAULT_CLASSES_DATASET = [
   {
+    id: 'CLASS_DBKT',
+    name: 'Dự Bị Khai Tâm',
+    block: 'Khai Tâm',
+    room: 'Phòng 100 (Dãy A)',
+    schedule: 'Chủ Nhật: 07:30 - 09:00',
+    studentCount: 24,
+    teacherIds: ['GLV05', 'GLV24'],
+    note: 'Lớp ấu nhi làm quen môi trường Giáo Lý & Thiếu Nhi Thánh Thể'
+  },
+  {
     id: 'CLASS_KT1',
     name: 'Khai Tâm 1',
     block: 'Khai Tâm',
     room: 'Phòng 101 (Dãy A)',
     schedule: 'Chủ Nhật: 07:30 - 09:00',
     studentCount: 26,
-    teacherIds: ['GLV01', 'GLV11', 'GLV05'],
+    teacherIds: ['GLV01', 'GLV11'],
     note: 'Lớp chuẩn bị làm quen Giáo Lý & Sinh hoạt Thiếu nhi Thánh Thể'
   },
   {
@@ -79,7 +89,7 @@ const DEFAULT_CLASSES_DATASET = [
     room: 'Phòng 102 (Dãy A)',
     schedule: 'Chủ Nhật: 07:30 - 09:00',
     studentCount: 28,
-    teacherIds: ['GLV22', 'GLV38', 'GLV24', 'GLV36'],
+    teacherIds: ['GLV22', 'GLV38', 'GLV36'],
     note: 'Học kinh căn bản, chuyện Phúc Âm và nhân bản Kitô giáo'
   },
   {
@@ -99,17 +109,7 @@ const DEFAULT_CLASSES_DATASET = [
     room: 'Phòng 202 (Dãy B)',
     schedule: 'Chủ Nhật: 07:30 - 09:00',
     studentCount: 32,
-    teacherIds: ['GLV31', 'GLV35', 'GLV21'],
-    note: 'Chuẩn bị tâm hồn và giáo lý Bí tích Hòa Giải'
-  },
-  {
-    id: 'CLASS_RL3',
-    name: 'Rước Lễ 3',
-    block: 'Rước Lễ',
-    room: 'Phòng 203 (Dãy B)',
-    schedule: 'Chủ Nhật: 07:30 - 09:00',
-    studentCount: 35,
-    teacherIds: ['GLV08', 'GLV10', 'GLV33'],
+    teacherIds: ['GLV31', 'GLV35', 'GLV21', 'GLV32'],
     note: 'Bí tích Thánh Thể & Nghi thức Xưng Tội Rước Lễ Lần Đầu'
   },
   {
@@ -129,17 +129,7 @@ const DEFAULT_CLASSES_DATASET = [
     room: 'Phòng 302 (Dãy C)',
     schedule: 'Chủ Nhật: 07:30 - 09:00',
     studentCount: 31,
-    teacherIds: ['GLV12', 'GLV27', 'GLV09'],
-    note: 'Học Kinh Thánh Cựu Ước & Tân Ước mở rộng'
-  },
-  {
-    id: 'CLASS_TS3',
-    name: 'Thêm Sức 3',
-    block: 'Thêm Sức',
-    room: 'Phòng 303 (Dãy C)',
-    schedule: 'Chủ Nhật: 07:30 - 09:00',
-    studentCount: 34,
-    teacherIds: ['GLV02', 'GLV15', 'GLV40'],
+    teacherIds: ['GLV12', 'GLV27', 'GLV09', 'GLV02', 'GLV15', 'GLV40'],
     note: 'Chuẩn bị lãnh nhận Bí Tích Thêm Sức từ Đức Giám Mục'
   },
   {
@@ -169,8 +159,18 @@ const DEFAULT_CLASSES_DATASET = [
     room: 'Hội Trường C',
     schedule: 'Chủ Nhật: 07:30 - 09:00',
     studentCount: 27,
-    teacherIds: ['GLV14', 'GLV18'],
+    teacherIds: ['GLV14', 'GLV18', 'GLV28'],
     note: 'Nghi thức Tuyên Hứa Bao Đồng & Tái tuyên xưng Đức Tin'
+  },
+  {
+    id: 'CLASS_BD4',
+    name: 'Bao Đồng 4',
+    block: 'Bao Đồng',
+    room: 'Hội Trường D',
+    schedule: 'Chủ Nhật: 07:30 - 09:00',
+    studentCount: 24,
+    teacherIds: ['GLV08', 'GLV10', 'GLV33'],
+    note: 'Trưởng thành Đức Tin & Dấn thân phục vụ Giáo Hội'
   },
   {
     id: 'CLASS_VD1',
@@ -179,7 +179,7 @@ const DEFAULT_CLASSES_DATASET = [
     room: 'Phòng Đa Năng 1',
     schedule: 'Chủ Nhật: 09:15 - 10:30',
     studentCount: 22,
-    teacherIds: ['GLV16', 'GLV17', 'GLV41'],
+    teacherIds: ['GLV16', 'GLV17', 'GLV41', 'GLV20'],
     note: 'Đức tin & Định hướng nghề nghiệp Kitô hữu trẻ'
   },
   {
@@ -254,17 +254,19 @@ function loadSavedClassesDatabase() {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.filter(item => item.block !== 'Dự Trưởng');
+        const filtered = parsed.filter(item => item.block !== 'Dự Trưởng');
+        return sortClassesList(filtered);
       }
     }
   } catch (e) {
     console.warn('Lỗi đọc dữ liệu Lớp học từ localStorage:', e);
   }
-  return [...DEFAULT_CLASSES_DATASET];
+  return sortClassesList([...DEFAULT_CLASSES_DATASET]);
 }
 
 function saveClassesDatabase() {
   try {
+    classDatabase = sortClassesList(classDatabase);
     localStorage.setItem(CLASS_STORAGE_KEY, JSON.stringify(classDatabase));
   } catch (e) {
     console.warn('Lỗi lưu dữ liệu Lớp học vào localStorage:', e);
@@ -878,6 +880,89 @@ function getTeachersByClass(teacherIds) {
   });
 }
 
+// ==========================================================================
+// THỨ TỰ SẮP XẾP CHUẨN CÁC LỚP GIÁO LÝ
+// Thứ tự: Dự bị khai tâm -> Khai tâm 1 -> Khai tâm 2 -> Rước lễ 1 -> Rước lễ 2
+// -> Thêm sức 1 -> Thêm sức 2 -> Bao đồng 1 -> Bao đồng 2 -> Bao đồng 3 -> Bao đồng 4
+// -> Vào đời 1 -> Vào đời 2
+// Các lớp trùng tên sắp xếp theo thứ tự chữ cái (ví dụ: Bao đồng 1A -> Bao đồng 1B)
+// ==========================================================================
+function getBlockSortPriority(blockName) {
+  const norm = removeVietnameseTones(blockName || '').toLowerCase().trim();
+  if (norm.includes('khai tam') || norm.includes('du bi')) return 1;
+  if (norm.includes('ruoc le')) return 2;
+  if (norm.includes('them suc')) return 3;
+  if (norm.includes('bao dong')) return 4;
+  if (norm.includes('vao doi')) return 5;
+  return 99;
+}
+
+function getClassNameBaseRank(className) {
+  const norm = removeVietnameseTones(className || '').toLowerCase().trim();
+
+  // Khối Khai Tâm
+  if (norm.includes('du bi')) return 10;
+  if (norm.startsWith('khai tam 1')) return 20;
+  if (norm.startsWith('khai tam 2')) return 30;
+  if (norm.startsWith('khai tam 3')) return 40;
+  if (norm.startsWith('khai tam')) return 25;
+
+  // Khối Rước Lễ
+  if (norm.startsWith('ruoc le 1')) return 110;
+  if (norm.startsWith('ruoc le 2')) return 120;
+  if (norm.startsWith('ruoc le 3')) return 130;
+  if (norm.startsWith('ruoc le 4')) return 140;
+  if (norm.startsWith('ruoc le')) return 115;
+
+  // Khối Thêm Sức
+  if (norm.startsWith('them suc 1')) return 210;
+  if (norm.startsWith('them suc 2')) return 220;
+  if (norm.startsWith('them suc 3')) return 230;
+  if (norm.startsWith('them suc 4')) return 240;
+  if (norm.startsWith('them suc')) return 215;
+
+  // Khối Bao Đồng
+  if (norm.startsWith('bao dong 1')) return 310;
+  if (norm.startsWith('bao dong 2')) return 320;
+  if (norm.startsWith('bao dong 3')) return 330;
+  if (norm.startsWith('bao dong 4')) return 340;
+  if (norm.startsWith('bao dong 5')) return 350;
+  if (norm.startsWith('bao dong')) return 315;
+
+  // Khối Vào Đời
+  if (norm.startsWith('vao doi 1')) return 410;
+  if (norm.startsWith('vao doi 2')) return 420;
+  if (norm.startsWith('vao doi 3')) return 430;
+  if (norm.startsWith('vao doi 4')) return 440;
+  if (norm.startsWith('vao doi')) return 415;
+
+  return 999;
+}
+
+function sortClassesList(classes) {
+  if (!Array.isArray(classes)) return [];
+  return [...classes].sort((a, b) => {
+    // 1. So sánh theo thứ tự Khối Lớp
+    const blockWeightA = getBlockSortPriority(a.block);
+    const blockWeightB = getBlockSortPriority(b.block);
+    if (blockWeightA !== blockWeightB) {
+      return blockWeightA - blockWeightB;
+    }
+
+    // 2. So sánh theo cấp độ lớp chuẩn
+    const rankA = getClassNameBaseRank(a.name);
+    const rankB = getClassNameBaseRank(b.name);
+    if (rankA !== rankB) {
+      return rankA - rankB;
+    }
+
+    // 3. Nếu cùng cấp độ hoặc trùng tên, sắp xếp theo thứ tự bảng chữ cái (A, B, C...)
+    const nameA = String(a.name || '').trim();
+    const nameB = String(b.name || '').trim();
+    return nameA.localeCompare(nameB, 'vi', { numeric: true, sensitivity: 'base' });
+  });
+}
+
 function renderClassesView() {
   const query = (classSearchInput ? classSearchInput.value.trim() : '');
   const qNorm = removeVietnameseTones(query.toLowerCase());
@@ -909,6 +994,9 @@ function renderClassesView() {
       });
     });
   }
+
+  // Luôn sắp xếp theo thứ tự chuẩn quy định
+  list = sortClassesList(list);
 
   renderClassCards(list, query);
 }
