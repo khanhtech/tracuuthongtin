@@ -4,9 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Website quản trị Đoàn Thiếu Nhi Thánh Thể Giáo xứ Tân Mỹ</title>
+  <title>Website Quản Trị & Tra Cứu - Đoàn Thiếu Nhi Thánh Thể Tân Mỹ</title>
   <meta name="description"
-    content="Hệ thống tra cứu thông tin Giáo Lý Viên nhanh chóng theo mã ID, Họ tên, Tên Thánh từ dữ liệu Data.xlsx">
+    content="Hệ thống tra cứu thông tin Giáo Lý Viên và quản lý Lớp Giáo Lý Đoàn Thiếu Nhi Thánh Thể Giáo xứ Tân Mỹ">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -17,504 +17,815 @@
 </head>
 
 <body>
+  <!-- Ambient Background Glow -->
   <div class="app-background">
     <div class="bg-glow bg-glow-1"></div>
     <div class="bg-glow bg-glow-2"></div>
   </div>
 
-  <div class="container">
-    <!-- Header -->
-    <header class="app-header">
-      <div class="top-nav-bar">
-        <!-- Thanh Tiêu Đề Đoàn TNTT ở chính giữa -->
-        <div class="header-badge">
+  <!-- Mobile Overlay Backdrop -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <div class="app-layout">
+    <!-- ==========================================================================
+         SIDEBAR NAVIGATION (MENU BÊN LỀ TRÁI)
+         ========================================================================== -->
+    <aside class="app-sidebar" id="appSidebar">
+      <!-- Sidebar Brand Header -->
+      <div class="sidebar-brand">
+        <div class="brand-emblem">
           <i class="fa-solid fa-cross"></i>
-          <span>ĐOÀN THIẾU NHI THÁNH THỂ GIÁO XỨ TÂN MỸ</span>
+        </div>
+        <div class="brand-text">
+          <h2 class="brand-title">Đoàn Thiếu Nhi Thánh Thể</h2>
+          <span class="brand-sub">Giáo xứ Tân Mỹ</span>
+        </div>
+        <button class="sidebar-close-btn" id="sidebarCloseBtn" title="Đóng menu">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <!-- Navigation Menu Items -->
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">DANH MỤC QUẢN TRỊ</div>
+
+        <button class="nav-item active" id="navItemGlv" data-tab="glv">
+          <div class="nav-icon-box">
+            <i class="fa-solid fa-user-graduate"></i>
+          </div>
+          <div class="nav-label-box">
+            <span class="nav-title">Giáo Lý Viên</span>
+            <span class="nav-desc">Tra cứu hồ sơ & thẻ</span>
+          </div>
+          <span class="nav-badge" id="sidebarGlvCount">41</span>
+        </button>
+
+        <button class="nav-item" id="navItemClasses" data-tab="classes">
+          <div class="nav-icon-box">
+            <i class="fa-solid fa-chalkboard-user"></i>
+          </div>
+          <div class="nav-label-box">
+            <span class="nav-title">Lớp Giáo Lý</span>
+            <span class="nav-desc">Khối lớp & phân công</span>
+          </div>
+          <span class="nav-badge badge-classes" id="sidebarClassCount">14</span>
+        </button>
+
+        <div class="nav-section-title" style="margin-top: 1.5rem;">TIỆN ÍCH NHANH</div>
+
+        <button class="nav-item-sub" id="sidebarViewAllGlvBtn">
+          <i class="fa-solid fa-table-list"></i>
+          <span>Bảng Danh Sách GLV</span>
+        </button>
+
+        <button class="nav-item-sub" id="sidebarAddGlvBtn">
+          <i class="fa-solid fa-user-plus"></i>
+          <span>Thêm GLV Mới</span>
+        </button>
+
+        <button class="nav-item-sub" id="sidebarAddClassBtn">
+          <i class="fa-solid fa-plus-circle"></i>
+          <span>Thêm Lớp Học Mới</span>
+        </button>
+      </nav>
+
+      <!-- Sidebar Footer (Auth / Role Info) -->
+      <div class="sidebar-footer">
+        <div class="sidebar-role-card" id="sidebarRoleCard">
+          <div class="role-avatar-icon" id="sidebarRoleIcon">
+            <i class="fa-solid fa-user-tag"></i>
+          </div>
+          <div class="role-info-text">
+            <span class="role-label">Quyền sử dụng:</span>
+            <strong class="role-name" id="sidebarRoleName">Khách (Guest)</strong>
+          </div>
+          <button class="btn-sidebar-auth" id="sidebarAuthSwitchBtn" title="Đổi quyền Admin / Khách">
+            <i class="fa-solid fa-arrow-right-arrow-left"></i>
+          </button>
         </div>
 
-        <!-- Nút Icon Đổi Vai Trò Admin/Guest Nằm Ngoài Cùng Bên Phải (Mặc định Khách) -->
-        <button class="btn-auth-icon-right role-guest" id="authSwitchBtn" title="Vai trò: Khách / Huynh Trưởng (Guest). Bấm để đổi vai trò">
+        <div class="sidebar-meta">
+          <span>Niên khóa 2026 - 2027</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ==========================================================================
+         MAIN CONTENT WRAPPER
+         ========================================================================== -->
+    <div class="app-main-content">
+      <!-- Mobile Top Bar (hiển thị trên thiết bị di động / màn hình nhỏ) -->
+      <div class="mobile-top-bar">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" title="Mở danh mục menu">
+          <i class="fa-solid fa-bars-staggered"></i>
+        </button>
+        <div class="mobile-brand-title">
+          <i class="fa-solid fa-cross"></i>
+          <span>ĐOÀN TNTT TÂN MỸ</span>
+        </div>
+        <button class="btn-auth-icon-right role-guest" id="authSwitchBtn" title="Vai trò: Khách / Huynh Trưởng. Bấm để đổi">
           <i class="fa-solid fa-user-tag" id="authRoleIcon"></i>
           <span class="auth-role-text" id="authRoleText">Khách</span>
         </button>
       </div>
 
-      <h1 class="header-title">TRA CỨU THÔNG TIN<br>ANH CHỊ HUYNH TRƯỞNG - GIÁO LÝ VIÊN</h1>
-      <p class="header-subtitle">Nhập mã định danh (ID) hoặc họ tên để tra cứu thông tin chi tiết, chứng chỉ GLV và lớp
-        giảng dạy năm học 2026 - 2027</p>
-    </header>
-
-    <!-- Search Section -->
-    <section class="search-section">
-      <div class="search-card">
-        <div class="search-input-wrapper">
-          <i class="fa-solid fa-magnifying-glass search-icon"></i>
-          <input type="text" id="searchInput"
-            placeholder="Nhập mã ID (ví dụ: GLV01, GLV16, 01...) hoặc Họ tên, Tên Thánh..." autocomplete="off"
-            autofocus>
-          <button id="clearSearchBtn" class="clear-btn" title="Xóa nội dung" style="display: none;">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-          <button id="searchBtn" class="btn-primary">
-            <span>Tìm kiếm</span>
-            <i class="fa-solid fa-arrow-right"></i>
-          </button>
-        </div>
-
-        <!-- Suggestions Dropdown -->
-        <div class="suggestions-dropdown" id="suggestionsBox" style="display: none;"></div>
-
-        <!-- Quick Tags -->
-        <div class="quick-tags">
-          <span class="tag-label"><i class="fa-solid fa-bolt"></i> Tìm nhanh mẫu:</span>
-          <button class="quick-tag-btn" data-query="GLV01">GLV01</button>
-          <button class="quick-tag-btn" data-query="GLV16">GLV16</button>
-          <button class="quick-tag-btn" data-query="GLV28">GLV28</button>
-          <button class="quick-tag-btn" data-query="MARIA">Tên Thánh MARIA</button>
-          <button class="quick-tag-btn" data-query="GIUSE">Tên Thánh GIUSE</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Main Content Area -->
-    <main class="content-section">
-      <!-- Loading State -->
-      <div id="loadingState" class="state-container" style="display: none;">
-        <div class="spinner"></div>
-        <p>Đang tìm kiếm thông tin...</p>
-      </div>
-
-      <!-- Result Card (Profile View) -->
-      <div id="resultCard" class="profile-card" style="display: none;">
-        <div class="card-header-bar">
-          <div class="church-emblem">
-            <i class="fa-solid fa-cross"></i>
-            <span>THẺ GIÁO LÝ VIÊN</span>
-          </div>
-          <div class="card-id-badge">
-            <span class="id-label">MÃ ĐỊNH DANH</span>
-            <span class="id-val" id="cardId">GLV01</span>
-          </div>
-        </div>
-
-        <div class="card-body">
-          <div class="avatar-col">
-            <div class="avatar-frame">
-              <img id="cardAvatarImg" class="avatar-img" src="assets/avatar_female.jpg" alt="Ảnh thẻ GLV">
-              <div class="avatar-badge-icon" id="cardGenderIcon" title="Giới tính">
-                <i class="fa-solid fa-venus"></i>
+      <div class="container">
+        <!-- ==========================================================================
+             TAB 1: THÔNG TIN GIÁO LÝ VIÊN
+             ========================================================================== -->
+        <div id="tabGlvView" class="tab-pane active">
+          <!-- Header -->
+          <header class="app-header">
+            <div class="top-nav-bar desktop-only-bar">
+              <div class="header-badge">
+                <i class="fa-solid fa-cross"></i>
+                <span>HUYNH TRƯỞNG - GIÁO LÝ VIÊN</span>
               </div>
             </div>
-            <div class="glv-stt-badge">
-              <span>STT: #<strong id="cardStt">01</strong></span>
+
+            <h1 class="header-title">TRA CỨU THÔNG TIN<br>ANH CHỊ HUYNH TRƯỞNG - GIÁO LÝ VIÊN</h1>
+            <p class="header-subtitle">Nhập mã định danh (ID) hoặc họ tên để tra cứu thông tin chi tiết, chứng chỉ GLV và lớp giảng dạy năm học 2026 - 2027</p>
+          </header>
+
+          <!-- Search Section -->
+          <section class="search-section">
+            <div class="search-card">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="searchInput"
+                  placeholder="Nhập mã ID (ví dụ: GLV01, GLV16, 01...) hoặc Họ tên, Tên Thánh..." autocomplete="off"
+                  autofocus>
+                <button id="clearSearchBtn" class="clear-btn" title="Xóa nội dung" style="display: none;">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+                <button id="searchBtn" class="btn-primary">
+                  <span>Tìm kiếm</span>
+                  <i class="fa-solid fa-arrow-right"></i>
+                </button>
+              </div>
+
+              <!-- Suggestions Dropdown -->
+              <div class="suggestions-dropdown" id="suggestionsBox" style="display: none;"></div>
+
+              <!-- Quick Tags -->
+              <div class="quick-tags">
+                <span class="tag-label"><i class="fa-solid fa-bolt"></i> Tìm nhanh mẫu:</span>
+                <button class="quick-tag-btn" data-query="GLV01">GLV01</button>
+                <button class="quick-tag-btn" data-query="GLV16">GLV16</button>
+                <button class="quick-tag-btn" data-query="GLV28">GLV28</button>
+                <button class="quick-tag-btn" data-query="MARIA">Tên Thánh MARIA</button>
+                <button class="quick-tag-btn" data-query="GIUSE">Tên Thánh GIUSE</button>
+              </div>
             </div>
-            <div class="qr-code-box" id="qrcodeContainer" title="Mã QR định danh"></div>
-          </div>
+          </section>
 
-          <div class="info-col">
-            <div class="holy-name-tag" id="cardHolyName">MARIA</div>
-            <h2 class="full-name" id="cardFullName">NGUYỄN THỊ VÂN ANH</h2>
-            <div class="card-divider"></div>
+          <!-- Main Content Area GLV -->
+          <main class="content-section">
+            <!-- Loading State -->
+            <div id="loadingState" class="state-container" style="display: none;">
+              <div class="spinner"></div>
+              <p>Đang tìm kiếm thông tin...</p>
+            </div>
 
-            <div class="info-grid">
-              <div class="info-item">
-                <div class="info-icon"><i class="fa-solid fa-certificate"></i></div>
-                <div class="info-text">
-                  <span class="label">Chứng chỉ GLV</span>
-                  <div class="value-wrapper">
-                    <span class="badge-cert" id="cardCert">Cấp 2</span>
+            <!-- Result Card (Profile View) -->
+            <div id="resultCard" class="profile-card" style="display: none;">
+              <div class="card-header-bar">
+                <div class="church-emblem">
+                  <i class="fa-solid fa-cross"></i>
+                  <span>THẺ GIÁO LÝ VIÊN</span>
+                </div>
+                <div class="card-id-badge">
+                  <span class="id-label">MÃ ĐỊNH DANH</span>
+                  <span class="id-val" id="cardId">GLV01</span>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="avatar-col">
+                  <div class="avatar-frame">
+                    <img id="cardAvatarImg" class="avatar-img" src="assets/avatar_female.jpg" alt="Ảnh thẻ GLV">
+                    <div class="avatar-badge-icon" id="cardGenderIcon" title="Giới tính">
+                      <i class="fa-solid fa-venus"></i>
+                    </div>
+                  </div>
+                  <div class="glv-stt-badge">
+                    <span>STT: #<strong id="cardStt">01</strong></span>
+                  </div>
+                  <div class="qr-code-box" id="qrcodeContainer" title="Mã QR định danh"></div>
+                </div>
+
+                <div class="info-col">
+                  <div class="holy-name-tag" id="cardHolyName">MARIA</div>
+                  <h2 class="full-name" id="cardFullName">NGUYỄN THỊ VÂN ANH</h2>
+                  <div class="card-divider"></div>
+
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <div class="info-icon"><i class="fa-solid fa-certificate"></i></div>
+                      <div class="info-text">
+                        <span class="label">Chứng chỉ GLV</span>
+                        <div class="value-wrapper">
+                          <span class="badge-cert" id="cardCert">Cấp 2</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="info-item">
+                      <div class="info-icon"><i class="fa-solid fa-venus-mars"></i></div>
+                      <div class="info-text">
+                        <span class="label">Giới tính</span>
+                        <span class="value" id="cardGender">Nữ</span>
+                      </div>
+                    </div>
+
+                    <div class="info-item">
+                      <div class="info-icon"><i class="fa-solid fa-layer-group"></i></div>
+                      <div class="info-text">
+                        <span class="label">Khối Lớp</span>
+                        <span class="value" id="cardBlock">Chưa phân khối</span>
+                      </div>
+                    </div>
+
+                    <div class="info-item">
+                      <div class="info-icon"><i class="fa-solid fa-chalkboard-user"></i></div>
+                      <div class="info-text">
+                        <span class="label">Lớp giảng dạy</span>
+                        <span class="value" id="cardClass">Đang cập nhật</span>
+                      </div>
+                    </div>
+
+                    <div class="info-item form-group-full">
+                      <div class="info-icon"><i class="fa-solid fa-user-check"></i></div>
+                      <div class="info-text">
+                        <span class="label">Trạng thái</span>
+                        <span class="value text-success"><i class="fa-solid fa-circle-check"></i> Đang hoạt động</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div class="info-item">
-                <div class="info-icon"><i class="fa-solid fa-venus-mars"></i></div>
-                <div class="info-text">
-                  <span class="label">Giới tính</span>
-                  <span class="value" id="cardGender">Nữ</span>
+              <div class="card-footer-actions">
+                <button class="btn-action btn-edit-current" id="editCurrentGlvBtn"
+                  title="Chỉnh sửa thông tin Giáo Lý Viên này">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                  <span>Sửa Thông Tin</span>
+                </button>
+                <button class="btn-action btn-print" id="printBtn" title="In thẻ hoặc lưu file PDF">
+                  <i class="fa-solid fa-print"></i>
+                  <span>In Thẻ GLV</span>
+                </button>
+                <button class="btn-action btn-copy" id="copyBtn" title="Sao chép thông tin chi tiết">
+                  <i class="fa-solid fa-copy"></i>
+                  <span>Sao Chép</span>
+                </button>
+                <button class="btn-action btn-reset" id="resetBtn" title="Tra cứu mã khác">
+                  <i class="fa-solid fa-rotate-left"></i>
+                  <span>Tra Cứu Khác</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Multiple Results List -->
+            <div id="multipleResultsCard" class="multiple-results-card" style="display: none;">
+              <div class="multi-header">
+                <h3><i class="fa-solid fa-users"></i> Tìm thấy <span id="matchCount">0</span> kết quả phù hợp:</h3>
+                <p>Nhấp vào một Giáo Lý Viên để xem thẻ chi tiết</p>
+              </div>
+              <div class="glv-grid-list" id="glvGridList"></div>
+            </div>
+
+            <!-- Not Found State -->
+            <div id="notFoundState" class="state-container not-found-box" style="display: none;">
+              <div class="not-found-icon">
+                <i class="fa-solid fa-user-slash"></i>
+              </div>
+              <h3>Không tìm thấy thông tin</h3>
+              <p>Không có Giáo Lý Viên nào khớp với từ khóa "<strong id="searchedKeyword"></strong>".</p>
+              <div class="not-found-tips">
+                <span><i class="fa-solid fa-lightbulb"></i> Mẹo:</span>
+                <ul>
+                  <li>Kiểm tra lại mã ID (Ví dụ: <code>GLV01</code>, <code>GLV12</code>, hoặc chỉ gõ số <code>01</code>, <code>12</code>).</li>
+                  <li>Có thể tìm theo Tên (ví dụ: <code>Vân Anh</code>, <code>Hải</code>) hoặc Tên Thánh (ví dụ: <code>Maria</code>, <code>Giuse</code>).</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Initial Welcome State -->
+            <div id="welcomeState" class="welcome-box">
+              <div class="welcome-icon">
+                <i class="fa-solid fa-address-card"></i>
+              </div>
+              <h3>Sẵn sàng tra cứu</h3>
+              <p>Hãy nhập mã ID Giáo Lý Viên vào thanh tìm kiếm phía trên để hiển thị hồ sơ thông tin.</p>
+
+              <div class="quick-stats-row">
+                <div class="stat-pill">
+                  <i class="fa-solid fa-users"></i>
+                  <span>Tổng số: <strong id="totalGLVCount">41</strong> GLV</span>
                 </div>
               </div>
 
-              <div class="info-item">
-                <div class="info-icon"><i class="fa-solid fa-layer-group"></i></div>
-                <div class="info-text">
-                  <span class="label">Khối Lớp</span>
-                  <span class="value" id="cardBlock">Chưa phân khối</span>
-                </div>
+              <div class="welcome-actions-row">
+                <button class="btn-outline-all" id="viewAllBtn">
+                  <i class="fa-solid fa-table-list"></i> Xem & Quản Lý Danh Sách
+                </button>
+                <button class="btn-primary-add" id="addNewGlvBtn">
+                  <i class="fa-solid fa-user-plus"></i> Thêm GLV Mới
+                </button>
               </div>
+            </div>
+          </main>
+        </div>
 
-              <div class="info-item">
-                <div class="info-icon"><i class="fa-solid fa-chalkboard-user"></i></div>
-                <div class="info-text">
-                  <span class="label">Lớp giảng dạy</span>
-                  <span class="value" id="cardClass">Đang cập nhật</span>
-                </div>
+        <!-- ==========================================================================
+             TAB 2: THÔNG TIN LỚP HỌC (CLASS VIEW)
+             ========================================================================== -->
+        <div id="tabClassView" class="tab-pane" style="display: none;">
+          <!-- Header Phân Hệ Lớp Học -->
+          <header class="app-header">
+            <div class="top-nav-bar desktop-only-bar">
+              <div class="header-badge badge-class-nav">
+                <i class="fa-solid fa-school"></i>
+                <span>BAN GIÁO LÝ</span>
               </div>
+            </div>
 
-              <div class="info-item form-group-full">
-                <div class="info-icon"><i class="fa-solid fa-user-check"></i></div>
-                <div class="info-text">
-                  <span class="label">Trạng thái</span>
-                  <span class="value text-success"><i class="fa-solid fa-circle-check"></i> Đang hoạt động</span>
-                </div>
+            <h1 class="header-title">QUẢN LÝ & TRA CỨU<br>THÔNG TIN CÁC LỚP GIÁO LÝ</h1>
+            <p class="header-subtitle">Danh sách các khối, lớp học giáo lý, huynh trưởng phụ trách và thông tin sinh hoạt năm học 2026 - 2027</p>
+          </header>
+
+          <!-- Thống kê tổng quan lớp học -->
+          <div class="class-overview-stats">
+            <div class="class-stat-card">
+              <div class="stat-icon-wrap icon-classes">
+                <i class="fa-solid fa-chalkboard-user"></i>
+              </div>
+              <div class="stat-info">
+                <span class="stat-num" id="classStatTotalClasses">14</span>
+                <span class="stat-label">Tổng số lớp học</span>
+              </div>
+            </div>
+
+            <div class="class-stat-card">
+              <div class="stat-icon-wrap icon-blocks">
+                <i class="fa-solid fa-layer-group"></i>
+              </div>
+              <div class="stat-info">
+                <span class="stat-num" id="classStatTotalBlocks">5</span>
+                <span class="stat-label">Khối Giáo Lý</span>
+              </div>
+            </div>
+
+            <div class="class-stat-card">
+              <div class="stat-icon-wrap icon-students">
+                <i class="fa-solid fa-children"></i>
+              </div>
+              <div class="stat-info">
+                <span class="stat-num" id="classStatTotalStudents">380+</span>
+                <span class="stat-label">Sĩ số ước tính</span>
+              </div>
+            </div>
+
+            <div class="class-stat-card">
+              <div class="stat-icon-wrap icon-teachers">
+                <i class="fa-solid fa-user-graduate"></i>
+              </div>
+              <div class="stat-info">
+                <span class="stat-num" id="classStatAssignedTeachers">32</span>
+                <span class="stat-label">GLV đứng lớp</span>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="card-footer-actions">
-          <button class="btn-action btn-edit-current" id="editCurrentGlvBtn"
-            title="Chỉnh sửa thông tin Giáo Lý Viên này">
-            <i class="fa-solid fa-pen-to-square"></i>
-            <span>Sửa Thông Tin</span>
-          </button>
-          <button class="btn-action btn-print" id="printBtn" title="In thẻ hoặc lưu file PDF">
-            <i class="fa-solid fa-print"></i>
-            <span>In Thẻ GLV</span>
-          </button>
-          <button class="btn-action btn-copy" id="copyBtn" title="Sao chép thông tin chi tiết">
-            <i class="fa-solid fa-copy"></i>
-            <span>Sao Chép</span>
-          </button>
-          <button class="btn-action btn-reset" id="resetBtn" title="Tra cứu mã khác">
-            <i class="fa-solid fa-rotate-left"></i>
-            <span>Tra Cứu Khác</span>
-          </button>
-        </div>
-      </div>
+          <!-- Thanh Tìm Kiếm & Bộ Lọc Lớp Học -->
+          <section class="class-control-section">
+            <div class="class-search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="classSearchInput" placeholder="Tìm tên lớp, tên Giáo Lý Viên hoặc phòng học...">
+              <button class="clear-btn" id="classClearSearchBtn" style="display: none;" title="Xóa tìm kiếm">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
 
-      <!-- Multiple Results List (if search by name/holy name returns > 1 person) -->
-      <div id="multipleResultsCard" class="multiple-results-card" style="display: none;">
-        <div class="multi-header">
-          <h3><i class="fa-solid fa-users"></i> Tìm thấy <span id="matchCount">0</span> kết quả phù hợp:</h3>
-          <p>Nhấp vào một Giáo Lý Viên để xem thẻ chi tiết</p>
-        </div>
-        <div class="glv-grid-list" id="glvGridList"></div>
-      </div>
+            <div class="class-actions-bar">
+              <!-- Bộ Lọc Khối (Pills) -->
+              <div class="block-filter-pills" id="blockFilterPills">
+                <button class="pill-btn active" data-block="all">Tất cả (<span id="countBlockAll">13</span>)</button>
+                <button class="pill-btn" data-block="Khai Tâm">Khai Tâm (<span id="countBlockKT">2</span>)</button>
+                <button class="pill-btn" data-block="Rước Lễ">Rước Lễ (<span id="countBlockRL">3</span>)</button>
+                <button class="pill-btn" data-block="Thêm Sức">Thêm Sức (<span id="countBlockTS">3</span>)</button>
+                <button class="pill-btn" data-block="Bao Đồng">Bao Đồng (<span id="countBlockBD">3</span>)</button>
+                <button class="pill-btn" data-block="Vào Đời">Vào Đời (<span id="countBlockVD">2</span>)</button>
+              </div>
 
-      <!-- Not Found State -->
-      <div id="notFoundState" class="state-container not-found-box" style="display: none;">
-        <div class="not-found-icon">
-          <i class="fa-solid fa-user-slash"></i>
-        </div>
-        <h3>Không tìm thấy thông tin</h3>
-        <p>Không có Giáo Lý Viên nào khớp với từ khóa "<strong id="searchedKeyword"></strong>".</p>
-        <div class="not-found-tips">
-          <span><i class="fa-solid fa-lightbulb"></i> Mẹo:</span>
-          <ul>
-            <li>Kiểm tra lại mã ID (Ví dụ: <code>GLV01</code>, <code>GLV12</code>, hoặc chỉ gõ số <code>01</code>,
-              <code>12</code>).
-            </li>
-            <li>Có thể tìm theo Tên (ví dụ: <code>Vân Anh</code>, <code>Hải</code>) hoặc Tên Thánh (ví dụ:
-              <code>Maria</code>, <code>Giuse</code>).
-            </li>
-          </ul>
-        </div>
-      </div>
+              <!-- Nút Thêm Lớp (Admin) -->
+              <button class="btn-primary-add" id="addClassBtn" style="white-space: nowrap;">
+                <i class="fa-solid fa-plus-circle"></i> Thêm Lớp Mới
+              </button>
+            </div>
+          </section>
 
-      <!-- Initial Welcome State -->
-      <div id="welcomeState" class="welcome-box">
-        <div class="welcome-icon">
-          <i class="fa-solid fa-address-card"></i>
-        </div>
-        <h3>Sẵn sàng tra cứu</h3>
-        <p>Hãy nhập mã ID Giáo Lý Viên vào thanh tìm kiếm phía trên để hiển thị hồ sơ thông tin.</p>
+          <!-- Danh sách Grid Thẻ Lớp Học -->
+          <section class="class-cards-grid" id="classCardsGrid"></section>
 
-        <div class="quick-stats-row">
-          <div class="stat-pill">
-            <i class="fa-solid fa-users"></i>
-            <span>Tổng số: <strong id="totalGLVCount">41</strong> GLV</span>
-          </div>
-        </div>
-
-        <div class="welcome-actions-row">
-          <button class="btn-outline-all" id="viewAllBtn">
-            <i class="fa-solid fa-table-list"></i> Xem & Quản Lý Danh Sách
-          </button>
-          <button class="btn-primary-add" id="addNewGlvBtn">
-            <i class="fa-solid fa-user-plus"></i> Thêm GLV Mới
-          </button>
-        </div>
-      </div>
-    </main>
-
-    <!-- Modal: View All & Manage Directory -->
-    <div class="modal-backdrop" id="allGlvModal" style="display: none;">
-      <div class="modal-content modal-large">
-        <div class="modal-header">
-          <div class="modal-title">
-            <i class="fa-solid fa-address-book"></i>
-            <span>Danh Sách & Quản Lý Giáo Lý Viên</span>
-          </div>
-          <button class="modal-close-btn" id="closeModalBtn"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-
-        <!-- Toolbar: Tìm kiếm & Thao tác nhanh -->
-        <div class="modal-toolbar">
-          <div class="modal-search-box">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="modalFilterInput" placeholder="Tìm nhanh theo Mã ID hoặc Họ tên, Tên Thánh...">
-          </div>
-          <div class="modal-toolbar-actions">
-            <button class="btn-tool btn-tool-add" id="modalAddGlvBtn">
-              <i class="fa-solid fa-plus"></i> Thêm Mới
-            </button>
-            <button class="btn-tool btn-tool-export" id="exportExcelBtn"
-              title="Tải về file Excel chứa dữ liệu đã chỉnh sửa">
-              <i class="fa-solid fa-file-excel"></i> Xuất Excel (.xlsx)
-            </button>
-            <button class="btn-tool btn-tool-reset" id="resetDataBtn" title="Khôi phục lại dữ liệu ban đầu">
-              <i class="fa-solid fa-rotate-left"></i> Khôi Phục Gốc
+          <!-- Trạng Thái Trống / Không Tìm Thấy Lớp -->
+          <div id="classNotFoundState" class="state-container not-found-box" style="display: none;">
+            <div class="not-found-icon">
+              <i class="fa-solid fa-school-circle-xmark"></i>
+            </div>
+            <h3>Không tìm thấy lớp học phù hợp</h3>
+            <p>Không có lớp nào khớp với từ khóa "<strong id="searchedClassKeyword"></strong>".</p>
+            <button class="btn-secondary-reset" id="resetClassFilterBtn">
+              <i class="fa-solid fa-rotate-left"></i> Xem lại tất cả các lớp
             </button>
           </div>
         </div>
 
-        <!-- Bộ Lọc Theo Cột (Column Filters) -->
-        <div class="modal-filters-bar">
-          <div class="filter-item">
-            <label for="filterGender"><i class="fa-solid fa-venus-mars"></i> Giới tính:</label>
-            <select id="filterGender">
-              <option value="all">Tất cả</option>
+        <!-- Footer -->
+        <footer class="app-footer">
+          <p>Đoàn Thiếu Nhi Thánh Thể Giáo xứ Tân Mỹ &bull; Năm Học 2026 - 2027</p>
+        </footer>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODALS: MODAL TOÀN BỘ DANH SÁCH & QUẢN LÝ GLV
+       ========================================================================== -->
+  <div class="modal-backdrop" id="allGlvModal" style="display: none;">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-address-book"></i>
+          <span>Danh Sách & Quản Lý Giáo Lý Viên</span>
+        </div>
+        <button class="modal-close-btn" id="closeModalBtn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Toolbar: Tìm kiếm & Thao tác nhanh -->
+      <div class="modal-toolbar">
+        <div class="modal-search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="modalFilterInput" placeholder="Tìm nhanh theo Mã ID hoặc Họ tên, Tên Thánh...">
+        </div>
+        <div class="modal-toolbar-actions">
+          <button class="btn-tool btn-tool-add" id="modalAddGlvBtn">
+            <i class="fa-solid fa-plus"></i> Thêm Mới
+          </button>
+          <button class="btn-tool btn-tool-export" id="exportExcelBtn"
+            title="Tải về file Excel chứa dữ liệu đã chỉnh sửa">
+            <i class="fa-solid fa-file-excel"></i> Xuất Excel (.xlsx)
+          </button>
+          <button class="btn-tool btn-tool-reset" id="resetDataBtn" title="Khôi phục lại dữ liệu ban đầu">
+            <i class="fa-solid fa-rotate-left"></i> Khôi Phục Gốc
+          </button>
+        </div>
+      </div>
+
+      <!-- Bộ Lọc Theo Cột (Column Filters) -->
+      <div class="modal-filters-bar">
+        <div class="filter-item">
+          <label for="filterGender"><i class="fa-solid fa-venus-mars"></i> Giới tính:</label>
+          <select id="filterGender">
+            <option value="all">Tất cả</option>
+            <option value="Nam">Nam</option>
+            <option value="Nữ">Nữ</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label for="filterBlock"><i class="fa-solid fa-layer-group"></i> Khối Lớp:</label>
+          <select id="filterBlock">
+            <option value="all">Tất cả các khối</option>
+            <option value="Khai Tâm">Khai Tâm</option>
+            <option value="Rước Lễ">Rước Lễ</option>
+            <option value="Thêm Sức">Thêm Sức</option>
+            <option value="Bao Đồng">Bao Đồng</option>
+            <option value="Vào Đời">Vào Đời</option>
+            <option value="none">Chưa phân khối</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label for="filterCert"><i class="fa-solid fa-certificate"></i> Chứng chỉ:</label>
+          <select id="filterCert">
+            <option value="all">Tất cả chứng chỉ</option>
+            <option value="1">Cấp 1</option>
+            <option value="2">Cấp 2</option>
+            <option value="3">Cấp 3</option>
+            <option value="none">Chưa có</option>
+          </select>
+        </div>
+
+        <div class="filter-count">
+          <span>Hiển thị: <strong id="filterResultCount">41</strong> GLV</span>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="glv-table">
+          <thead>
+            <tr>
+              <th class="th-sortable" data-sort="stt">STT <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th style="text-align: center;">Ảnh</th>
+              <th class="th-sortable" data-sort="id">Mã ID <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="th-sortable" data-sort="holyName">Tên Thánh <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="th-sortable" data-sort="name">Họ và Tên <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="th-sortable" data-sort="gender">Giới tính <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="th-sortable" data-sort="cert">Chứng chỉ GLV <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="th-sortable" data-sort="block">Khối Lớp <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="th-sortable" data-sort="class">Lớp giảng dạy <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th style="text-align: center;">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="allGlvTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: CHỈNH SỬA / THÊM MỚI GLV
+       ========================================================================== -->
+  <div class="modal-backdrop" id="editGlvModal" style="display: none;">
+    <div class="modal-content modal-form">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-user-pen"></i>
+          <span id="editModalTitle">Chỉnh Sửa Thông Tin Giáo Lý Viên</span>
+        </div>
+        <button class="modal-close-btn" id="closeEditModalBtn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="glvEditForm" class="glv-edit-form">
+        <input type="hidden" id="editOriginalId">
+        <input type="hidden" id="formPhotoData">
+
+        <!-- Banner thông báo khi ở vai trò Khách -->
+        <div class="guest-mode-alert" id="guestFormAlert" style="display: none;">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>Bạn đang ở vai trò <strong>Khách (Guest)</strong>: Bạn chỉ có thể sửa <strong>Tên Thánh</strong>, <strong>Họ tên</strong> và <strong>Ảnh thẻ</strong>. Các thông tin khác ở chế độ chỉ xem.</span>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="formId">Mã ID <span class="req">*</span></label>
+            <input type="text" id="formId" placeholder="Ví dụ: GLV01, GLV42..." required>
+          </div>
+
+          <div class="form-group">
+            <label for="formGender">Giới tính <span class="req">*</span></label>
+            <select id="formGender" required>
               <option value="Nam">Nam</option>
               <option value="Nữ">Nữ</option>
             </select>
           </div>
 
-          <div class="filter-item">
-            <label for="filterBlock"><i class="fa-solid fa-layer-group"></i> Khối Lớp:</label>
-            <select id="filterBlock">
-              <option value="all">Tất cả các khối</option>
+          <div class="form-group">
+            <label for="formHolyName">Tên Thánh <span class="req">*</span></label>
+            <input type="text" id="formHolyName" placeholder="Ví dụ: MARIA, GIUSE, ĐAMINH..." required>
+          </div>
+
+          <div class="form-group">
+            <label for="formLastName">Họ và tên đệm <span class="req">*</span></label>
+            <input type="text" id="formLastName" placeholder="Ví dụ: NGUYỄN THỊ VÂN..." required>
+          </div>
+
+          <div class="form-group">
+            <label for="formFirstName">Tên <span class="req">*</span></label>
+            <input type="text" id="formFirstName" placeholder="Ví dụ: ANH, TRÚC, DUY..." required>
+          </div>
+
+          <div class="form-group">
+            <label for="formCert">Chứng chỉ GLV</label>
+            <input type="text" id="formCert" placeholder="Ví dụ: 1, 2, 3, 3 - BMVTT...">
+          </div>
+
+          <div class="form-group">
+            <label for="formBlock">Khối Lớp</label>
+            <select id="formBlock">
+              <option value="">-- Chọn Khối Lớp --</option>
               <option value="Khai Tâm">Khai Tâm</option>
               <option value="Rước Lễ">Rước Lễ</option>
               <option value="Thêm Sức">Thêm Sức</option>
               <option value="Bao Đồng">Bao Đồng</option>
               <option value="Vào Đời">Vào Đời</option>
-              <option value="none">Chưa phân khối</option>
             </select>
           </div>
 
-          <div class="filter-item">
-            <label for="filterCert"><i class="fa-solid fa-certificate"></i> Chứng chỉ:</label>
-            <select id="filterCert">
-              <option value="all">Tất cả chứng chỉ</option>
-              <option value="1">Cấp 1</option>
-              <option value="2">Cấp 2</option>
-              <option value="3">Cấp 3</option>
-              <option value="none">Chưa có</option>
+          <div class="form-group">
+            <label for="formClass">Lớp giảng dạy</label>
+            <input type="text" id="formClass" placeholder="Ví dụ: Khai Tâm 1, Rước Lễ 2...">
+          </div>
+
+          <!-- Upload Ảnh Thẻ -->
+          <div class="form-group form-group-full photo-upload-section">
+            <label><i class="fa-solid fa-image"></i> Ảnh Thẻ Giáo Lý Viên</label>
+            <div class="photo-upload-container">
+              <div class="photo-preview-box">
+                <img id="formPhotoPreview" src="assets/avatar_male.jpg" alt="Ảnh thẻ GLV">
+              </div>
+              <div class="photo-upload-controls">
+                <label for="formPhotoInput" class="btn-upload-photo">
+                  <i class="fa-solid fa-cloud-arrow-up"></i> Tải ảnh từ máy tính...
+                </label>
+                <input type="file" id="formPhotoInput" accept="image/*" style="display: none;">
+                <button type="button" id="formPhotoResetBtn" class="btn-reset-photo"
+                  title="Xóa ảnh riêng và dùng ảnh chibi mặc định">
+                  <i class="fa-solid fa-rotate-left"></i> Dùng ảnh mặc định theo giới tính
+                </button>
+                <span class="photo-hint">Chấp nhận định dạng JPG, PNG. Ảnh sẽ được hiển thị trên thẻ và bảng danh sách.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-footer">
+          <button type="button" class="btn-cancel" id="cancelEditBtn">Hủy Bỏ</button>
+          <button type="submit" class="btn-save"><i class="fa-solid fa-floppy-disk"></i> Lưu Thông Tin</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: CHI TIẾT LỚP HỌC (CLASS DETAIL MODAL)
+       ========================================================================== -->
+  <div class="modal-backdrop" id="classDetailModal" style="display: none;">
+    <div class="modal-content modal-class-detail">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-school"></i>
+          <span id="classDetailModalTitle">Thông Tin Chi Tiết Lớp Học</span>
+        </div>
+        <button class="modal-close-btn" id="closeClassDetailModalBtn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="class-detail-body" id="classDetailBody">
+        <!-- Nội dung chi tiết lớp được render động từ JS -->
+      </div>
+
+      <div class="modal-footer class-detail-footer">
+        <button class="btn-tool btn-edit-class-from-detail" id="btnEditClassFromDetail">
+          <i class="fa-solid fa-pen-to-square"></i> Chỉnh Sửa Lớp
+        </button>
+        <button class="btn-cancel" id="closeClassDetailFooterBtn">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: THÊM MỚI / CHỈNH SỬA LỚP HỌC (ADD/EDIT CLASS)
+       ========================================================================== -->
+  <div class="modal-backdrop" id="editClassModal" style="display: none;">
+    <div class="modal-content modal-form">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-school-flag"></i>
+          <span id="editClassModalTitle">Thêm Lớp Giáo Lý Mới</span>
+        </div>
+        <button class="modal-close-btn" id="closeEditClassModalBtn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="classEditForm" class="glv-edit-form">
+        <input type="hidden" id="editClassOriginalId">
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="formClassName">Tên Lớp Học <span class="req">*</span></label>
+            <input type="text" id="formClassName" placeholder="Ví dụ: Khai Tâm 1, Rước Lễ 2..." required>
+          </div>
+
+          <div class="form-group">
+            <label for="formClassBlock">Khối Lớp <span class="req">*</span></label>
+            <select id="formClassBlock" required>
+              <option value="Khai Tâm">Khai Tâm</option>
+              <option value="Rước Lễ">Rước Lễ</option>
+              <option value="Thêm Sức">Thêm Sức</option>
+              <option value="Bao Đồng">Bao Đồng</option>
+              <option value="Vào Đời">Vào Đời</option>
             </select>
           </div>
 
-          <div class="filter-count">
-            <span>Hiển thị: <strong id="filterResultCount">41</strong> GLV</span>
+          <div class="form-group">
+            <label for="formClassRoom">Phòng Học</label>
+            <input type="text" id="formClassRoom" placeholder="Ví dụ: Phòng 101, Hội trường A...">
+          </div>
+
+          <div class="form-group">
+            <label for="formClassSchedule">Thời Gian Học</label>
+            <input type="text" id="formClassSchedule" placeholder="Ví dụ: Chủ Nhật 07:30 - 09:00">
+          </div>
+
+          <div class="form-group">
+            <label for="formClassStudents">Sĩ Số Thiếu Nhi (Em)</label>
+            <input type="number" id="formClassStudents" placeholder="Ví dụ: 28" min="0" max="200">
+          </div>
+
+          <div class="form-group">
+            <label for="formClassNote">Ghi Chú Ban Giáo Lý</label>
+            <input type="text" id="formClassNote" placeholder="Ví dụ: Lớp chuẩn bị Xưng tội Rước lễ lần đầu...">
+          </div>
+
+          <!-- Phân công Giáo lý viên -->
+          <div class="form-group form-group-full">
+            <label><i class="fa-solid fa-users"></i> Phân Công Giáo Lý Viên / Huynh Trưởng Phụ Trách</label>
+            <div class="teacher-select-container">
+              <input type="text" id="teacherSearchFilter" class="teacher-filter-input"
+                placeholder="Tìm nhanh tên hoặc mã GLV để chọn...">
+              <div class="teacher-checkbox-list" id="teacherCheckboxList"></div>
+            </div>
           </div>
         </div>
 
-        <div class="table-responsive">
-          <table class="glv-table">
-            <thead>
-              <tr>
-                <th class="th-sortable" data-sort="stt">STT <i class="fa-solid fa-sort sort-icon"></i></th>
-                <th style="text-align: center;">Ảnh</th>
-                <th class="th-sortable" data-sort="id">Mã ID <i class="fa-solid fa-sort sort-icon"></i></th>
-                <th class="th-sortable" data-sort="holyName">Tên Thánh <i class="fa-solid fa-sort sort-icon"></i></th>
-                <th class="th-sortable" data-sort="name">Họ và Tên <i class="fa-solid fa-sort sort-icon"></i></th>
-                <th class="th-sortable" data-sort="gender">Giới tính <i class="fa-solid fa-sort sort-icon"></i></th>
-                <th class="th-sortable" data-sort="cert">Chứng chỉ GLV <i class="fa-solid fa-sort sort-icon"></i></th>
-                <th class="th-sortable" data-sort="block">Khối Lớp <i class="fa-solid fa-sort sort-icon"></i></th>
-                <th class="th-sortable" data-sort="class">Lớp giảng dạy <i class="fa-solid fa-sort sort-icon"></i></th>
-                <th style="text-align: center;">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody id="allGlvTableBody"></tbody>
-          </table>
+        <div class="form-footer">
+          <button type="button" class="btn-cancel" id="cancelEditClassBtn">Hủy Bỏ</button>
+          <button type="submit" class="btn-save"><i class="fa-solid fa-floppy-disk"></i> Lưu Lớp Học</button>
         </div>
-      </div>
+      </form>
     </div>
+  </div>
 
-    <!-- Modal: Edit / Add GLV Form -->
-    <div class="modal-backdrop" id="editGlvModal" style="display: none;">
-      <div class="modal-content modal-form">
-        <div class="modal-header">
-          <div class="modal-title">
-            <i class="fa-solid fa-user-pen"></i>
-            <span id="editModalTitle">Chỉnh Sửa Thông Tin Giáo Lý Viên</span>
-          </div>
-          <button class="modal-close-btn" id="closeEditModalBtn"><i class="fa-solid fa-xmark"></i></button>
+  <!-- ==========================================================================
+       MODAL: ĐĂNG NHẬP / ĐỔI VAI TRÒ ADMIN VS GUEST
+       ========================================================================== -->
+  <div class="modal-backdrop" id="loginModal" style="display: none;">
+    <div class="modal-content modal-auth">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-user-shield"></i>
+          <span>Đăng Nhập / Phân Quyền Sử Dụng</span>
         </div>
+        <button class="modal-close-btn" id="closeLoginModalBtn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
 
-        <form id="glvEditForm" class="glv-edit-form">
-          <input type="hidden" id="editOriginalId">
-          <input type="hidden" id="formPhotoData">
+      <div class="auth-modal-body">
+        <p class="auth-modal-desc">Vui lòng chọn vai trò để sử dụng các tính năng tương ứng:</p>
 
-          <!-- Banner thông báo khi ở vai trò Khách -->
-          <div class="guest-mode-alert" id="guestFormAlert" style="display: none;">
-            <i class="fa-solid fa-circle-info"></i>
-            <span>Bạn đang ở vai trò <strong>Khách (Guest)</strong>: Bạn chỉ có thể sửa <strong>Tên Thánh</strong>, <strong>Họ tên</strong> và <strong>Ảnh thẻ</strong>. Các thông tin khác ở chế độ chỉ xem.</span>
-          </div>
-
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="formId">Mã ID <span class="req">*</span></label>
-              <input type="text" id="formId" placeholder="Ví dụ: GLV01, GLV42..." required>
-            </div>
-
-            <div class="form-group">
-              <label for="formGender">Giới tính <span class="req">*</span></label>
-              <select id="formGender" required>
-                <option value="Nam">Nam</option>
-                <option value="Nữ">Nữ</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="formHolyName">Tên Thánh <span class="req">*</span></label>
-              <input type="text" id="formHolyName" placeholder="Ví dụ: MARIA, GIUSE, ĐAMINH..." required>
-            </div>
-
-            <div class="form-group">
-              <label for="formLastName">Họ và tên đệm <span class="req">*</span></label>
-              <input type="text" id="formLastName" placeholder="Ví dụ: NGUYỄN THỊ VÂN..." required>
-            </div>
-
-            <div class="form-group">
-              <label for="formFirstName">Tên <span class="req">*</span></label>
-              <input type="text" id="formFirstName" placeholder="Ví dụ: ANH, TRÚC, DUY..." required>
-            </div>
-
-            <div class="form-group">
-              <label for="formCert">Chứng chỉ GLV</label>
-              <input type="text" id="formCert" placeholder="Ví dụ: 1, 2, 3, 3 - BMVTT...">
-            </div>
-
-            <div class="form-group">
-              <label for="formBlock">Khối Lớp</label>
-              <select id="formBlock">
-                <option value="">-- Chọn Khối Lớp --</option>
-                <option value="Khai Tâm">Khai Tâm</option>
-                <option value="Rước Lễ">Rước Lễ</option>
-                <option value="Thêm Sức">Thêm Sức</option>
-                <option value="Bao Đồng">Bao Đồng</option>
-                <option value="Vào Đời">Vào Đời</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="formClass">Lớp giảng dạy</label>
-              <input type="text" id="formClass" placeholder="Ví dụ: Khai Tâm 1, Rước Lễ 2...">
-            </div>
-
-            <!-- Upload Ảnh Thẻ -->
-            <div class="form-group form-group-full photo-upload-section">
-              <label><i class="fa-solid fa-image"></i> Ảnh Thẻ Giáo Lý Viên</label>
-              <div class="photo-upload-container">
-                <div class="photo-preview-box">
-                  <img id="formPhotoPreview" src="assets/avatar_male.jpg" alt="Ảnh thẻ GLV">
-                </div>
-                <div class="photo-upload-controls">
-                  <label for="formPhotoInput" class="btn-upload-photo">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Tải ảnh từ máy tính...
-                  </label>
-                  <input type="file" id="formPhotoInput" accept="image/*" style="display: none;">
-                  <button type="button" id="formPhotoResetBtn" class="btn-reset-photo"
-                    title="Xóa ảnh riêng và dùng ảnh chibi mặc định">
-                    <i class="fa-solid fa-rotate-left"></i> Dùng ảnh mặc định theo giới tính
-                  </button>
-                  <span class="photo-hint">Chấp nhận định dạng JPG, PNG. Ảnh sẽ được hiển thị trên thẻ và bảng danh
-                    sách.</span>
-                </div>
+        <div class="auth-cards-container">
+          <!-- Card Admin -->
+          <div class="auth-role-card admin-card">
+            <div class="role-card-header">
+              <div class="role-icon-box admin-badge-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+              </div>
+              <div>
+                <h3 class="role-title">Quản Trị Viên (Admin)</h3>
+                <span class="role-sub">Toàn quyền hệ thống</span>
               </div>
             </div>
-          </div>
-
-          <div class="form-footer">
-            <button type="button" class="btn-cancel" id="cancelEditBtn">Hủy Bỏ</button>
-            <button type="submit" class="btn-save"><i class="fa-solid fa-floppy-disk"></i> Lưu Thông Tin</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Modal: Login / Switch Role (Admin vs Guest) -->
-    <div class="modal-backdrop" id="loginModal" style="display: none;">
-      <div class="modal-content modal-auth">
-        <div class="modal-header">
-          <div class="modal-title">
-            <i class="fa-solid fa-user-shield"></i>
-            <span>Đăng Nhập / Phân Quyền Sử Dụng</span>
-          </div>
-          <button class="modal-close-btn" id="closeLoginModalBtn"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-
-        <div class="auth-modal-body">
-          <p class="auth-modal-desc">Vui lòng chọn vai trò để sử dụng các tính năng tương ứng:</p>
-
-          <div class="auth-cards-container">
-            <!-- Card Admin -->
-            <div class="auth-role-card admin-card">
-              <div class="role-card-header">
-                <div class="role-icon-box admin-badge-icon">
-                  <i class="fa-solid fa-shield-halved"></i>
-                </div>
-                <div>
-                  <h3 class="role-title">Quản Trị Viên (Admin)</h3>
-                  <span class="role-sub">Toàn quyền hệ thống</span>
-                </div>
-              </div>
-              <ul class="role-perm-list">
-                <li><i class="fa-solid fa-check"></i> Thêm mới, Sửa, Xóa hồ sơ GLV</li>
-                <li><i class="fa-solid fa-check"></i> Chỉnh sửa mọi trường dữ liệu & ảnh thẻ</li>
-                <li><i class="fa-solid fa-check"></i> Khôi phục dữ liệu gốc & Xuất Excel</li>
-              </ul>
-              <div class="admin-login-form">
-                <div class="password-field-wrapper">
-                  <i class="fa-solid fa-lock"></i>
-                  <input type="password" id="adminPasswordInput" placeholder="Nhập mật khẩu Quản Trị Viên..." autocomplete="current-password">
-                  <button type="button" id="togglePasswordBtn" class="btn-toggle-pw" title="Ẩn/Hiện mật khẩu">
-                    <i class="fa-solid fa-eye-slash" id="togglePasswordIcon"></i>
-                  </button>
-                </div>
-                <button type="button" class="btn-role-submit btn-submit-admin" id="submitAdminLoginBtn">
-                  <i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập Admin
+            <ul class="role-perm-list">
+              <li><i class="fa-solid fa-check"></i> Thêm mới, Sửa, Xóa hồ sơ GLV & Lớp học</li>
+              <li><i class="fa-solid fa-check"></i> Phân công GLV đứng lớp & quản lý sĩ số</li>
+              <li><i class="fa-solid fa-check"></i> Khôi phục dữ liệu gốc & Xuất Excel</li>
+            </ul>
+            <div class="admin-login-form">
+              <div class="password-field-wrapper">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="adminPasswordInput" placeholder="Nhập mật khẩu Quản Trị Viên..." autocomplete="current-password">
+                <button type="button" id="togglePasswordBtn" class="btn-toggle-pw" title="Ẩn/Hiện mật khẩu">
+                  <i class="fa-solid fa-eye-slash" id="togglePasswordIcon"></i>
                 </button>
               </div>
-            </div>
-
-            <!-- Card Guest -->
-            <div class="auth-role-card guest-card">
-              <div class="role-card-header">
-                <div class="role-icon-box guest-badge-icon">
-                  <i class="fa-solid fa-user-tag"></i>
-                </div>
-                <div>
-                  <h3 class="role-title">Khách / Huynh Trưởng (Guest)</h3>
-                  <span class="role-sub">Quyền hạn giới hạn</span>
-                </div>
-              </div>
-              <ul class="role-perm-list">
-                <li><i class="fa-solid fa-check"></i> Chỉnh sửa <strong>Tên Thánh</strong> & <strong>Họ tên</strong></li>
-                <li><i class="fa-solid fa-check"></i> Tải lên và thay đổi <strong>Ảnh thẻ</strong></li>
-                <li class="disabled"><i class="fa-solid fa-ban"></i> Không thể sửa ID, Giới tính, Khối, Lớp, Chứng chỉ (Chỉ xem)</li>
-                <li class="disabled"><i class="fa-solid fa-ban"></i> Không thể Thêm mới hoặc Xóa hồ sơ</li>
-              </ul>
-              <button type="button" class="btn-role-submit btn-submit-guest" id="submitGuestLoginBtn">
-                <i class="fa-solid fa-arrow-right-to-bracket"></i> Dùng Quyền Khách (Guest)
+              <button type="button" class="btn-role-submit btn-submit-admin" id="submitAdminLoginBtn">
+                <i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập Admin
               </button>
             </div>
           </div>
+
+          <!-- Card Guest -->
+          <div class="auth-role-card guest-card">
+            <div class="role-card-header">
+              <div class="role-icon-box guest-badge-icon">
+                <i class="fa-solid fa-user-tag"></i>
+              </div>
+              <div>
+                <h3 class="role-title">Khách / Huynh Trưởng (Guest)</h3>
+                <span class="role-sub">Quyền hạn giới hạn</span>
+              </div>
+            </div>
+            <ul class="role-perm-list">
+              <li><i class="fa-solid fa-check"></i> Tra cứu thẻ GLV & danh sách Lớp học</li>
+              <li><i class="fa-solid fa-check"></i> Chỉnh sửa <strong>Tên Thánh</strong> & <strong>Họ tên</strong> GLV</li>
+              <li><i class="fa-solid fa-check"></i> Tải lên và thay đổi <strong>Ảnh thẻ</strong></li>
+              <li class="disabled"><i class="fa-solid fa-ban"></i> Không thể Thêm/Xóa hồ sơ hoặc sửa thông tin cốt lõi</li>
+            </ul>
+            <button type="button" class="btn-role-submit btn-submit-guest" id="submitGuestLoginBtn">
+              <i class="fa-solid fa-arrow-right-to-bracket"></i> Dùng Quyền Khách (Guest)
+            </button>
+          </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Toast Notification -->
-    <div id="toastNotification" class="toast">
-      <i class="fa-solid fa-circle-check"></i>
-      <span id="toastMessage">Đã lưu thông tin thành công!</span>
-    </div>
-
-    <!-- Footer -->
-    <footer class="app-footer">
-      <p>Đoàn Thiếu Nhi Thánh Thể Giáo xứ Tân Mỹ</p>
-    </footer>
+  <!-- Toast Notification -->
+  <div id="toastNotification" class="toast">
+    <i class="fa-solid fa-circle-check"></i>
+    <span id="toastMessage">Đã lưu thông tin thành công!</span>
   </div>
 
   <!-- CDN Scripts for SheetJS & QR Code -->
