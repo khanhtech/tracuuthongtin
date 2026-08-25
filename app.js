@@ -107,9 +107,9 @@ const clearSearchBtn = document.getElementById('clearSearchBtn');
 const suggestionsBox = document.getElementById('suggestionsBox');
 const totalGLVCount = document.getElementById('totalGLVCount');
 
-// Quản lý Quyền Người Dùng (Admin vs Guest)
-const AUTH_ROLE_KEY = 'glv_user_role_tanmy_v1';
-let currentUserRole = localStorage.getItem(AUTH_ROLE_KEY) || 'admin';
+// Quản lý Quyền Người Dùng (Admin vs Guest) - Mặc định luôn là Khách (Guest)
+const AUTH_ROLE_KEY = 'glv_user_role_tanmy_session';
+let currentUserRole = sessionStorage.getItem(AUTH_ROLE_KEY) || 'guest';
 const ADMIN_PASSWORDS = ['admin', 'admin123', 'tanmy2026', 'tanmy'];
 
 // Auth DOM Elements
@@ -211,7 +211,9 @@ function initUserRole() {
 function setRole(newRole) {
   currentUserRole = newRole;
   try {
-    localStorage.setItem(AUTH_ROLE_KEY, newRole);
+    sessionStorage.setItem(AUTH_ROLE_KEY, newRole);
+    // Xóa khóa cũ nếu có
+    localStorage.removeItem('glv_user_role_tanmy_v1');
   } catch (e) {
     console.warn('Lỗi lưu vai trò:', e);
   }
