@@ -273,6 +273,9 @@ async function initApiSync() {
       glvDatabase = dbTeachers;
       saveDatabase();
       updateStatsDisplay();
+      if (currentTab === 'glv' && !currentDisplayedGLV) {
+        showWelcomeState();
+      }
     }
     // Cập nhật classes từ MySQL
     const dbClasses = await API.getClasses();
@@ -301,6 +304,7 @@ function switchTab(tabName) {
     if (tabClassView) tabClassView.style.display = 'none';
     if (quickActionsGlv) quickActionsGlv.style.display = 'block';
     if (quickActionsClasses) quickActionsClasses.style.display = 'none';
+    if (!currentDisplayedGLV) showWelcomeState();
   } else if (tabName === 'classes') {
     if (navItemGlv) navItemGlv.classList.remove('active');
     if (navItemClasses) navItemClasses.classList.add('active');
@@ -526,7 +530,11 @@ function hideAllStates() {
 function showWelcomeState() {
   hideAllStates();
   currentDisplayedGLV = null;
-  welcomeState.style.display = 'block';
+  if (glvDatabase && glvDatabase.length > 0) {
+    displayMultipleResults(glvDatabase);
+  } else {
+    welcomeState.style.display = 'block';
+  }
   updateStatsDisplay();
 }
 
@@ -579,24 +587,15 @@ function displayProfileCard(glv) {
   if (cardGenderIcon) {
     cardGenderIcon.className = isMale ? 'avatar-badge-icon male' : 'avatar-badge-icon female';
     cardGenderIcon.innerHTML = isMale ? '<i class="fa-solid fa-mars"></i>' : '<i class="fa-solid fa-venus"></i>';
-    cardGenderIcon.title = isMale ? 'Giới tính: Nam' : 'Giới tính: Nữ';
   }
 
-  if (cardAvatarImg) {
-    cardAvatarImg.src = getGlvAvatar(glv);
-  }
+  cardAvatarImg.src = getGlvAvatar(glv);
 
-  let certRaw = String(glv.cert || '').trim();
-  let certText = 'Chưa có chứng chỉ';
+  let certText = 'Chưa có';
   let isGold = false;
-
-  if (certRaw) {
-    if (certRaw.startsWith('Cấp') || certRaw.startsWith('cấp')) {
-      certText = certRaw;
-    } else {
-      certText = `Cấp ${certRaw}`;
-    }
-    if (certRaw.includes('3') || certRaw.toUpperCase().includes('BMVTN') || certRaw.toUpperCase().includes('BMVTT')) {
+  if (glv.cert) {
+    certText = `Cấp ${glv.cert}`;
+    if (glv.cert.toString().includes('3')) {
       isGold = true;
     }
   }
@@ -636,28 +635,47 @@ function generateQRCode(glv) {
 }
 
 function displayMultipleResults(list) {
-  matchCount.textContent = list.length;
+  if (matchCount) matchCount.textContent = list.length;
+  if (!glvGridList) return;
   glvGridList.innerHTML = '';
 
+  const multiHeaderTitle = multipleResultsCard.querySelector('.multi-header h3');
+  const multiHeaderDesc = multipleResultsCard.querySelector('.multi-header p');
+  
+  if (searchInput && searchInput.value && searchInput.value.trim() !== '') {
+    if (multiHeaderTitle) multiHeaderTitle.innerHTML = `<i class="fa-solid fa-users"></i> Tìm thấy <span id="matchCount">${list.length}</span> kết quả phù hợp:`;
+    if (multiHeaderDesc) multiHeaderDesc.textContent = 'Nhấp vào một Giáo Lý Viên để xem thẻ chi tiết';
+  } else {
+    if (multiHeaderTitle) multiHeaderTitle.innerHTML = `<i class="fa-solid fa-users-line"></i> Danh Sách Giáo Lý Viên (${list.length} GLV)`;
+    if (multiHeaderDesc) multiHeaderDesc.textContent = 'Dữ liệu được nạp trực tiếp từ Cơ Sở Dữ Liệu MySQL (XAMPP). Bấm vào thẻ để xem chi tiết';
+  }
+
   list.forEach(item => {
+    const isMale = (item.gender === 'Nam');
     const div = document.createElement('div');
     div.className = 'glv-mini-card';
     div.innerHTML = `
       <div class="mini-card-top">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <img class="table-avatar-img" style="width: 32px; height: 32px;" src="${getGlvAvatar(item)}" alt="avatar">
-          <span class="mini-id">${item.id}</span>
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <img class="table-avatar-img" style="width: 38px; height: 38px; border-radius: 50%; border: 2px solid ${isMale ? '#3b82f6' : '#ec4899'};" src="${getGlvAvatar(item)}" alt="avatar">
+          <div>
+            <span class="mini-id" style="font-weight: 800; color: #b91c1c;">${item.id}</span>
+            <span style="font-size: 0.75rem; color: #64748b; margin-left: 4px;">#${String(item.stt).padStart(2, '0')}</span>
+          </div>
         </div>
-        <span class="mini-cert">${item.gender === 'Nam' ? '♂ Nam' : '♀ Nữ'}${item.cert ? ' • Cấp ' + item.cert : ''}</span>
+        <span class="mini-cert" style="font-weight: 600; font-size: 0.75rem;">${isMale ? '<span style="color:#1d4ed8;">♂ Nam</span>' : '<span style="color:#be185d;">♀ Nữ</span>'}${item.cert ? ' • Cấp ' + item.cert : ''}</span>
       </div>
-      <span class="mini-holy">${item.holyName || ''}</span>
-      <span class="mini-name">${item.lastName} ${item.firstName}</span>
-      <span style="font-size: 0.8rem; color: #64748b;">${item.block ? 'Khối ' + item.block : (item.teachingClass || 'Đoàn Tân Mỹ')}</span>
+      <div class="mini-holy" style="color: #991b1b; font-weight: 700; font-size: 0.82rem; margin-top: 0.4rem;">${item.holyName || ''}</div>
+      <div class="mini-name" style="font-weight: 800; font-size: 1.05rem; color: #0f172a;">${item.lastName} ${item.firstName}</div>
+      <div style="margin-top: 0.4rem; padding-top: 0.35rem; border-top: 1px dashed #e2e8f0; font-size: 0.8rem; color: #475569; display: flex; justify-content: space-between; align-items: center;">
+        <span><i class="fa-solid fa-layer-group" style="color: #b91c1c;"></i> ${item.block ? 'Khối ' + item.block : 'Đoàn TNTT'}</span>
+        <span style="font-weight: 600; color: #0369a1;"><i class="fa-solid fa-chalkboard-user"></i> ${item.teachingClass || 'Chưa phân'}</span>
+      </div>
     `;
 
     div.addEventListener('click', () => {
       searchInput.value = item.id;
-      clearSearchBtn.style.display = 'block';
+      if (clearSearchBtn) clearSearchBtn.style.display = 'block';
       displayProfileCard(item);
     });
 
