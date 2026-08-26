@@ -5604,8 +5604,10 @@ function handleNewsFormSubmit(e) {
 
   saveNewsDatabase();
   renderNewsView();
-  if (typeof API !== 'undefined' && API.isOnline && targetItem) {
-    API.saveNews(targetItem, !isEdit);
+  if (typeof API !== 'undefined' && targetItem) {
+    API.saveNews(targetItem, !isEdit).then(ok => {
+      if (ok) console.log('✅ Đã đồng bộ bài thông báo vào MySQL Database thành công!');
+    });
   }
   document.getElementById('newsEditModal').style.display = 'none';
   showToast(isEdit ? 'Đã cập nhật thông báo thành công!' : 'Đã đăng thông báo mới!');
@@ -5627,7 +5629,7 @@ async function deleteNews(newsId) {
   newsDatabase = newsDatabase.filter(n => n.id !== newsId);
   saveNewsDatabase();
   renderNewsView();
-  if (typeof API !== 'undefined' && API.isOnline) {
+  if (typeof API !== 'undefined') {
     API.deleteNews(newsId);
   }
   showToast('Đã xóa thông báo!');
@@ -5892,8 +5894,10 @@ function handleDocFormSubmit(e) {
 
   saveDocsDatabase();
   renderDocsView();
-  if (typeof API !== 'undefined' && API.isOnline && targetDocItem) {
-    API.saveDoc(targetDocItem, !isEdit);
+  if (typeof API !== 'undefined' && targetDocItem) {
+    API.saveDoc(targetDocItem, !isEdit).then(ok => {
+      if (ok) console.log('✅ Đã đồng bộ tài liệu vào MySQL Database thành công!');
+    });
   }
   document.getElementById('docEditModal').style.display = 'none';
   showToast(isEdit ? 'Đã cập nhật tài liệu thành công!' : 'Đã đăng tài liệu mới!');
@@ -5905,7 +5909,7 @@ function downloadDoc(docId) {
   doc.downloads = (doc.downloads || 0) + 1;
   saveDocsDatabase();
   renderDocsView();
-  if (typeof API !== 'undefined' && API.isOnline) {
+  if (typeof API !== 'undefined') {
     API.recordDocDownload(docId);
   }
   showToast(`Đang tải về "${doc.title}"...`);
@@ -5927,7 +5931,7 @@ async function deleteDoc(docId) {
   docsDatabase = docsDatabase.filter(d => d.id !== docId);
   saveDocsDatabase();
   renderDocsView();
-  if (typeof API !== 'undefined' && API.isOnline) {
+  if (typeof API !== 'undefined') {
     API.deleteDoc(docId);
   }
   showToast('Đã xóa tài liệu!');

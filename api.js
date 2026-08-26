@@ -7,11 +7,11 @@
 
 const API_CONFIG = {
   BASE_URL: 'api',
-  TIMEOUT: 5000
+  TIMEOUT: 6000
 };
 
 const API = {
-  isOnline: false,
+  isOnline: true,
 
   /**
    * Kiểm tra kết nối tới Backend PHP & MySQL
@@ -43,11 +43,11 @@ const API = {
    * 1. LẤY DANH SÁCH GIÁO LÝ VIÊN
    */
   async getTeachers() {
-    if (!this.isOnline) return null;
     try {
       const res = await fetch(`${API_CONFIG.BASE_URL}/teachers.php`);
       const json = await res.json();
       if (json.success && Array.isArray(json.data)) {
+        this.isOnline = true;
         return json.data.map(item => ({
           stt: parseInt(item.stt, 10),
           id: item.id || item.teacher_id,
@@ -71,7 +71,6 @@ const API = {
    * 2. LƯU / CẬP NHẬT GIÁO LÝ VIÊN
    */
   async saveTeacher(glv, isNew = false) {
-    if (!this.isOnline) return false;
     try {
       const method = isNew ? 'POST' : 'PUT';
       const url = isNew ? `${API_CONFIG.BASE_URL}/teachers.php` : `${API_CONFIG.BASE_URL}/teachers.php?id=${encodeURIComponent(glv.id)}`;
@@ -92,6 +91,7 @@ const API = {
         })
       });
       const json = await res.json();
+      if (json.success) this.isOnline = true;
       return json.success;
     } catch (e) {
       console.warn('Lỗi lưu Teacher qua API:', e);
@@ -103,12 +103,12 @@ const API = {
    * 3. XÓA GIÁO LÝ VIÊN
    */
   async deleteTeacher(glvId) {
-    if (!this.isOnline) return false;
     try {
       const res = await fetch(`${API_CONFIG.BASE_URL}/teachers.php?id=${encodeURIComponent(glvId)}`, {
         method: 'DELETE'
       });
       const json = await res.json();
+      if (json.success) this.isOnline = true;
       return json.success;
     } catch (e) {
       console.warn('Lỗi xóa Teacher qua API:', e);
@@ -120,11 +120,11 @@ const API = {
    * 4. LẤY DANH SÁCH LỚP HỌC
    */
   async getClasses() {
-    if (!this.isOnline) return null;
     try {
       const res = await fetch(`${API_CONFIG.BASE_URL}/classes.php`);
       const json = await res.json();
       if (json.success && Array.isArray(json.data)) {
+        this.isOnline = true;
         return json.data.map(c => ({
           id: c.id || c.class_id,
           name: c.name || c.class_name,
@@ -146,7 +146,6 @@ const API = {
    * 5. LƯU / CẬP NHẬT LỚP HỌC
    */
   async saveClass(cls, isNew = false) {
-    if (!this.isOnline) return false;
     try {
       const method = isNew ? 'POST' : 'PUT';
       const url = isNew ? `${API_CONFIG.BASE_URL}/classes.php` : `${API_CONFIG.BASE_URL}/classes.php?id=${encodeURIComponent(cls.id)}`;
@@ -165,6 +164,7 @@ const API = {
         })
       });
       const json = await res.json();
+      if (json.success) this.isOnline = true;
       return json.success;
     } catch (e) {
       console.warn('Lỗi lưu Class qua API:', e);
@@ -176,12 +176,12 @@ const API = {
    * 6. XÓA LỚP HỌC
    */
   async deleteClass(classId) {
-    if (!this.isOnline) return false;
     try {
       const res = await fetch(`${API_CONFIG.BASE_URL}/classes.php?id=${encodeURIComponent(classId)}`, {
         method: 'DELETE'
       });
       const json = await res.json();
+      if (json.success) this.isOnline = true;
       return json.success;
     } catch (e) {
       console.warn('Lỗi xóa Class qua API:', e);
@@ -193,26 +193,30 @@ const API = {
    * 7. LẤY DANH SÁCH THIẾU NHI CỦA LỚP
    */
   async getStudents(classId) {
-    if (!this.isOnline) return null;
     try {
       const res = await fetch(`${API_CONFIG.BASE_URL}/students.php?class_id=${encodeURIComponent(classId)}`);
       const json = await res.json();
       if (json.success && Array.isArray(json.data)) {
+        this.isOnline = true;
         return json.data.map(s => ({
-          stt: parseInt(s.stt, 10) || 1,
-          id: s.id || s.student_id || '',
+          stt: parseInt(s.stt, 10),
+          id: s.id || s.student_id,
           holyName: s.holyName || s.holy_name || '',
-          fullName: s.fullName || s.full_name || `${s.lastName || s.last_name || ''} ${s.firstName || s.first_name || ''}`.trim() || 'Chưa đặt tên',
+          name: s.name || (s.lastName ? `${s.lastName} ${s.firstName}` : s.firstName) || '',
           gender: s.gender || 'Nam',
-          birthDate: s.birthDate || s.birth_date || '',
-          note: s.note || s.role_in_class || 'Đang theo học',
-          parentName: s.parentName || s.parent_name || '',
+          dob: s.dob || '',
+          classId: s.classId || s.class_id || classId,
+          role: s.role || 'Đang theo học',
+          note: s.note || '',
           parentPhone: s.parentPhone || s.parent_phone || '',
-          address: s.address || ''
+          scoreHK1: s.scoreHK1 || { cc: null, m: null, p15: null, p45: null, thi: null, tb: null },
+          scoreHK2: s.scoreHK2 || { cc: null, m: null, p15: null, p45: null, thi: null, tb: null },
+          scoreFinal: s.scoreFinal !== undefined ? s.scoreFinal : null,
+          evaluation: s.evaluation || 'Đang học'
         }));
       }
     } catch (e) {
-      console.warn('Lỗi lấy danh sách thiếu nhi qua API:', e);
+      console.warn(`Không thể lấy danh sách học sinh lớp ${classId} từ API:`, e);
     }
     return null;
   },
@@ -220,29 +224,32 @@ const API = {
   /**
    * 8. LƯU / CẬP NHẬT THIẾU NHI
    */
-  async saveStudent(stu, isNew = false) {
-    if (!this.isOnline) return false;
+  async saveStudent(classId, student, isNew = false) {
     try {
       const method = isNew ? 'POST' : 'PUT';
-      const url = isNew ? `${API_CONFIG.BASE_URL}/students.php` : `${API_CONFIG.BASE_URL}/students.php?id=${encodeURIComponent(stu.id)}`;
+      const url = isNew ? `${API_CONFIG.BASE_URL}/students.php` : `${API_CONFIG.BASE_URL}/students.php?id=${encodeURIComponent(student.id)}`;
       const res = await fetch(url, {
         method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id: stu.id,
-          class_id: stu.classId,
-          stt: stu.stt,
-          holyName: stu.holyName,
-          fullName: stu.fullName,
-          gender: stu.gender,
-          birthDate: stu.birthDate,
-          note: stu.note,
-          parentName: stu.parentName,
-          parentPhone: stu.parentPhone,
-          address: stu.address
+          class_id: classId,
+          id: student.id,
+          stt: student.stt,
+          holyName: student.holyName,
+          name: student.name,
+          gender: student.gender,
+          dob: student.dob,
+          role: student.role,
+          note: student.note,
+          parentPhone: student.parentPhone,
+          scoreHK1: student.scoreHK1,
+          scoreHK2: student.scoreHK2,
+          scoreFinal: student.scoreFinal,
+          evaluation: student.evaluation
         })
       });
       const json = await res.json();
+      if (json.success) this.isOnline = true;
       return json.success;
     } catch (e) {
       console.warn('Lỗi lưu Student qua API:', e);
@@ -254,12 +261,12 @@ const API = {
    * 9. XÓA THIẾU NHI
    */
   async deleteStudent(studentId) {
-    if (!this.isOnline) return false;
     try {
       const res = await fetch(`${API_CONFIG.BASE_URL}/students.php?id=${encodeURIComponent(studentId)}`, {
         method: 'DELETE'
       });
       const json = await res.json();
+      if (json.success) this.isOnline = true;
       return json.success;
     } catch (e) {
       console.warn('Lỗi xóa Student qua API:', e);
@@ -271,7 +278,6 @@ const API = {
    * 9.1 NHẬP HÀNG LOẠT THIẾU NHI TỪ EXCEL VÀO LỚP
    */
   async importStudents(classId, students, replaceMode = false) {
-    if (!this.isOnline) return false;
     try {
       const res = await fetch(`${API_CONFIG.BASE_URL}/students.php`, {
         method: 'POST',
@@ -284,6 +290,7 @@ const API = {
         })
       });
       const json = await res.json();
+      if (json.success) this.isOnline = true;
       return json;
     } catch (e) {
       console.warn('Lỗi Import Students qua API:', e);
@@ -295,7 +302,6 @@ const API = {
    * 10. ĐĂNG NHẬP ADMIN VÀ XÁC THỰC
    */
   async loginAdmin(password) {
-    if (!this.isOnline) return null;
     try {
       const res = await fetch(`${API_CONFIG.BASE_URL}/auth.php`, {
         method: 'POST',
@@ -303,6 +309,7 @@ const API = {
         body: JSON.stringify({ password: password })
       });
       const json = await res.json();
+      if (json && json.success) this.isOnline = true;
       return json;
     } catch (e) {
       console.warn('Lỗi kết nối auth API:', e);
@@ -314,11 +321,13 @@ const API = {
    * 11. THÔNG BÁO & TIN TỨC (NEWS)
    */
   async getNews() {
-    if (!this.isOnline) return null;
     try {
       const res = await fetch(`${API_CONFIG.BASE_URL}/news.php`);
       const json = await res.json();
-      if (json.success && Array.isArray(json.data)) return json.data;
+      if (json.success && Array.isArray(json.data)) {
+        this.isOnline = true;
+        return json.data;
+      }
     } catch (e) {
       console.warn('Lỗi lấy News từ API:', e);
     }
@@ -326,7 +335,6 @@ const API = {
   },
 
   async saveNews(news, isNew = false) {
-    if (!this.isOnline) return false;
     try {
       const method = isNew ? 'POST' : 'PUT';
       const url = isNew ? `${API_CONFIG.BASE_URL}/news.php` : `${API_CONFIG.BASE_URL}/news.php?id=${encodeURIComponent(news.id)}`;
@@ -336,6 +344,7 @@ const API = {
         body: JSON.stringify(news)
       });
       const json = await res.json();
+      if (json.success) this.isOnline = true;
       return json.success;
     } catch (e) {
       console.warn('Lỗi lưu News qua API:', e);
@@ -344,12 +353,12 @@ const API = {
   },
 
   async deleteNews(newsId) {
-    if (!this.isOnline) return false;
     try {
       const res = await fetch(`${API_CONFIG.BASE_URL}/news.php?id=${encodeURIComponent(newsId)}`, {
         method: 'DELETE'
       });
       const json = await res.json();
+      if (json.success) this.isOnline = true;
       return json.success;
     } catch (e) {
       console.warn('Lỗi xóa News qua API:', e);
@@ -361,11 +370,13 @@ const API = {
    * 12. KHO TÀI LIỆU & GIÁO TRÌNH (DOCUMENTS)
    */
   async getDocs() {
-    if (!this.isOnline) return null;
     try {
       const res = await fetch(`${API_CONFIG.BASE_URL}/docs.php`);
       const json = await res.json();
-      if (json.success && Array.isArray(json.data)) return json.data;
+      if (json.success && Array.isArray(json.data)) {
+        this.isOnline = true;
+        return json.data;
+      }
     } catch (e) {
       console.warn('Lỗi lấy Docs từ API:', e);
     }
@@ -373,7 +384,6 @@ const API = {
   },
 
   async saveDoc(doc, isNew = false) {
-    if (!this.isOnline) return false;
     try {
       const method = isNew ? 'POST' : 'PUT';
       const url = isNew ? `${API_CONFIG.BASE_URL}/docs.php` : `${API_CONFIG.BASE_URL}/docs.php?id=${encodeURIComponent(doc.id)}`;
@@ -383,6 +393,7 @@ const API = {
         body: JSON.stringify(doc)
       });
       const json = await res.json();
+      if (json.success) this.isOnline = true;
       return json.success;
     } catch (e) {
       console.warn('Lỗi lưu Doc qua API:', e);
@@ -391,12 +402,12 @@ const API = {
   },
 
   async deleteDoc(docId) {
-    if (!this.isOnline) return false;
     try {
       const res = await fetch(`${API_CONFIG.BASE_URL}/docs.php?id=${encodeURIComponent(docId)}`, {
         method: 'DELETE'
       });
       const json = await res.json();
+      if (json.success) this.isOnline = true;
       return json.success;
     } catch (e) {
       console.warn('Lỗi xóa Doc qua API:', e);
@@ -405,7 +416,6 @@ const API = {
   },
 
   async recordDocDownload(docId) {
-    if (!this.isOnline) return;
     try {
       await fetch(`${API_CONFIG.BASE_URL}/docs.php?id=${encodeURIComponent(docId)}`, {
         method: 'PUT',

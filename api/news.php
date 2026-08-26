@@ -56,10 +56,22 @@ switch ($method) {
             $pdo->exec("UPDATE news SET is_pinned = 0");
         }
 
-        $stmt = $pdo->prepare("INSERT INTO news (news_id, title, category, date, author, summary, content, is_pinned, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())");
+        $stmt = $pdo->prepare("
+            INSERT INTO news (news_id, title, category, date, author, summary, content, is_pinned, created_at, updated_at) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+            ON DUPLICATE KEY UPDATE 
+                title = VALUES(title), 
+                category = VALUES(category), 
+                date = VALUES(date), 
+                author = VALUES(author), 
+                summary = VALUES(summary), 
+                content = VALUES(content), 
+                is_pinned = VALUES(is_pinned), 
+                updated_at = NOW()
+        ");
         $stmt->execute([$id, $title, $category, $date, $author, $summary, $content, $isPinned]);
 
-        jsonResponse(true, "Đã thêm thông báo thành công", ['id' => $id]);
+        jsonResponse(true, "Đã lưu thông báo thành công", ['id' => $id]);
         break;
 
     case 'PUT':

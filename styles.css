@@ -5378,14 +5378,22 @@ body {
   box-shadow: 0 3px 8px rgba(220, 38, 38, 0.15);
 }
 
-/* Modal Footer & Nút Bấm Sang Bên Phải Chuẩn Symmetrical (Ảnh 2) */
+/* Modal Footer & Nút Bấm Sang Bên Phải Chuẩn Symmetrical */
 .modal-footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #e2e8f0;
-  background: #f8fafc;
+  padding: 1.25rem 0 0 0;
+  margin-top: 1.25rem;
+  border-top: 1px solid #f1f5f9;
+  background: transparent;
   display: flex;
   align-items: center;
-  border-radius: 0 0 16px 16px;
+}
+
+.modal-news-detail .modal-footer,
+.modal-doc-preview .modal-footer {
+  padding: 1rem 1.5rem;
+  margin-top: 0;
+  border-top: 1px solid #f1f5f9;
+  background: transparent;
 }
 
 .modal-footer-right {

@@ -49,10 +49,22 @@ switch ($method) {
         $desc = trim($data['desc'] ?? '');
         $content = trim($data['content'] ?? '');
 
-        $stmt = $pdo->prepare("INSERT INTO documents (doc_id, title, category, format, target, size, author, downloads, `desc`, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, NOW(), NOW())");
+        $stmt = $pdo->prepare("
+            INSERT INTO documents (doc_id, title, category, format, target, size, author, downloads, `desc`, content, created_at, updated_at) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, NOW(), NOW())
+            ON DUPLICATE KEY UPDATE 
+                title = VALUES(title), 
+                category = VALUES(category), 
+                format = VALUES(format), 
+                target = VALUES(target), 
+                size = VALUES(size), 
+                `desc` = VALUES(`desc`), 
+                content = VALUES(content), 
+                updated_at = NOW()
+        ");
         $stmt->execute([$id, $title, $category, $format, $target, $size, $author, $desc, $content]);
 
-        jsonResponse(true, "Đã thêm tài liệu thành công", ['id' => $id]);
+        jsonResponse(true, "Đã lưu tài liệu thành công", ['id' => $id]);
         break;
 
     case 'PUT':
