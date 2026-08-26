@@ -1411,6 +1411,15 @@
           </div>
         </div>
 
+        <!-- Lựa chọn lớp nhận dữ liệu -->
+        <div class="import-class-select-row" style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 0.75rem 1.25rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+          <label for="importTargetClassSelect" style="font-weight: 700; color: #1e293b; font-size: 0.88rem; display: flex; align-items: center; gap: 0.4rem;">
+            <i class="fa-solid fa-chalkboard-user" style="color: #059669;"></i> Lớp học nhận dữ liệu:
+          </label>
+          <select id="importTargetClassSelect" style="padding: 0.45rem 0.85rem; border-radius: 8px; border: 1.5px solid #cbd5e1; font-weight: 700; font-size: 0.88rem; color: #0f172a; outline: none; background: #ffffff; min-width: 240px;">
+          </select>
+        </div>
+
         <!-- Tùy chọn chế độ nhập -->
         <div class="import-options-bar" style="background: #f1f5f9; border-radius: 12px; padding: 0.85rem 1.25rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
           <div style="font-weight: 700; color: #1e293b; font-size: 0.9rem;">
@@ -1421,7 +1430,7 @@
               <input type="radio" name="importModeRadio" value="append" checked>
               Thêm bổ sung vào danh sách hiện tại
             </label>
-            <label style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.88rem; font-weight: 600; cursor: pointer; color: #b91c1c;">
+            <label style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.88rem; font-weight: 700; cursor: pointer; color: #b91c1c;">
               <input type="radio" name="importModeRadio" value="replace">
               Thay thế toàn bộ danh sách lớp này
             </label>

@@ -2719,7 +2719,8 @@ let importClassId = null;
 
 function openStudentExcelImportModal(classId) {
   if (!classId) classId = currentRosterClassId;
-  const cls = classDatabase.find(c => c.id === classId || c.id.toLowerCase() === classId.toLowerCase());
+  let cls = classDatabase.find(c => c.id === classId || c.id.toLowerCase() === (classId || '').toLowerCase());
+  if (!cls && classDatabase.length > 0) cls = classDatabase[0];
   if (!cls) return;
 
   importClassId = cls.id;
@@ -2731,6 +2732,7 @@ function openStudentExcelImportModal(classId) {
   const statusText = document.getElementById('importFileStatusText');
   const confirmBtn = document.getElementById('btnConfirmImportExcel');
   const fileInput = document.getElementById('rosterImportFileInput');
+  const targetClassSelect = document.getElementById('importTargetClassSelect');
 
   if (title) title.textContent = `Lớp ${cls.name}`;
   if (previewBox) previewBox.style.display = 'none';
@@ -2741,6 +2743,44 @@ function openStudentExcelImportModal(classId) {
     confirmBtn.style.opacity = '0.6';
   }
   if (fileInput) fileInput.value = '';
+
+  if (targetClassSelect) {
+    targetClassSelect.innerHTML = classDatabase.map(c => `
+      <option value="${c.id}" ${c.id === importClassId ? 'selected' : ''}>${c.name} (${c.block})</option>
+    `).join('');
+
+    targetClassSelect.onchange = (e) => {
+      importClassId = e.target.value;
+      const currentCls = classDatabase.find(c => c.id === importClassId);
+      if (title && currentCls) title.textContent = `Lớp ${currentCls.name}`;
+      // Nếu đã đọc file, cập nhật lại mã ID cho phù hợp lớp
+      if (pendingImportStudents && pendingImportStudents.length > 0) {
+        const code = (currentCls ? currentCls.id : 'DBKT').replace('CLASS_', '');
+        pendingImportStudents = pendingImportStudents.map((s, idx) => ({
+          ...s,
+          id: `TN-${code}-${String(idx + 1).padStart(2, '0')}`
+        }));
+        const tbody = document.getElementById('importPreviewTableBody');
+        if (tbody) {
+          tbody.innerHTML = pendingImportStudents.map((s, idx) => `
+            <tr>
+              <td style="text-align: center; font-weight: 700; color: #64748b;">${idx + 1}</td>
+              <td><span class="student-id-badge">${s.id}</span></td>
+              <td><span class="student-holy-name">${s.holyName || '-'}</span></td>
+              <td><strong style="color: #0f172a;">${s.fullName}</strong></td>
+              <td style="text-align: center; font-weight: 700; color: ${s.gender === 'Nam' ? '#1d4ed8' : '#be185d'};">
+                ${s.gender === 'Nam' ? '♂ Nam' : '♀ Nữ'}
+              </td>
+              <td style="text-align: center; color: #475569;">${s.birthDate || '-'}</td>
+              <td><span class="student-note-tag">${s.note}</span></td>
+              <td>${s.parentName || '-'}</td>
+              <td>${s.parentPhone || '-'}</td>
+            </tr>
+          `).join('');
+        }
+      }
+    };
+  }
 
   if (modal) modal.style.display = 'flex';
 }
@@ -2775,56 +2815,103 @@ function parseStudentExcelFile(file) {
         return;
       }
 
-      // Xác định hàng tiêu đề
-      const headerRow = rows[0].map(h => removeVietnameseTones(String(h).toLowerCase().trim()));
-      
-      const findColIdx = (keywords) => {
-        return headerRow.findIndex(h => keywords.some(k => h.includes(k)));
-      };
+      // 1. Quét tìm dòng tiêu đề phù hợp nhất trong 10 dòng đầu
+      let headerRowIdx = 0;
+      let maxScore = -1;
+      const keywordsSample = ['ten', 'ho', 'thanh', 'stt', 'gioi', 'sinh', 'phu huynh', 'sdt', 'ma'];
 
-      const sttIdx = findColIdx(['stt', 'so thu tu', 'tt']);
-      const idIdx = findColIdx(['ma thieu nhi', 'ma tn', 'ma hoc sinh', 'ma', 'id']);
-      const holyIdx = findColIdx(['ten thanh', 'bon mang', 'holy']);
-      const nameIdx = findColIdx(['ho va ten', 'ho ten', 'ho ten (*)', 'ten', 'full name']);
-      const genderIdx = findColIdx(['gioi tinh', 'gioi', 'phai', 'gender']);
-      const birthIdx = findColIdx(['ngay sinh', 'nam sinh', 'birth']);
-      const noteIdx = findColIdx(['ghi chu', 'vai tro', 'chuc vu', 'role', 'note']);
-      const parentIdx = findColIdx(['phu huynh', 'cha me', 'ten phu huynh', 'parent']);
-      const phoneIdx = findColIdx(['so dien thoai', 'sdt', 'dien thoai', 'phone']);
-      const addressIdx = findColIdx(['dia chi', 'giao ho', 'address']);
+      for (let r = 0; r < Math.min(rows.length, 10); r++) {
+        const rowNorm = (rows[r] || []).map(cell => removeVietnameseTones(String(cell || '').toLowerCase().trim()));
+        let score = 0;
+        rowNorm.forEach(cell => {
+          if (keywordsSample.some(kw => cell.includes(kw))) score++;
+        });
+        if (score > maxScore && score >= 2) {
+          maxScore = score;
+          headerRowIdx = r;
+        }
+      }
+
+      const headerRow = (rows[headerRowIdx] || []).map(h => removeVietnameseTones(String(h || '').toLowerCase().trim()));
+
+      // 2. Xác định chính xác chỉ số từng cột (Không nhầm lẫn Tên Thánh với Họ Tên)
+      const sttIdx = headerRow.findIndex(h => h === 'stt' || h === 'so thu tu' || h === 'tt' || h === 'no');
+      const idIdx = headerRow.findIndex(h => h === 'ma thieu nhi' || h === 'ma tn' || h === 'ma hoc sinh' || h === 'ma' || h === 'id' || h.includes('ma thieu nhi') || h.includes('ma tn') || h.includes('ma hoc sinh'));
+      
+      // Tên Thánh: Phải chứa 'thanh' hoặc 'bon mang' hoặc 'holy'
+      const holyIdx = headerRow.findIndex(h => h === 'ten thanh' || h === 'bon mang' || h === 'thanh' || h === 'holy' || h.includes('ten thanh') || h.includes('bon mang'));
+
+      // Họ và tên: Phải chứa 'ho va ten', 'ho ten', 'full name', 'ten hoc sinh'
+      const fullNameIdx = headerRow.findIndex(h => h === 'ho va ten' || h === 'ho ten' || h === 'ho va ten (*)' || h === 'full name' || h.includes('ho va ten') || h.includes('ho ten') || h.includes('ten hoc sinh'));
+
+      // Tách cột Họ đệm và Tên
+      const lastNameIdx = headerRow.findIndex(h => h === 'ho va ten dem' || h === 'ho va ten lot' || h === 'ho dem' || h === 'ho lot' || h === 'ho' || h.includes('ho dem') || h.includes('ho lot'));
+      const firstNameIdx = headerRow.findIndex(h => (h === 'ten' || h === 'ten goi' || h === 'first name') && !h.includes('thanh') && !h.includes('phu huynh') && !h.includes('cha') && !h.includes('me') && !h.includes('dem') && !h.includes('lot'));
+
+      const genderIdx = headerRow.findIndex(h => h === 'gioi tinh' || h === 'gioi' || h === 'phai' || h === 'gender' || h.includes('gioi tinh'));
+      const birthIdx = headerRow.findIndex(h => h === 'ngay sinh' || h === 'nam sinh' || h === 'ngay thang nam sinh' || h === 'dob' || h.includes('ngay sinh') || h.includes('nam sinh'));
+      const noteIdx = headerRow.findIndex(h => h === 'ghi chu' || h === 'vai tro' || h === 'chuc vu' || h === 'role' || h.includes('ghi chu') || h.includes('vai tro'));
+      const parentIdx = headerRow.findIndex(h => h === 'phu huynh' || h === 'cha me' || h === 'ten phu huynh' || h === 'ten cha me' || h.includes('phu huynh') || h.includes('cha me'));
+      const phoneIdx = headerRow.findIndex(h => h === 'so dien thoai' || h === 'sdt' || h === 'dien thoai' || h === 'phone' || h.includes('dien thoai') || h.includes('sdt'));
+      const addressIdx = headerRow.findIndex(h => h === 'dia chi' || h === 'giao ho' || h === 'address' || h.includes('dia chi') || h.includes('giao ho'));
 
       const parsed = [];
       const cls = classDatabase.find(c => c.id === importClassId);
       const code = (cls ? cls.id : 'DBKT').replace('CLASS_', '');
 
-      for (let i = 1; i < rows.length; i++) {
+      for (let i = headerRowIdx + 1; i < rows.length; i++) {
         const row = rows[i];
         if (!row || row.length === 0) continue;
 
-        let fullName = (nameIdx !== -1 && row[nameIdx] !== undefined) ? String(row[nameIdx]).trim() : '';
-        if (!fullName && row[3]) fullName = String(row[3]).trim();
-        if (!fullName && row[2] && isNaN(row[2])) fullName = String(row[2]).trim();
+        // Trích xuất Tên Thánh
+        let holyName = (holyIdx !== -1 && row[holyIdx] !== undefined) ? String(row[holyIdx]).trim() : '';
 
-        if (!fullName) continue;
+        // Trích xuất Họ và Tên
+        let fullName = '';
+        if (fullNameIdx !== -1 && row[fullNameIdx] !== undefined && String(row[fullNameIdx]).trim() !== '') {
+          fullName = String(row[fullNameIdx]).trim();
+        } else if (lastNameIdx !== -1 && firstNameIdx !== -1) {
+          const lName = row[lastNameIdx] !== undefined ? String(row[lastNameIdx]).trim() : '';
+          const fName = row[firstNameIdx] !== undefined ? String(row[firstNameIdx]).trim() : '';
+          fullName = `${lName} ${fName}`.trim();
+        } else if (firstNameIdx !== -1 && row[firstNameIdx] !== undefined && String(row[firstNameIdx]).trim() !== '') {
+          fullName = String(row[firstNameIdx]).trim();
+        }
 
+        // Fallback tự động nếu file không có header chuẩn hoặc tách cột đặc thù
+        if (!fullName && row[3] && isNaN(row[3])) {
+          fullName = String(row[3]).trim();
+        } else if (!fullName && row[2] && isNaN(row[2]) && String(row[2]).trim() !== holyName) {
+          fullName = String(row[2]).trim();
+        }
+
+        // Bỏ qua nếu dòng rỗng hoặc không có họ tên
+        if (!fullName || fullName === '-' || fullName.toLowerCase() === 'ho va ten') continue;
+
+        // Mã thiếu nhi
         let id = (idIdx !== -1 && row[idIdx]) ? String(row[idIdx]).trim() : '';
         if (!id) {
           id = `TN-${code}-${String(parsed.length + 1).padStart(2, '0')}`;
         }
 
-        let holyName = (holyIdx !== -1 && row[holyIdx]) ? String(row[holyIdx]).trim() : '';
-        let gender = (genderIdx !== -1 && row[genderIdx]) ? String(row[genderIdx]).trim() : 'Nam';
-        if (gender.toLowerCase().includes('nu') || gender.toLowerCase().includes('nữ') || gender === 'F') {
+        // Giới tính
+        let genderRaw = (genderIdx !== -1 && row[genderIdx]) ? String(row[genderIdx]).trim().toLowerCase() : '';
+        let gender = 'Nam';
+        if (genderRaw.includes('nu') || genderRaw.includes('nữ') || genderRaw === 'f' || genderRaw.includes('gai')) {
           gender = 'Nữ';
-        } else {
-          gender = 'Nam';
         }
 
-        let birthDate = (birthIdx !== -1 && row[birthIdx]) ? String(row[birthIdx]).trim() : '';
-        if (typeof row[birthIdx] === 'number') {
-          const dateObj = new Date((row[birthIdx] - 25569) * 86400 * 1000);
-          if (!isNaN(dateObj.getTime())) {
-            birthDate = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+        // Ngày sinh
+        let birthDate = '';
+        if (birthIdx !== -1 && row[birthIdx] !== undefined && row[birthIdx] !== '') {
+          const val = row[birthIdx];
+          if (typeof val === 'number') {
+            const dateObj = new Date((val - 25569) * 86400 * 1000);
+            if (!isNaN(dateObj.getTime())) {
+              birthDate = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+            }
+          } else {
+            birthDate = String(val).trim();
           }
         }
 
@@ -2922,10 +3009,16 @@ async function confirmStudentExcelImport() {
   renderBlockFilterPillCounts();
 
   // Đồng bộ lưu hàng loạt vào MySQL Database
-  if (typeof API !== 'undefined' && API.isOnline) {
+  if (typeof API !== 'undefined') {
     const res = await API.importStudents(cls.id, pendingImportStudents, isReplace);
     if (res && res.success) {
       console.log('Đã nạp toàn bộ thiếu nhi vào MySQL CSDL thành công!');
+      const updatedClassStudents = await API.getStudents(cls.id);
+      if (updatedClassStudents && updatedClassStudents.length > 0) {
+        cls.students = updatedClassStudents;
+        cls.studentCount = updatedClassStudents.length;
+        saveClassesDatabase();
+      }
     }
   }
 
@@ -3879,8 +3972,14 @@ function setupEventListeners() {
 
   if (tabStudentsImportBtn) {
     tabStudentsImportBtn.addEventListener('click', () => {
-      const firstClass = classDatabase[0];
-      openStudentExcelImportModal(firstClass ? firstClass.id : null);
+      let targetClassId = null;
+      if (filterStudentClassSelect && filterStudentClassSelect.value !== 'all') {
+        targetClassId = filterStudentClassSelect.value;
+      } else {
+        const firstClass = classDatabase[0];
+        targetClassId = firstClass ? firstClass.id : null;
+      }
+      openStudentExcelImportModal(targetClassId);
     });
   }
 

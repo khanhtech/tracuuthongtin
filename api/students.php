@@ -52,7 +52,7 @@ switch ($method) {
                        eg.score_final as scoreFinal,
                        eg.evaluation
                 FROM students s
-                LEFT JOIN enrollments_and_grades eg ON s.student_id = eg.student_id
+                JOIN enrollments_and_grades eg ON s.student_id = eg.student_id
                 LEFT JOIN classes c ON eg.class_id = c.class_id
                 ORDER BY c.block ASC, c.class_name ASC, eg.stt_in_class ASC, s.student_id ASC
             ");
@@ -80,6 +80,7 @@ switch ($method) {
                 if ($replaceMode) {
                     $delStmt = $pdo->prepare("DELETE FROM enrollments_and_grades WHERE class_id = ?");
                     $delStmt->execute([$classId]);
+                    $pdo->exec("DELETE FROM students WHERE student_id NOT IN (SELECT student_id FROM enrollments_and_grades)");
                 }
 
                 $sStmt = $pdo->prepare("
