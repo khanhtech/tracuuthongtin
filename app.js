@@ -3155,10 +3155,7 @@ function setupEventListeners() {
     });
   }
 
-  // 6. Sự kiện Bảng Danh Sách Lớp Học (All Classes Modal) & Tiện Ích Sidebar
-  const sidebarViewAllClassesBtn = document.getElementById('sidebarViewAllClassesBtn');
-  const sidebarExportGlvBtn = document.getElementById('sidebarExportGlvBtn');
-  const sidebarExportClassesBtn = document.getElementById('sidebarExportClassesBtn');
+  // 6. Sự kiện Bảng Danh Sách Lớp Học (All Classes Modal)
   const allClassesModal = document.getElementById('allClassesModal');
   const closeClassesModalBtn = document.getElementById('closeClassesModalBtn');
   const modalToolbarAddClassBtn = document.getElementById('modalToolbarAddClassBtn');
@@ -3166,15 +3163,6 @@ function setupEventListeners() {
   const modalFilterClassInput = document.getElementById('modalFilterClassInput');
   const modalFilterClassBlockSelect = document.getElementById('modalFilterClassBlockSelect');
 
-  if (sidebarViewAllClassesBtn) {
-    sidebarViewAllClassesBtn.addEventListener('click', openAllClassesModal);
-  }
-  if (sidebarExportGlvBtn) {
-    sidebarExportGlvBtn.addEventListener('click', exportDatabaseToExcel);
-  }
-  if (sidebarExportClassesBtn) {
-    sidebarExportClassesBtn.addEventListener('click', exportClassesDatabaseToExcel);
-  }
   if (closeClassesModalBtn) {
     closeClassesModalBtn.addEventListener('click', closeAllClassesModal);
   }

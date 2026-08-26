@@ -934,14 +934,14 @@
   <!-- ==========================================================================
        MODAL: CHI TIẾT LỚP HỌC (CLASS DETAIL MODAL)
        ========================================================================== -->
-  <div class="modal-backdrop" id="classDetailModal" style="display: none;">
+  <div class="modal-backdrop" id="classDetailModal" style="display: none;" onclick="if(event.target===this) this.style.display='none';">
     <div class="modal-content modal-class-detail">
       <div class="modal-header">
         <div class="modal-title">
           <i class="fa-solid fa-school"></i>
           <span id="classDetailModalTitle">Thông Tin Chi Tiết Lớp Học</span>
         </div>
-        <button class="modal-close-btn" id="closeClassDetailModalBtn"><i class="fa-solid fa-xmark"></i></button>
+        <button class="modal-close-btn" id="closeClassDetailModalBtn" title="Đóng cửa sổ" onclick="document.getElementById('classDetailModal').style.display='none';"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <div class="class-detail-body" id="classDetailBody">
@@ -952,7 +952,7 @@
         <button class="btn-tool btn-edit-class-from-detail" id="btnEditClassFromDetail">
           <i class="fa-solid fa-pen-to-square"></i> Chỉnh Sửa Lớp
         </button>
-        <button class="btn-cancel" id="closeClassDetailFooterBtn">Đóng</button>
+        <button class="btn-cancel" id="closeClassDetailFooterBtn" onclick="document.getElementById('classDetailModal').style.display='none';">Đóng</button>
       </div>
     </div>
   </div>
