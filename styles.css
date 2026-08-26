@@ -3514,6 +3514,66 @@ body {
   transform: translateY(-1px);
 }
 
+/* Student Roster Dedicated Window Modal */
+.modal-roster-wide {
+  max-width: 1080px;
+  width: 95vw;
+}
+
+.roster-table-responsive {
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.roster-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.btn-open-student-roster {
+  width: 100%;
+  padding: 0.9rem 1.25rem;
+  background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+  border: 1.5px solid #fecdd3;
+  border-radius: var(--radius-md);
+  color: #9f1239;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  transition: all 0.25s ease;
+  margin-top: 1.25rem;
+}
+
+.btn-open-student-roster:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: #ffffff;
+  border-color: #dc2626;
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-open-student-roster .roster-btn-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  color: inherit;
+}
+
+.btn-open-student-roster:hover .roster-btn-arrow {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
 .btn-export-students {
   background: #ecfdf5;
   color: #047857;

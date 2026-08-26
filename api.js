@@ -218,7 +218,54 @@ const API = {
   },
 
   /**
-   * 8. ĐĂNG NHẬP ADMIN VÀ XÁC THỰC
+   * 8. LƯU / CẬP NHẬT THIẾU NHI
+   */
+  async saveStudent(stu, isNew = false) {
+    if (!this.isOnline) return false;
+    try {
+      const method = isNew ? 'POST' : 'PUT';
+      const url = isNew ? `${API_CONFIG.BASE_URL}/students.php` : `${API_CONFIG.BASE_URL}/students.php?id=${encodeURIComponent(stu.id)}`;
+      const res = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: stu.id,
+          class_id: stu.classId,
+          stt: stu.stt,
+          holyName: stu.holyName,
+          fullName: stu.fullName,
+          gender: stu.gender,
+          birthDate: stu.birthDate,
+          note: stu.note
+        })
+      });
+      const json = await res.json();
+      return json.success;
+    } catch (e) {
+      console.warn('Lỗi lưu Student qua API:', e);
+      return false;
+    }
+  },
+
+  /**
+   * 9. XÓA THIẾU NHI
+   */
+  async deleteStudent(studentId) {
+    if (!this.isOnline) return false;
+    try {
+      const res = await fetch(`${API_CONFIG.BASE_URL}/students.php?id=${encodeURIComponent(studentId)}`, {
+        method: 'DELETE'
+      });
+      const json = await res.json();
+      return json.success;
+    } catch (e) {
+      console.warn('Lỗi xóa Student qua API:', e);
+      return false;
+    }
+  },
+
+  /**
+   * 10. ĐĂNG NHẬP ADMIN VÀ XÁC THỰC
    */
   async loginAdmin(password) {
     if (!this.isOnline) return null;
