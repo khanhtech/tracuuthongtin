@@ -4198,7 +4198,7 @@ body {
    CỬA SỔ THÊM / SỬA THIẾU NHI (NỔI BẬT TRÊN ĐẦU, MỞ RỘNG CÂN ĐỐI)
    ========================================================================== */
 .modal-backdrop.modal-super-top {
-  z-index: 5000 !important;
+  z-index: 50000 !important;
   align-items: flex-start !important;
   padding: 3rem 1.25rem 2rem !important;
   overflow-y: auto !important;

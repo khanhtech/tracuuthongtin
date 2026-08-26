@@ -199,13 +199,16 @@ const API = {
       const json = await res.json();
       if (json.success && Array.isArray(json.data)) {
         return json.data.map(s => ({
-          stt: parseInt(s.stt, 10),
-          id: s.id,
-          holyName: s.holy_name || '',
-          fullName: s.full_name,
+          stt: parseInt(s.stt, 10) || 1,
+          id: s.id || s.student_id || '',
+          holyName: s.holyName || s.holy_name || '',
+          fullName: s.fullName || s.full_name || `${s.lastName || s.last_name || ''} ${s.firstName || s.first_name || ''}`.trim() || 'Chưa đặt tên',
           gender: s.gender || 'Nam',
-          birthDate: s.birth_date || '',
-          note: s.note || 'Đang theo học'
+          birthDate: s.birthDate || s.birth_date || '',
+          note: s.note || s.role_in_class || 'Đang theo học',
+          parentName: s.parentName || s.parent_name || '',
+          parentPhone: s.parentPhone || s.parent_phone || '',
+          address: s.address || ''
         }));
       }
     } catch (e) {
@@ -233,7 +236,10 @@ const API = {
           fullName: stu.fullName,
           gender: stu.gender,
           birthDate: stu.birthDate,
-          note: stu.note
+          note: stu.note,
+          parentName: stu.parentName,
+          parentPhone: stu.parentPhone,
+          address: stu.address
         })
       });
       const json = await res.json();

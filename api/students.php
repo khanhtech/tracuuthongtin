@@ -19,6 +19,9 @@ switch ($method) {
                        s.gender,
                        s.birth_date as birthDate,
                        eg.role_in_class as note,
+                       s.parent_name as parentName,
+                       s.parent_phone as parentPhone,
+                       s.address,
                        eg.score_final,
                        eg.evaluation
                 FROM enrollments_and_grades eg
@@ -66,6 +69,10 @@ switch ($method) {
 
         // Sinh mã thiếu nhi nếu chưa có
         $studentId = trim($data['id'] ?? ($data['student_id'] ?? ''));
+        $parentName = trim($data['parentName'] ?? ($data['parent_name'] ?? ''));
+        $parentPhone = trim($data['parentPhone'] ?? ($data['parent_phone'] ?? ''));
+        $address = trim($data['address'] ?? '');
+
         if (empty($studentId)) {
             $code = str_replace('CLASS_', '', $classId);
             $count = $pdo->query("SELECT COUNT(*) FROM students")->fetchColumn() + 1;
@@ -74,11 +81,18 @@ switch ($method) {
 
         // 1. Thêm vào bảng students
         $sStmt = $pdo->prepare("
-            INSERT INTO students (student_id, holy_name, last_name, first_name, full_name, gender, birth_date)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE holy_name = VALUES(holy_name), full_name = VALUES(full_name), gender = VALUES(gender), birth_date = VALUES(birth_date)
+            INSERT INTO students (student_id, holy_name, last_name, first_name, full_name, gender, birth_date, address, parent_name, parent_phone)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE 
+                holy_name = VALUES(holy_name), 
+                full_name = VALUES(full_name), 
+                gender = VALUES(gender), 
+                birth_date = VALUES(birth_date),
+                address = VALUES(address),
+                parent_name = VALUES(parent_name),
+                parent_phone = VALUES(parent_phone)
         ");
-        $sStmt->execute([$studentId, $holyName, $lastName, $firstName, $fullName, $gender, $birthDate]);
+        $sStmt->execute([$studentId, $holyName, $lastName, $firstName, $fullName, $gender, $birthDate, $address, $parentName, $parentPhone]);
 
         // 2. Xếp lớp vào enrollments_and_grades
         if (!empty($classId)) {
@@ -100,7 +114,10 @@ switch ($method) {
             "fullName" => $fullName,
             "gender" => $gender,
             "birthDate" => $birthDate,
-            "note" => $note
+            "note" => $note,
+            "parentName" => $parentName,
+            "parentPhone" => $parentPhone,
+            "address" => $address
         ], 201);
         break;
 
@@ -118,6 +135,9 @@ switch ($method) {
         $gender = trim($data['gender'] ?? 'Nam');
         $birthDate = trim($data['birthDate'] ?? ($data['birth_date'] ?? ''));
         $note = trim($data['note'] ?? ($data['role_in_class'] ?? 'Đang theo học'));
+        $parentName = trim($data['parentName'] ?? ($data['parent_name'] ?? ''));
+        $parentPhone = trim($data['parentPhone'] ?? ($data['parent_phone'] ?? ''));
+        $address = trim($data['address'] ?? '');
 
         $parts = explode(' ', $fullName);
         $firstName = array_pop($parts);
@@ -125,10 +145,10 @@ switch ($method) {
 
         $upStmt = $pdo->prepare("
             UPDATE students 
-            SET holy_name = ?, last_name = ?, first_name = ?, full_name = ?, gender = ?, birth_date = ?
+            SET holy_name = ?, last_name = ?, first_name = ?, full_name = ?, gender = ?, birth_date = ?, parent_name = ?, parent_phone = ?, address = ?
             WHERE student_id = ?
         ");
-        $upStmt->execute([$holyName, $lastName, $firstName, $fullName, $gender, $birthDate, $studentId]);
+        $upStmt->execute([$holyName, $lastName, $firstName, $fullName, $gender, $birthDate, $parentName, $parentPhone, $address, $studentId]);
 
         if (!empty($classId)) {
             $upEg = $pdo->prepare("
