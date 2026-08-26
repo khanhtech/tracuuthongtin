@@ -30,10 +30,10 @@ const DEFAULT_DATASET = [
   { stt: 13, id: 'GLV13', holyName: 'ĐAMINH', lastName: 'ĐẶNG TRẦN NHẬT', firstName: 'HOAN', gender: 'Nam', cert: '2', block: 'Bao Đồng', teachingClass: 'Bao Đồng 1', photo: '' },
   { stt: 14, id: 'GLV14', holyName: 'GIOAN BOSCO', lastName: 'ĐỊNH QUANG', firstName: 'HUY', gender: 'Nam', cert: '3', block: 'Bao Đồng', teachingClass: 'Bao Đồng 3', photo: '' },
   { stt: 15, id: 'GLV15', holyName: 'MARIA', lastName: 'BÙI DIỆU', firstName: 'HUYỀN', gender: 'Nữ', cert: '3', block: 'Thêm Sức', teachingClass: 'Thêm Sức 3', photo: '' },
-  { stt: 16, id: 'GLV16', holyName: 'ĐAMINH', lastName: 'ĐÀO BẢO', firstName: 'KHANH', gender: 'Nam', cert: '3 - BMVTT', block: 'Vào Đời', teachingClass: 'Vào Đời 1', photo: '' },
-  { stt: 17, id: 'GLV17', holyName: 'GIOAN KIM', lastName: 'TRẦN VŨ ĐĂNG', firstName: 'KHOA', gender: 'Nam', cert: '2 - BMVTT', block: 'Vào Đời', teachingClass: 'Vào Đời 1', photo: '' },
+  { stt: 16, id: 'GLV16', holyName: 'ĐAMINH', lastName: 'ĐÀO BẢO', firstName: 'KHANH', gender: 'Nam', cert: '3 - BMVTN', block: 'Vào Đời', teachingClass: 'Vào Đời 1', photo: '' },
+  { stt: 17, id: 'GLV17', holyName: 'GIOAN KIM', lastName: 'TRẦN VŨ ĐĂNG', firstName: 'KHOA', gender: 'Nam', cert: '2 - BMVTN', block: 'Vào Đời', teachingClass: 'Vào Đời 1', photo: '' },
   { stt: 18, id: 'GLV18', holyName: 'MARIA', lastName: 'LÂM HOÀI', firstName: 'LIÊN', gender: 'Nữ', cert: '3', block: 'Bao Đồng', teachingClass: 'Bao Đồng 3', photo: '' },
-  { stt: 19, id: 'GLV19', holyName: 'GIUSE', lastName: 'LÊ DƯƠNG CÔNG', firstName: 'MINH', gender: 'Nam', cert: '2 - BMVTT', block: 'Vào Đời', teachingClass: 'Vào Đời 2', photo: '' },
+  { stt: 19, id: 'GLV19', holyName: 'GIUSE', lastName: 'LÊ DƯƠNG CÔNG', firstName: 'MINH', gender: 'Nam', cert: '2 - BMVTN', block: 'Vào Đời', teachingClass: 'Vào Đời 2', photo: '' },
   { stt: 20, id: 'GLV20', holyName: 'MARIA', lastName: 'DƯƠNG ĐỖ GIA', firstName: 'NGHI', gender: 'Nữ', cert: '3', block: 'Vào Đời', teachingClass: 'Vào Đời 1', photo: '' },
   { stt: 21, id: 'GLV21', holyName: 'GIOANKIM', lastName: 'NGUYỄN ĐỨC', firstName: 'NHẬT', gender: 'Nam', cert: '1', block: 'Rước Lễ', teachingClass: 'Rước Lễ 2', photo: '' },
   { stt: 22, id: 'GLV22', holyName: 'MARIA', lastName: 'NGUYỄN HÀ UYÊN', firstName: 'NHI', gender: 'Nữ', cert: '2', block: 'Khai Tâm', teachingClass: 'Khai Tâm 2', photo: '' },
@@ -51,7 +51,7 @@ const DEFAULT_DATASET = [
   { stt: 34, id: 'GLV34', holyName: 'MARIA', lastName: 'TRẦN NHẬT ANH', firstName: 'THƯ', gender: 'Nữ', cert: '2', block: 'Thêm Sức', teachingClass: 'Thêm Sức 1', photo: '' },
   { stt: 35, id: 'GLV35', holyName: 'PHERO', lastName: 'NGUYỄN TẤN', firstName: 'TIẾN', gender: 'Nam', cert: '1', block: 'Rước Lễ', teachingClass: 'Rước Lễ 2', photo: '' },
   { stt: 36, id: 'GLV36', holyName: 'MARIA', lastName: 'BẠCH NGUYỄN BẢO', firstName: 'TRÂM', gender: 'Nữ', cert: '1', block: 'Khai Tâm', teachingClass: 'Khai Tâm 2', photo: '' },
-  { stt: 37, id: 'GLV37', holyName: 'TERESA', lastName: 'NGUYỄN NHẬT KHÁNH', firstName: 'TRÂN', gender: 'Nữ', cert: '3 - BMVTT', block: 'Vào Đời', teachingClass: 'Vào Đời 2', photo: '' },
+  { stt: 37, id: 'GLV37', holyName: 'TERESA', lastName: 'NGUYỄN NHẬT KHÁNH', firstName: 'TRÂN', gender: 'Nữ', cert: '3 - BMVTN', block: 'Vào Đời', teachingClass: 'Vào Đời 2', photo: '' },
   { stt: 38, id: 'GLV38', holyName: 'MARIA', lastName: 'NGUYỄN THANH', firstName: 'TRÚC', gender: 'Nữ', cert: '1', block: 'Khai Tâm', teachingClass: 'Khai Tâm 2', photo: '' },
   { stt: 39, id: 'GLV39', holyName: 'MARIA', lastName: 'ĐOÀN THANH', firstName: 'TRÚC', gender: 'Nữ', cert: '', block: 'Bao Đồng', teachingClass: 'Bao Đồng 2', photo: '' },
   { stt: 40, id: 'GLV40', holyName: 'MARIA', lastName: 'TRẦN NGUYỄN PHƯƠNG', firstName: 'UYÊN', gender: 'Nữ', cert: '1', block: 'Thêm Sức', teachingClass: 'Thêm Sức 3', photo: '' },
@@ -226,7 +226,7 @@ function loadSavedDatabase() {
           lastName: item.lastName || '',
           firstName: item.firstName || '',
           gender: item.gender || 'Nữ',
-          cert: item.cert || '',
+          cert: (item.cert || '').replace(/BMVTT/gi, 'BMVTN'),
           block: item.block || '',
           teachingClass: item.teachingClass || '',
           photo: item.photo || ''
@@ -733,7 +733,7 @@ function displayProfileCard(glv) {
     } else {
       certText = `Cấp ${certRaw}`;
     }
-    if (certRaw.includes('3') || certRaw.toUpperCase().includes('BMVTT')) {
+    if (certRaw.includes('3') || certRaw.toUpperCase().includes('BMVTN') || certRaw.toUpperCase().includes('BMVTT')) {
       isGold = true;
     }
   }
