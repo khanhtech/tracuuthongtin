@@ -2795,6 +2795,16 @@ body {
   color: #3b82f6;
 }
 
+.badge-student-nav {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+
+.badge-student-nav i {
+  color: #059669;
+}
+
 /* ==========================================================================
    CLASS INFORMATION COMPONENT STYLES
    ========================================================================== */
