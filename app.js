@@ -5407,8 +5407,8 @@ function renderNewsView() {
           <i class="fa-solid fa-book-open-reader"></i> Xem Chi Tiết
         </button>
         ${isAdmin ? `
-          <div style="display: flex; gap: 0.35rem;">
-            <button type="button" class="btn-tool-icon edit btn-edit-news" data-edit-id="${n.id}" title="Sửa thông báo"><i class="fa-solid fa-pen"></i></button>
+          <div style="display: flex; gap: 0.45rem; align-items: center;">
+            <button type="button" class="btn-tool-icon edit btn-edit-news" data-edit-id="${n.id}" title="Sửa thông báo"><i class="fa-solid fa-pen-to-square"></i></button>
             <button type="button" class="btn-tool-icon delete btn-del-news" data-del-id="${n.id}" title="Xóa thông báo"><i class="fa-solid fa-trash-can"></i></button>
           </div>
         ` : ''}
