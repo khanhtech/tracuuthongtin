@@ -843,60 +843,104 @@
   </div>
 
   <!-- ==========================================================================
-       MODAL: CHỈNH SỬA / THÊM MỚI THIẾU NHI (STUDENT MODAL)
+       MODAL: THÊM / CHỈNH SỬA THÔNG TIN THIẾU NHI TRONG LỚP (STUDENT EDIT MODAL)
        ========================================================================== -->
-  <div class="modal-backdrop modal-backdrop-top" id="editStudentModal" style="display: none;">
-    <div class="modal-content modal-form">
+  <div class="modal-backdrop modal-backdrop-top modal-super-top" id="editStudentModal" style="display: none;">
+    <div class="modal-content modal-edit-student">
       <div class="modal-header">
         <div class="modal-title">
           <i class="fa-solid fa-child-reaching"></i>
-          <span id="editStudentModalTitle">Chỉnh Sửa Thông Tin Thiếu Nhi</span>
+          <span id="editStudentModalTitle">Thêm Thiếu Nhi Mới – Lớp Dự Bị Khai Tâm</span>
         </div>
-        <button class="modal-close-btn" id="closeEditStudentModalBtn"><i class="fa-solid fa-xmark"></i></button>
+        <button class="modal-close-btn" id="closeEditStudentModalBtn" title="Đóng cửa sổ"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <form id="studentEditForm" class="modal-form-body">
         <input type="hidden" id="formStudentOriginalId">
         <input type="hidden" id="formStudentClassId">
 
-        <div class="form-grid">
+        <div class="student-form-grid">
           <div class="form-group">
-            <label for="formStudentId">Mã Thiếu Nhi</label>
-            <input type="text" id="formStudentId" placeholder="Ví dụ: TN-DBKT-01" required>
+            <label for="formStudentId">Mã Thiếu Nhi <span class="req">*</span></label>
+            <div class="input-icon-wrap">
+              <i class="fa-solid fa-id-card"></i>
+              <input type="text" id="formStudentId" placeholder="Ví dụ: TN-DBKT-01" required>
+            </div>
           </div>
 
           <div class="form-group">
             <label for="formStudentHolyName">Tên Thánh (Bổn Mạng)</label>
-            <input type="text" id="formStudentHolyName" placeholder="Ví dụ: Maria, Giuse, Têrêsa...">
+            <div class="input-icon-wrap">
+              <i class="fa-solid fa-cross"></i>
+              <input type="text" id="formStudentHolyName" placeholder="Ví dụ: Maria, Giuse, Têrêsa...">
+            </div>
           </div>
 
           <div class="form-group">
-            <label for="formStudentFullName">Họ và Tên <span style="color: var(--primary-red);">*</span></label>
-            <input type="text" id="formStudentFullName" placeholder="Ví dụ: Nguyễn Minh An" required>
+            <label for="formStudentFullName">Họ và Tên <span class="req">*</span></label>
+            <div class="input-icon-wrap">
+              <i class="fa-solid fa-user"></i>
+              <input type="text" id="formStudentFullName" placeholder="Ví dụ: Nguyễn Minh An" required>
+            </div>
           </div>
 
           <div class="form-group">
             <label for="formStudentGender">Giới Tính</label>
-            <select id="formStudentGender">
-              <option value="Nam">Nam</option>
-              <option value="Nữ">Nữ</option>
-            </select>
+            <div class="input-icon-wrap">
+              <i class="fa-solid fa-venus-mars"></i>
+              <select id="formStudentGender">
+                <option value="Nam">Nam (♂)</option>
+                <option value="Nữ">Nữ (♀)</option>
+              </select>
+            </div>
           </div>
 
           <div class="form-group">
             <label for="formStudentBirthDate">Ngày Sinh (DD/MM/YYYY)</label>
-            <input type="text" id="formStudentBirthDate" placeholder="Ví dụ: 15/04/2019">
+            <div class="input-icon-wrap">
+              <i class="fa-solid fa-cake-candles"></i>
+              <input type="text" id="formStudentBirthDate" placeholder="Ví dụ: 15/04/2019">
+            </div>
           </div>
 
           <div class="form-group">
-            <label for="formStudentNote">Ghi Chú / Vai Trò</label>
-            <input type="text" id="formStudentNote" placeholder="Ví dụ: Lớp trưởng, Ban Lễ Sinh, Đang theo học...">
+            <label for="formStudentNote">Ghi Chú / Vai Trò Trong Lớp</label>
+            <div class="input-icon-wrap">
+              <i class="fa-solid fa-tag"></i>
+              <input type="text" id="formStudentNote" placeholder="Ví dụ: Lớp trưởng, Ban Lễ Sinh, Đang theo học...">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="formStudentParentName">Tên Phụ Huynh (Cha / Mẹ)</label>
+            <div class="input-icon-wrap">
+              <i class="fa-solid fa-user-group"></i>
+              <input type="text" id="formStudentParentName" placeholder="Ví dụ: Nguyễn Văn Hải">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="formStudentParentPhone">Số Điện Thoại Phụ Huynh</label>
+            <div class="input-icon-wrap">
+              <i class="fa-solid fa-phone"></i>
+              <input type="text" id="formStudentParentPhone" placeholder="Ví dụ: 0901234567">
+            </div>
+          </div>
+
+          <div class="form-group form-group-full">
+            <label for="formStudentAddress">Địa Chỉ / Giáo Họ</label>
+            <div class="input-icon-wrap">
+              <i class="fa-solid fa-location-dot"></i>
+              <input type="text" id="formStudentAddress" placeholder="Ví dụ: Giáo họ Thánh Giuse, Giáo xứ Tân Mỹ">
+            </div>
           </div>
         </div>
 
-        <div class="form-footer">
+        <div class="form-footer" style="padding: 1rem 1.5rem; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 0.75rem;">
           <button type="button" class="btn-cancel" id="cancelEditStudentBtn">Hủy Bỏ</button>
-          <button type="submit" class="btn-save"><i class="fa-solid fa-floppy-disk"></i> Lưu Thiếu Nhi</button>
+          <button type="submit" class="btn-save" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; padding: 0.65rem 1.5rem; border-radius: 10px; font-weight: 700; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 10px rgba(220, 38, 38, 0.25);">
+            <i class="fa-solid fa-floppy-disk"></i> Lưu Thiếu Nhi
+          </button>
         </div>
       </form>
     </div>

@@ -1343,7 +1343,7 @@ function openClassDetailModal(classId) {
 // ==========================================================================
 let currentRosterClassId = null;
 
-function openClassStudentsRosterModal(classId) {
+async function openClassStudentsRosterModal(classId) {
   const cls = classDatabase.find(c => c.id === classId);
   if (!cls) return;
 
@@ -1361,6 +1361,16 @@ function openClassStudentsRosterModal(classId) {
 
   if (classTitle) classTitle.textContent = `Lớp ${cls.name}`;
   if (classNameDisplay) classNameDisplay.textContent = cls.name;
+
+  // Lấy dữ liệu mới nhất từ MySQL Database API
+  if (typeof API !== 'undefined') {
+    const apiStudents = await API.getStudents(classId);
+    if (apiStudents && Array.isArray(apiStudents) && apiStudents.length > 0) {
+      cls.students = apiStudents;
+      cls.studentCount = apiStudents.length;
+      saveClassesDatabase();
+    }
+  }
 
   const students = getClassStudents(cls);
   if (countDisplay) countDisplay.textContent = students.length;
@@ -1478,7 +1488,10 @@ function getStudentDomElements() {
     fullName: document.getElementById('formStudentFullName'),
     gender: document.getElementById('formStudentGender'),
     birthDate: document.getElementById('formStudentBirthDate'),
-    note: document.getElementById('formStudentNote')
+    note: document.getElementById('formStudentNote'),
+    parentName: document.getElementById('formStudentParentName'),
+    parentPhone: document.getElementById('formStudentParentPhone'),
+    address: document.getElementById('formStudentAddress')
   };
 }
 
@@ -1507,6 +1520,9 @@ function openEditStudentModal(studentId = null, classId = null) {
     dom.gender.value = s.gender || 'Nam';
     dom.birthDate.value = s.birthDate || '';
     dom.note.value = s.note || '';
+    if (dom.parentName) dom.parentName.value = s.parentName || s.parent_name || '';
+    if (dom.parentPhone) dom.parentPhone.value = s.parentPhone || s.parent_phone || '';
+    if (dom.address) dom.address.value = s.address || '';
   } else {
     // Chế độ Thêm mới thiếu nhi
     dom.origId.value = '';
@@ -1522,9 +1538,14 @@ function openEditStudentModal(studentId = null, classId = null) {
     dom.gender.value = 'Nam';
     dom.birthDate.value = '';
     dom.note.value = 'Đang theo học';
+    if (dom.parentName) dom.parentName.value = '';
+    if (dom.parentPhone) dom.parentPhone.value = '';
+    if (dom.address) dom.address.value = '';
   }
 
-  if (dom.modal) dom.modal.style.display = 'flex';
+  if (dom.modal) {
+    dom.modal.style.display = 'flex';
+  }
   if (dom.fullName) dom.fullName.focus();
 }
 
@@ -1545,6 +1566,9 @@ function handleStudentFormSubmit(e) {
   const gender = dom.gender.value;
   const birthDate = dom.birthDate.value.trim();
   const note = dom.note.value.trim();
+  const parentName = dom.parentName ? dom.parentName.value.trim() : '';
+  const parentPhone = dom.parentPhone ? dom.parentPhone.value.trim() : '';
+  const address = dom.address ? dom.address.value.trim() : '';
 
   if (!classId || !fullName || !id) {
     showToast('Vui lòng điền đầy đủ thông tin bắt buộc!');
@@ -1568,7 +1592,10 @@ function handleStudentFormSubmit(e) {
         fullName: fullName,
         gender: gender,
         birthDate: birthDate,
-        note: note
+        note: note,
+        parentName: parentName,
+        parentPhone: parentPhone,
+        address: address
       };
       savedStudentObj = students[idx];
       showToast(`Đã cập nhật thông tin em ${fullName}!`);
@@ -1582,7 +1609,10 @@ function handleStudentFormSubmit(e) {
       fullName: fullName,
       gender: gender,
       birthDate: birthDate,
-      note: note || 'Đang theo học'
+      note: note || 'Đang theo học',
+      parentName: parentName,
+      parentPhone: parentPhone,
+      address: address
     };
     students.push(newStudent);
     savedStudentObj = newStudent;
