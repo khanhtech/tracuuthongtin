@@ -747,6 +747,9 @@ document.addEventListener('DOMContentLoaded', () => {
     updateStudentStatsDisplay();
     setupEventListeners();
     switchTab(currentTab);
+    clearSearchAutofills();
+    setTimeout(clearSearchAutofills, 300);
+    setTimeout(clearSearchAutofills, 1000);
     initApiSync();
     tryAutoFetchExcel();
   } catch (err) {
@@ -828,12 +831,36 @@ async function initApiSync() {
 }
 
 // ==========================================================================
+// XỬ LÝ KHÓA TỰ ĐỘNG ĐIỀN TÀI KHOẢN TRÊN CÁC Ô TÌM KIẾM (PREVENT AUTOFILL)
+// ==========================================================================
+function clearSearchAutofills() {
+  const searchInputIds = [
+    'newsSearchInput', 'searchInput', 'classSearchInput', 
+    'allStudentsSearchInput', 'docsSearchInput', 'modalFilterInput', 
+    'modalFilterClassInput', 'rosterSearchInput', 'gradebookSearchInput'
+  ];
+  searchInputIds.forEach(id => {
+    const input = document.getElementById(id);
+    if (input && input.value) {
+      const val = input.value.trim();
+      // Nếu trình duyệt tự ý điền email (chứa @) hoặc admin credential vào ô tìm kiếm
+      if (val.includes('@') || val.toLowerCase() === 'admin' || val.toLowerCase().includes('gmail')) {
+        input.value = '';
+        const clearBtn = input.parentElement ? input.parentElement.querySelector('.clear-btn') : null;
+        if (clearBtn) clearBtn.style.display = 'none';
+      }
+    }
+  });
+}
+
 // ==========================================================================
 // QUẢN LÝ TAB & SIDEBAR NAVIGATION
 // ==========================================================================
 function switchTab(tabName) {
   currentTab = tabName || 'news';
   localStorage.setItem(ACTIVE_TAB_KEY, currentTab);
+
+  clearSearchAutofills();
 
   const quickActionsNews = document.getElementById('quickActionsNews');
   const quickActionsGlv = document.getElementById('quickActionsGlv');
