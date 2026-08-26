@@ -1065,13 +1065,11 @@ function renderClassCards(classesList, searchKeyword) {
           </div>
           <div class="teachers-chips-list">
             ${teachers.length > 0 ? teachers.map(t => `
-              <div class="teacher-chip" data-glv-id="${t.id}" title="Bấm để xem hồ sơ ${t.id}">
-                <img src="${getGlvAvatar(t)}" alt="avatar">
+              <div class="teacher-chip" data-glv-id="${t.id}" title="Bấm để xem hồ sơ ${t.holyName} ${t.lastName} ${t.firstName}">
                 <span class="chip-name-box">
                   <strong class="chip-holy">${t.holyName || ''}</strong>
                   <span class="chip-name">${t.lastName} ${t.firstName}</span>
                 </span>
-                <span class="chip-id">${t.id}</span>
               </div>
             `).join('') : '<span style="font-size: 0.78rem; color: #94a3b8; font-style: italic;">Chưa phân công Huynh Trưởng</span>'}
           </div>
