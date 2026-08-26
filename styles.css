@@ -2437,6 +2437,29 @@ body {
   white-space: nowrap;
 }
 
+.sidebar-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  cursor: pointer;
+  margin-left: auto;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.sidebar-toggle-btn:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #b91c1c;
+  transform: scale(1.06);
+}
+
 .sidebar-close-btn {
   display: none;
   position: absolute;
@@ -2451,6 +2474,83 @@ body {
   border-radius: 50%;
   cursor: pointer;
   font-size: 0.95rem;
+}
+
+/* ==========================================================================
+   TRẠNG THÁI THU GỌN THANH CÔNG CỤ (COLLAPSED SIDEBAR)
+   ========================================================================== */
+.app-layout.sidebar-collapsed .app-sidebar {
+  width: 82px;
+  min-width: 82px;
+}
+
+.app-layout.sidebar-collapsed .brand-text,
+.app-layout.sidebar-collapsed .nav-label-box,
+.app-layout.sidebar-collapsed .nav-badge,
+.app-layout.sidebar-collapsed .nav-section-title,
+.app-layout.sidebar-collapsed .sidebar-meta,
+.app-layout.sidebar-collapsed .role-info-text,
+.app-layout.sidebar-collapsed .btn-sidebar-auth,
+.app-layout.sidebar-collapsed .sidebar-quick-section {
+  display: none !important;
+}
+
+.app-layout.sidebar-collapsed .sidebar-brand {
+  padding: 1.25rem 0.5rem;
+  justify-content: center;
+  position: relative;
+}
+
+.app-layout.sidebar-collapsed .brand-emblem {
+  margin: 0 auto;
+}
+
+.app-layout.sidebar-collapsed .sidebar-toggle-btn {
+  position: absolute;
+  right: -13px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  z-index: 105;
+  color: #0f172a;
+}
+
+.app-layout.sidebar-collapsed .sidebar-toggle-btn:hover {
+  background: #b91c1c;
+  border-color: #991b1b;
+  color: #ffffff;
+}
+
+.app-layout.sidebar-collapsed .sidebar-divider {
+  margin: 0 0.75rem 1rem;
+}
+
+.app-layout.sidebar-collapsed .nav-item {
+  padding: 0.75rem 0;
+  justify-content: center;
+  border-radius: 12px;
+}
+
+.app-layout.sidebar-collapsed .nav-item::before {
+  display: none;
+}
+
+.app-layout.sidebar-collapsed .nav-icon-box {
+  margin: 0 auto;
+}
+
+.app-layout.sidebar-collapsed .sidebar-footer {
+  padding: 0.75rem 0.4rem;
+}
+
+.app-layout.sidebar-collapsed .sidebar-role-card {
+  padding: 0.4rem;
+  justify-content: center;
 }
 
 .sidebar-divider {

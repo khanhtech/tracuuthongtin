@@ -741,6 +741,7 @@ const btnOpenGradebookFromDetail = document.getElementById('btnOpenGradebookFrom
 document.addEventListener('DOMContentLoaded', () => {
   try {
     initUserRole();
+    initSidebarState();
     updateStatsDisplay();
     initClassModule();
     updateStudentStatsDisplay();
@@ -900,6 +901,39 @@ function openMobileSidebar() {
 function closeMobileSidebar() {
   if (appSidebar) appSidebar.classList.remove('sidebar-open');
   if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+}
+
+function toggleSidebarCollapse() {
+  const appLayout = document.querySelector('.app-layout');
+  const sidebarToggleIcon = document.getElementById('sidebarToggleIcon');
+  if (!appLayout) return;
+
+  if (window.innerWidth <= 1024) {
+    if (appSidebar && appSidebar.classList.contains('sidebar-open')) {
+      closeMobileSidebar();
+    } else {
+      openMobileSidebar();
+    }
+    return;
+  }
+
+  const isCollapsed = appLayout.classList.toggle('sidebar-collapsed');
+  localStorage.setItem('sidebar_collapsed_pref', isCollapsed ? '1' : '0');
+  if (sidebarToggleIcon) {
+    sidebarToggleIcon.className = isCollapsed ? 'fa-solid fa-chevron-right' : 'fa-solid fa-chevron-left';
+  }
+}
+
+function initSidebarState() {
+  const appLayout = document.querySelector('.app-layout');
+  const sidebarToggleIcon = document.getElementById('sidebarToggleIcon');
+  const saved = localStorage.getItem('sidebar_collapsed_pref');
+  if (saved === '1' && appLayout && window.innerWidth > 1024) {
+    appLayout.classList.add('sidebar-collapsed');
+    if (sidebarToggleIcon) {
+      sidebarToggleIcon.className = 'fa-solid fa-chevron-right';
+    }
+  }
 }
 
 // ==========================================================================
@@ -3118,6 +3152,13 @@ function setupEventListeners() {
   }
   if (mobileMenuBtn) {
     mobileMenuBtn.addEventListener('click', openMobileSidebar);
+  }
+  const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+  if (sidebarToggleBtn) {
+    sidebarToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleSidebarCollapse();
+    });
   }
   if (sidebarCloseBtn) {
     sidebarCloseBtn.addEventListener('click', closeMobileSidebar);
