@@ -418,6 +418,84 @@ function checkAdminPassword() {
 }
 
 // ==========================================================================
+// HỘP THOẠI XÁC NHẬN TÙY BIẾN ĐẸP MẮT (CUSTOM CONFIRM MODAL)
+// ==========================================================================
+function showConfirmDialog({
+  title = 'Xác Nhận Xóa',
+  message = 'Bạn có chắc chắn muốn xóa đối tượng này không?',
+  itemName = '',
+  note = '⚠️ Thao tác này không thể hoàn tác và sẽ cập nhật trực tiếp về MySQL Database.',
+  confirmText = 'Xác Nhận Xóa',
+  cancelText = 'Hủy Bỏ',
+  type = 'danger',
+  iconClass = 'fa-solid fa-trash-can'
+} = {}) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('customConfirmModal');
+    const backdrop = document.getElementById('confirmModalBackdrop');
+    const iconWrap = document.getElementById('confirmIconWrap');
+    const icon = document.getElementById('confirmIcon');
+    const titleEl = document.getElementById('confirmTitle');
+    const msgEl = document.getElementById('confirmMessage');
+    const itemBadge = document.getElementById('confirmItemBadge');
+    const itemNameEl = document.getElementById('confirmItemName');
+    const noteEl = document.getElementById('confirmNote');
+    const cancelBtn = document.getElementById('btnConfirmCancel');
+    const okBtn = document.getElementById('btnConfirmOk');
+
+    if (!modal) {
+      const ok = confirm(itemName ? `${message}\n[${itemName}]` : message);
+      return resolve(ok);
+    }
+
+    if (titleEl) titleEl.textContent = title;
+    if (msgEl) msgEl.textContent = message;
+    if (noteEl) noteEl.textContent = note;
+
+    if (itemBadge && itemNameEl) {
+      if (itemName) {
+        itemNameEl.textContent = itemName;
+        itemBadge.style.display = 'inline-block';
+        itemBadge.className = `confirm-item-badge ${type}`;
+      } else {
+        itemBadge.style.display = 'none';
+      }
+    }
+
+    if (iconWrap && icon) {
+      iconWrap.className = `confirm-icon-wrap ${type}`;
+      icon.className = iconClass;
+    }
+
+    if (cancelBtn) {
+      cancelBtn.innerHTML = `<i class="fa-solid fa-xmark"></i> ${cancelText}`;
+    }
+
+    if (okBtn) {
+      okBtn.className = `btn-confirm-ok ${type}`;
+      okBtn.innerHTML = `${type === 'danger' ? '<i class="fa-solid fa-trash-can"></i>' : '<i class="fa-solid fa-check"></i>'} ${confirmText}`;
+    }
+
+    modal.classList.add('active');
+
+    function cleanup(result) {
+      modal.classList.remove('active');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      if (backdrop) backdrop.removeEventListener('click', onCancel);
+      resolve(result);
+    }
+
+    function onOk() { cleanup(true); }
+    function onCancel() { cleanup(false); }
+
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    if (backdrop) backdrop.addEventListener('click', onCancel);
+  });
+}
+
+// ==========================================================================
 // PHÂN HỆ THÔNG TIN GIÁO LÝ VIÊN
 // ==========================================================================
 function updateStatsDisplay() {
@@ -1530,7 +1608,12 @@ function handleStudentFormSubmit(e) {
   }
 }
 
-function deleteStudentFromClass(studentId, classId) {
+async function deleteStudentFromClass(studentId, classId) {
+  if (currentUserRole !== 'admin') {
+    showToast('Chỉ Quản Trị Viên (Admin) mới có quyền xóa thiếu nhi!');
+    return;
+  }
+
   const cls = classDatabase.find(c => c.id === classId);
   if (!cls) return;
 
@@ -1538,29 +1621,38 @@ function deleteStudentFromClass(studentId, classId) {
   const target = students.find(s => s.id === studentId);
   if (!target) return;
 
-  if (confirm(`Bạn có chắc chắn muốn xóa em "${target.holyName ? target.holyName + ' ' : ''}${target.fullName}" khỏi lớp ${cls.name} không?`)) {
-    cls.students = students.filter(s => s.id !== studentId);
-    // Cập nhật lại STT
-    cls.students.forEach((s, idx) => { s.stt = idx + 1; });
-    cls.studentCount = cls.students.length;
+  const confirmed = await showConfirmDialog({
+    title: 'Xác Nhận Xóa Thiếu Nhi',
+    message: 'Bạn có chắc chắn muốn xóa thiếu nhi này khỏi danh sách lớp không?',
+    itemName: `${target.id} - ${target.holyName ? target.holyName + ' ' : ''}${target.fullName} (Lớp ${cls.name})`,
+    confirmText: 'Xác Nhận Xóa',
+    type: 'danger',
+    iconClass: 'fa-solid fa-user-minus'
+  });
 
-    saveClassesDatabase();
-    renderClassesView();
-    renderBlockFilterPillCounts();
-    showToast(`Đã xóa em ${target.fullName} khỏi danh sách lớp!`);
+  if (!confirmed) return;
 
-    // Tự động xóa khỏi MySQL Database
-    if (typeof API !== 'undefined' && API.isOnline) {
-      API.deleteStudent(studentId).then(success => {
-        if (success) console.log('Đã xóa thiếu nhi khỏi MySQL Database!');
-      });
-    }
+  cls.students = students.filter(s => s.id !== studentId);
+  // Cập nhật lại STT
+  cls.students.forEach((s, idx) => { s.stt = idx + 1; });
+  cls.studentCount = cls.students.length;
 
-    // Cập nhật lại cửa sổ Roster nếu đang mở
-    const rosterModal = document.getElementById('classStudentsModal');
-    if (rosterModal && rosterModal.style.display !== 'none') {
-      openClassStudentsRosterModal(classId);
-    }
+  saveClassesDatabase();
+  renderClassesView();
+  renderBlockFilterPillCounts();
+  showToast(`Đã xóa em ${target.fullName} khỏi danh sách lớp!`);
+
+  // Tự động xóa khỏi MySQL Database
+  if (typeof API !== 'undefined' && API.isOnline) {
+    API.deleteStudent(studentId).then(success => {
+      if (success) console.log('Đã xóa thiếu nhi khỏi MySQL Database!');
+    });
+  }
+
+  // Cập nhật lại cửa sổ Roster nếu đang mở
+  const rosterModal = document.getElementById('classStudentsModal');
+  if (rosterModal && rosterModal.style.display !== 'none') {
+    openClassStudentsRosterModal(classId);
   }
 }
 
@@ -1890,7 +1982,7 @@ function renderAllClassesTable() {
   });
 }
 
-function deleteClass(classId) {
+async function deleteClass(classId) {
   if (currentUserRole !== 'admin') {
     showToast('Chỉ Quản Trị Viên (Admin) mới có quyền xóa lớp học!');
     return;
@@ -1898,13 +1990,26 @@ function deleteClass(classId) {
   const cls = classDatabase.find(c => c.id === classId);
   if (!cls) return;
 
-  if (confirm(`Bạn có chắc chắn muốn xóa lớp "${cls.name}" không? Thao tác này không thể hoàn tác.`)) {
-    classDatabase = classDatabase.filter(c => c.id !== classId);
-    saveClassesDatabase();
-    renderClassesView();
-    renderBlockFilterPillCounts();
-    renderAllClassesTable();
-    showToast(`Đã xóa lớp "${cls.name}" thành công!`);
+  const confirmed = await showConfirmDialog({
+    title: 'Xác Nhận Xóa Lớp Học',
+    message: 'Bạn có chắc chắn muốn xóa lớp học này khỏi hệ thống không?',
+    itemName: `${cls.id} - ${cls.name} (${cls.block || 'Khối Giáo Lý'})`,
+    confirmText: 'Xác Nhận Xóa Lớp',
+    type: 'danger',
+    iconClass: 'fa-solid fa-trash-can'
+  });
+
+  if (!confirmed) return;
+
+  classDatabase = classDatabase.filter(c => c.id !== classId);
+  saveClassesDatabase();
+  renderClassesView();
+  renderBlockFilterPillCounts();
+  renderAllClassesTable();
+  showToast(`Đã xóa lớp "${cls.name}" thành công!`);
+
+  if (typeof API !== 'undefined' && API.isOnline) {
+    API.deleteClass(cls.id);
   }
 }
 
@@ -2689,17 +2794,25 @@ function saveGlvForm() {
   applyModalFilters();
 }
 
-function deleteGLV(glvId) {
-  if (currentUserRole === 'guest') {
-    showToast('Chỉ Quản Trị Viên (Admin) mới có quyền xóa hồ sơ!');
+async function deleteGLV(glvId) {
+  if (currentUserRole !== 'admin') {
+    showToast('Chỉ Quản Trị Viên (Admin) mới có quyền xóa Giáo Lý Viên!');
     return;
   }
 
   const glv = glvDatabase.find(item => item.id.toUpperCase() === glvId.toUpperCase());
   if (!glv) return;
 
-  const confirmDelete = confirm(`Bạn có chắc chắn muốn xóa Giáo Lý Viên ${glv.id} (${glv.holyName} ${glv.lastName} ${glv.firstName}) không?`);
-  if (!confirmDelete) return;
+  const confirmed = await showConfirmDialog({
+    title: 'Xác Nhận Xóa Giáo Lý Viên',
+    message: 'Bạn có chắc chắn muốn xóa Giáo Lý Viên này khỏi hệ thống không?',
+    itemName: `${glv.id} - ${glv.holyName ? glv.holyName + ' ' : ''}${glv.lastName} ${glv.firstName}`,
+    confirmText: 'Xác Nhận Xóa',
+    type: 'danger',
+    iconClass: 'fa-solid fa-trash-can'
+  });
+
+  if (!confirmed) return;
 
   glvDatabase = glvDatabase.filter(item => item.id.toUpperCase() !== glvId.toUpperCase());
   
@@ -2754,8 +2867,17 @@ function exportDatabaseToExcel() {
 }
 
 async function resetDatabaseToOriginal() {
-  const confirmReset = confirm('Bạn có chắc chắn muốn làm mới và tải lại toàn bộ dữ liệu từ Cơ Sở Dữ Liệu MySQL không?');
-  if (!confirmReset) return;
+  const confirmed = await showConfirmDialog({
+    title: 'Làm Mới & Tải Lại Dữ Liệu',
+    message: 'Bạn có chắc chắn muốn làm mới và tải lại toàn bộ dữ liệu từ Cơ Sở Dữ Liệu MySQL không?',
+    itemName: 'Database: giaoly_tanmy_db',
+    note: 'ℹ️ Hệ thống sẽ xóa bộ nhớ đệm và kết nối lại máy chủ MySQL XAMPP.',
+    confirmText: 'Đồng Ý Làm Mới',
+    type: 'warning',
+    iconClass: 'fa-solid fa-rotate'
+  });
+
+  if (!confirmed) return;
 
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(CLASS_STORAGE_KEY);

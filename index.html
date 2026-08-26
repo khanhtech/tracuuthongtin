@@ -1060,6 +1060,28 @@
         <button type="button" class="btn-cancel" id="closeQuickGlvFooterBtn">Đóng</button>
       </div>
     </div>
+  <!-- Custom Confirmation Modal (SweetAlert Modern Style) -->
+  <div id="customConfirmModal" class="custom-confirm-modal">
+    <div class="confirm-modal-backdrop" id="confirmModalBackdrop"></div>
+    <div class="confirm-modal-card">
+      <div class="confirm-icon-wrap danger" id="confirmIconWrap">
+        <i class="fa-solid fa-trash-can" id="confirmIcon"></i>
+      </div>
+      <h3 class="confirm-title" id="confirmTitle">Xác Nhận Xóa</h3>
+      <p class="confirm-message" id="confirmMessage">Bạn có chắc chắn muốn xóa đối tượng này không?</p>
+      <div class="confirm-item-badge danger" id="confirmItemBadge">
+        <span class="confirm-item-name" id="confirmItemName">GLV01 - Maria Nguyễn Thị Vân Anh</span>
+      </div>
+      <p class="confirm-note" id="confirmNote">⚠️ Thao tác này không thể hoàn tác và sẽ cập nhật trực tiếp về MySQL Database.</p>
+      <div class="confirm-btn-group">
+        <button type="button" class="btn-confirm-cancel" id="btnConfirmCancel">
+          <i class="fa-solid fa-xmark"></i> Hủy Bỏ
+        </button>
+        <button type="button" class="btn-confirm-ok danger" id="btnConfirmOk">
+          <i class="fa-solid fa-trash-can"></i> Xác Nhận Xóa
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Toast Notification -->
