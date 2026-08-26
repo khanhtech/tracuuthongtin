@@ -2849,6 +2849,9 @@ function parseStudentExcelFile(file) {
       const firstNameIdx = headerRow.findIndex(h => (h === 'ten' || h === 'ten goi' || h === 'first name') && !h.includes('thanh') && !h.includes('phu huynh') && !h.includes('cha') && !h.includes('me') && !h.includes('dem') && !h.includes('lot'));
 
       const genderIdx = headerRow.findIndex(h => h === 'gioi tinh' || h === 'gioi' || h === 'phai' || h === 'gender' || h.includes('gioi tinh'));
+      const maleColIdx = headerRow.findIndex(h => h === 'nam' || h === 'nam (♂)' || h === 'm' || h === 'trai');
+      const femaleColIdx = headerRow.findIndex(h => h === 'nu' || h === 'nữ' || h === 'nu (♀)' || h === 'f' || h === 'gai');
+
       const birthIdx = headerRow.findIndex(h => h === 'ngay sinh' || h === 'nam sinh' || h === 'ngay thang nam sinh' || h === 'dob' || h.includes('ngay sinh') || h.includes('nam sinh'));
       const noteIdx = headerRow.findIndex(h => h === 'ghi chu' || h === 'vai tro' || h === 'chuc vu' || h === 'role' || h.includes('ghi chu') || h.includes('vai tro'));
       const parentIdx = headerRow.findIndex(h => h === 'phu huynh' || h === 'cha me' || h === 'ten phu huynh' || h === 'ten cha me' || h.includes('phu huynh') || h.includes('cha me'));
@@ -2858,6 +2861,18 @@ function parseStudentExcelFile(file) {
       const parsed = [];
       const cls = classDatabase.find(c => c.id === importClassId);
       const code = (cls ? cls.id : 'DBKT').replace('CLASS_', '');
+
+      // Danh mục Tên Thánh Nữ & Nam chuẩn Công Giáo để suy luận giới tính thông minh
+      const femaleSaints = [
+        'maria', 'teresa', 'anna', 'monica', 'matta', 'cecilia', 'agnes', 'rosa', 'lucia', 'ine', 'clara',
+        'catarina', 'elisabeth', 'magdalena', 'veronica', 'faustina', 'anna nguyen', 'maria goretti', 'gertrude',
+        'scholastica', 'mariana', 'anre dung lac', 'teresa calcutta', 'joan of arc', 'bernadette'
+      ];
+      const maleSaints = [
+        'giuse', 'gioan', 'phero', 'phaolo', 'anton', 'daminh', 'micae', 'phanxico', 'augustino', 'inhaxio',
+        'toma', 'lucas', 'mattheu', 'savio', 'bosco', 'vinhson', 'stephen', 'tephano', 'anre', 'phanxico xavie',
+        'gioan baotixita', 'gioan kim', 'phanxico de sales', 'phaolo le bao tinh', 'giuse khang', 'martino', 'bactolomeo'
+      ];
 
       for (let i = headerRowIdx + 1; i < rows.length; i++) {
         const row = rows[i];
@@ -2894,11 +2909,47 @@ function parseStudentExcelFile(file) {
           id = `TN-${code}-${String(parsed.length + 1).padStart(2, '0')}`;
         }
 
-        // Giới tính
-        let genderRaw = (genderIdx !== -1 && row[genderIdx]) ? String(row[genderIdx]).trim().toLowerCase() : '';
-        let gender = 'Nam';
-        if (genderRaw.includes('nu') || genderRaw.includes('nữ') || genderRaw === 'f' || genderRaw.includes('gai')) {
-          gender = 'Nữ';
+        // Phân tích & Nhận diện Giới tính (Từ Excel hoặc Tên Thánh / Họ Tên)
+        let gender = '';
+        if (femaleColIdx !== -1 && row[femaleColIdx] !== undefined && String(row[femaleColIdx]).trim() !== '') {
+          const fVal = String(row[femaleColIdx]).trim().toLowerCase();
+          if (fVal === 'x' || fVal === '1' || fVal === 'v' || fVal === 'nu' || fVal.includes('nu') || (fVal !== '' && (!row[maleColIdx] || String(row[maleColIdx]).trim() === ''))) {
+            gender = 'Nữ';
+          }
+        }
+        if (!gender && maleColIdx !== -1 && row[maleColIdx] !== undefined && String(row[maleColIdx]).trim() !== '') {
+          const mVal = String(row[maleColIdx]).trim().toLowerCase();
+          if (mVal === 'x' || mVal === '1' || mVal === 'v' || mVal === 'nam' || mVal.includes('nam')) {
+            gender = 'Nam';
+          }
+        }
+        if (!gender && genderIdx !== -1 && row[genderIdx] !== undefined && String(row[genderIdx]).trim() !== '') {
+          const gRaw = removeVietnameseTones(String(row[genderIdx]).trim().toLowerCase());
+          if (gRaw.includes('nu') || gRaw === 'f' || gRaw === 'female' || gRaw.includes('gai') || gRaw === '2') {
+            gender = 'Nữ';
+          } else if (gRaw.includes('nam') || gRaw === 'm' || gRaw === 'male' || gRaw.includes('trai') || gRaw === '1') {
+            gender = 'Nam';
+          }
+        }
+
+        // Tự động suy luận giới tính dựa theo Tên Thánh Công Giáo
+        if (!gender) {
+          const holyNorm = removeVietnameseTones(holyName.toLowerCase());
+          if (femaleSaints.some(s => holyNorm.includes(s))) {
+            gender = 'Nữ';
+          } else if (maleSaints.some(s => holyNorm.includes(s))) {
+            gender = 'Nam';
+          }
+        }
+
+        // Tự động suy luận theo Họ và Tên Tiếng Việt nếu chưa có
+        if (!gender) {
+          const nameNorm = removeVietnameseTones(fullName.toLowerCase());
+          if (nameNorm.includes(' thi ') || nameNorm.includes(' thi') || nameNorm.startsWith('thi ')) {
+            gender = 'Nữ';
+          } else {
+            gender = 'Nam';
+          }
         }
 
         // Ngày sinh
