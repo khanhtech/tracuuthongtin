@@ -5928,3 +5928,217 @@ body {
   transform: translateY(-1.5px);
   box-shadow: 0 3px 8px rgba(220, 38, 38, 0.3);
 }
+
+/* ==========================================================================
+   HỆ THỐNG PHÂN QUYỀN 3 VAI TRÒ (ADMIN / HUYNH TRƯỞNG / KHÁCH)
+   ========================================================================== */
+.modal-auth {
+  max-width: 960px !important;
+  width: 95vw;
+}
+
+.auth-cards-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 900px) {
+  .auth-cards-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.auth-role-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.25rem;
+  border: 1.5px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-role-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+}
+
+.auth-role-card.admin-card {
+  border-color: #fecaca;
+  background: linear-gradient(180deg, #fffafa 0%, #ffffff 100%);
+}
+.auth-role-card.admin-card:hover {
+  border-color: #f87171;
+  box-shadow: 0 10px 25px rgba(220, 38, 38, 0.12);
+}
+
+.auth-role-card.glv-card {
+  border-color: #bae6fd;
+  background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);
+}
+.auth-role-card.glv-card:hover {
+  border-color: #38bdf8;
+  box-shadow: 0 10px 25px rgba(2, 132, 199, 0.14);
+}
+
+.auth-role-card.guest-card {
+  border-color: #e2e8f0;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+}
+.auth-role-card.guest-card:hover {
+  border-color: #94a3b8;
+  box-shadow: 0 10px 25px rgba(71, 85, 105, 0.08);
+}
+
+.role-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.role-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.admin-badge-icon {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.glv-badge-icon {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.guest-badge-icon {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.role-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 0.15rem;
+}
+
+.role-sub {
+  font-size: 0.76rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.role-perm-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.25rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.role-perm-list li {
+  font-size: 0.82rem;
+  color: #334155;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  line-height: 1.35;
+}
+
+.role-perm-list li i.fa-check {
+  color: #16a34a;
+  margin-top: 2px;
+  font-size: 0.85rem;
+}
+
+.role-perm-list li i.fa-eye {
+  color: #0284c7;
+  margin-top: 2px;
+  font-size: 0.85rem;
+}
+
+.role-perm-list li.disabled {
+  color: #94a3b8;
+}
+
+.role-perm-list li i.fa-ban {
+  color: #ef4444;
+  margin-top: 2px;
+  font-size: 0.85rem;
+}
+
+.btn-role-submit {
+  width: 100%;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.btn-submit-admin {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.25);
+}
+.btn-submit-admin:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.btn-submit-glv {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);
+}
+.btn-submit-glv:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.btn-submit-guest {
+  background: #334155;
+  color: #ffffff;
+}
+.btn-submit-guest:hover {
+  background: #1e293b;
+  transform: translateY(-1px);
+}
+
+/* Badges for Top Bar & Sidebar */
+.btn-auth-icon-right.role-glv {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: #7dd3fc;
+}
+.btn-auth-icon-right.role-glv:hover {
+  background: #bae6fd;
+  border-color: #38bdf8;
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.18);
+}
+
+.role-avatar-icon.glv {
+  background: #e0f2fe;
+  color: #0284c7;
+}

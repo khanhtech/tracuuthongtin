@@ -1585,7 +1585,7 @@
   </div>
 
   <!-- ==========================================================================
-       MODAL: ĐĂNG NHẬP / ĐỔI VAI TRÒ ADMIN VS GUEST
+       MODAL: ĐĂNG NHẬP / ĐỔI VAI TRÒ (ADMIN / HUYNH TRƯỞNG / KHÁCH)
        ========================================================================== -->
   <div class="modal-backdrop" id="loginModal" style="display: none;">
     <div class="modal-content modal-auth">
@@ -1601,28 +1601,28 @@
         <p class="auth-modal-desc">Vui lòng chọn vai trò để sử dụng các tính năng tương ứng:</p>
 
         <div class="auth-cards-container">
-          <!-- Card Admin -->
+          <!-- 1. Card Admin -->
           <div class="auth-role-card admin-card">
             <div class="role-card-header">
               <div class="role-icon-box admin-badge-icon">
                 <i class="fa-solid fa-shield-halved"></i>
               </div>
               <div>
-                <h3 class="role-title">Quản Trị Viên (Admin)</h3>
+                <h3 class="role-title">Quản Trị Viên</h3>
                 <span class="role-sub">Toàn quyền hệ thống</span>
               </div>
             </div>
             <ul class="role-perm-list">
-              <li><i class="fa-solid fa-check"></i> Thêm mới, Sửa, Xóa hồ sơ GLV & Lớp học</li>
-              <li><i class="fa-solid fa-check"></i> Phân công GLV đứng lớp & quản lý sĩ số</li>
-              <li><i class="fa-solid fa-check"></i> Khôi phục dữ liệu gốc & Xuất Excel</li>
+              <li><i class="fa-solid fa-check"></i> Thêm, Sửa, Xóa hồ sơ GLV & Lớp học</li>
+              <li><i class="fa-solid fa-check"></i> Đăng, Sửa, Xóa bài Thông Báo</li>
+              <li><i class="fa-solid fa-check"></i> Phân công GLV & Quản lý Thiếu Nhi</li>
+              <li><i class="fa-solid fa-check"></i> Khôi phục dữ liệu & Xuất Excel</li>
             </ul>
             <form class="admin-login-form" onsubmit="event.preventDefault();" autocomplete="off">
-              <!-- Hidden dummy credentials to isolate password manager -->
               <input type="text" name="fake_username_remember" style="display:none" autocomplete="username">
               <div class="password-field-wrapper">
                 <i class="fa-solid fa-lock"></i>
-                <input type="password" id="adminPasswordInput" placeholder="Nhập mật khẩu Quản Trị Viên..." autocomplete="current-password">
+                <input type="password" id="adminPasswordInput" placeholder="Mật khẩu Admin..." autocomplete="current-password">
                 <button type="button" id="togglePasswordBtn" class="btn-toggle-pw" title="Ẩn/Hiện mật khẩu">
                   <i class="fa-solid fa-eye-slash" id="togglePasswordIcon"></i>
                 </button>
@@ -1630,25 +1630,57 @@
               <button type="button" class="btn-role-submit btn-submit-admin" id="submitAdminLoginBtn">
                 <i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập Admin
               </button>
-            </div>
+            </form>
           </div>
 
-          <!-- Card Guest -->
-          <div class="auth-role-card guest-card">
+          <!-- 2. Card Huynh Trưởng / GLV -->
+          <div class="auth-role-card glv-card">
             <div class="role-card-header">
-              <div class="role-icon-box guest-badge-icon">
-                <i class="fa-solid fa-user-tag"></i>
+              <div class="role-icon-box glv-badge-icon">
+                <i class="fa-solid fa-user-graduate"></i>
               </div>
               <div>
-                <h3 class="role-title">Khách / Huynh Trưởng (Guest)</h3>
-                <span class="role-sub">Quyền hạn giới hạn</span>
+                <h3 class="role-title">Huynh Trưởng</h3>
+                <span class="role-sub">Quản lý lớp & tài liệu</span>
               </div>
             </div>
             <ul class="role-perm-list">
-              <li><i class="fa-solid fa-check"></i> Tra cứu thẻ GLV & danh sách Lớp học</li>
-              <li><i class="fa-solid fa-check"></i> Chỉnh sửa <strong>Tên Thánh</strong> & <strong>Họ tên</strong> GLV</li>
-              <li><i class="fa-solid fa-check"></i> Tải lên và thay đổi <strong>Ảnh thẻ</strong></li>
-              <li class="disabled"><i class="fa-solid fa-ban"></i> Không thể Thêm/Xóa hồ sơ hoặc sửa thông tin cốt lõi</li>
+              <li><i class="fa-solid fa-check"></i> Thêm & Sửa dữ liệu <strong>Thiếu Nhi</strong></li>
+              <li><i class="fa-solid fa-check"></i> Thêm & Sửa hồ sơ <strong>Huynh Trưởng</strong></li>
+              <li><i class="fa-solid fa-check"></i> Đăng tài liệu vào <strong>Kho Tài Liệu</strong></li>
+              <li><i class="fa-solid fa-eye"></i> Chỉ có quyền <strong>Xem Bảng Tin</strong></li>
+            </ul>
+            <form class="admin-login-form" onsubmit="event.preventDefault();" autocomplete="off">
+              <input type="text" name="fake_username_glv" style="display:none" autocomplete="username">
+              <div class="password-field-wrapper">
+                <i class="fa-solid fa-lock" style="color: #0284c7;"></i>
+                <input type="password" id="glvPasswordInput" placeholder="Mật khẩu Huynh Trưởng..." autocomplete="current-password">
+                <button type="button" id="toggleGlvPasswordBtn" class="btn-toggle-pw" title="Ẩn/Hiện mật khẩu">
+                  <i class="fa-solid fa-eye-slash" id="toggleGlvPasswordIcon"></i>
+                </button>
+              </div>
+              <button type="button" class="btn-role-submit btn-submit-glv" id="submitGlvLoginBtn">
+                <i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập Huynh Trưởng
+              </button>
+            </form>
+          </div>
+
+          <!-- 3. Card Khách (Guest) -->
+          <div class="auth-role-card guest-card">
+            <div class="role-card-header">
+              <div class="role-icon-box guest-badge-icon">
+                <i class="fa-solid fa-user"></i>
+              </div>
+              <div>
+                <h3 class="role-title">Khách (Guest)</h3>
+                <span class="role-sub">Chỉ có quyền xem</span>
+              </div>
+            </div>
+            <ul class="role-perm-list">
+              <li><i class="fa-solid fa-eye"></i> Tra cứu danh sách & Thẻ GLV</li>
+              <li><i class="fa-solid fa-eye"></i> Xem danh sách các Lớp Giáo Lý</li>
+              <li><i class="fa-solid fa-eye"></i> Xem danh sách Thiếu Nhi & Bảng Tin</li>
+              <li class="disabled"><i class="fa-solid fa-ban"></i> Không thể Thêm/Sửa/Xóa dữ liệu</li>
             </ul>
             <button type="button" class="btn-role-submit btn-submit-guest" id="submitGuestLoginBtn">
               <i class="fa-solid fa-arrow-right-to-bracket"></i> Dùng Quyền Khách (Guest)

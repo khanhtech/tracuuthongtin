@@ -522,6 +522,7 @@ let currentDocsCategoryFilter = 'all';
 let currentTab = localStorage.getItem(ACTIVE_TAB_KEY) || 'news';
 let currentUserRole = sessionStorage.getItem(AUTH_ROLE_KEY) || 'guest';
 const ADMIN_PASSWORDS = ['admin', 'admin123', 'tanmy2026', 'tanmy'];
+const GLV_PASSWORDS = ['glv', 'glv2026', 'huynhtruong', 'ht2026', 'giaolyvien', 'tanmy'];
 
 function getGlvAvatar(glv) {
   if (glv && glv.photo && glv.photo.trim()) {
@@ -983,6 +984,13 @@ function setRole(newRole) {
 
 function updateRoleUI() {
   const isAdmin = (currentUserRole === 'admin');
+  const isGlv = (currentUserRole === 'glv');
+  const isGuest = (currentUserRole === 'guest');
+  const canManageStudents = (isAdmin || isGlv);
+  const canManageGlv = (isAdmin || isGlv);
+  const canAddDocs = (isAdmin || isGlv);
+  const canManageNews = isAdmin;
+  const canManageClasses = isAdmin;
 
   // Top Bar Auth Button
   if (authSwitchBtn) {
@@ -991,21 +999,26 @@ function updateRoleUI() {
       authSwitchBtn.title = 'Vai trò: Quản Trị Viên (Admin). Bấm để đổi vai trò';
       if (authRoleIcon) authRoleIcon.className = 'fa-solid fa-shield-halved';
       if (authRoleText) authRoleText.textContent = 'Admin';
+    } else if (isGlv) {
+      authSwitchBtn.className = 'btn-auth-icon-right role-glv';
+      authSwitchBtn.title = 'Vai trò: Huynh Trưởng (GLV). Bấm để đổi vai trò';
+      if (authRoleIcon) authRoleIcon.className = 'fa-solid fa-user-graduate';
+      if (authRoleText) authRoleText.textContent = 'Huynh Trưởng';
     } else {
       authSwitchBtn.className = 'btn-auth-icon-right role-guest';
-      authSwitchBtn.title = 'Vai trò: Khách / Huynh Trưởng (Guest). Bấm để đổi vai trò';
-      if (authRoleIcon) authRoleIcon.className = 'fa-solid fa-user-tag';
+      authSwitchBtn.title = 'Vai trò: Khách (Guest). Bấm để đổi vai trò';
+      if (authRoleIcon) authRoleIcon.className = 'fa-solid fa-user';
       if (authRoleText) authRoleText.textContent = 'Khách';
     }
   }
 
   // Sidebar Role Info Card
   if (sidebarRoleName) {
-    sidebarRoleName.textContent = isAdmin ? 'Quản Trị Viên (Admin)' : 'Khách / Huynh Trưởng';
+    sidebarRoleName.textContent = isAdmin ? 'Quản Trị Viên (Admin)' : (isGlv ? 'Huynh Trưởng - GLV' : 'Khách Tham Quan');
   }
   if (sidebarRoleIcon) {
-    sidebarRoleIcon.className = isAdmin ? 'role-avatar-icon admin' : 'role-avatar-icon';
-    sidebarRoleIcon.innerHTML = isAdmin ? '<i class="fa-solid fa-shield-halved"></i>' : '<i class="fa-solid fa-user-tag"></i>';
+    sidebarRoleIcon.className = isAdmin ? 'role-avatar-icon admin' : (isGlv ? 'role-avatar-icon glv' : 'role-avatar-icon');
+    sidebarRoleIcon.innerHTML = isAdmin ? '<i class="fa-solid fa-shield-halved"></i>' : (isGlv ? '<i class="fa-solid fa-user-graduate"></i>' : '<i class="fa-solid fa-user"></i>');
   }
 
   // Phân quyền các nút thao tác
@@ -1014,18 +1027,36 @@ function updateRoleUI() {
   const sidebarAddClassBtn = document.getElementById('sidebarAddClassBtn');
   const modalToolbarAddClassBtn = document.getElementById('modalToolbarAddClassBtn');
 
-  if (btnAddNews) btnAddNews.style.display = isAdmin ? 'inline-flex' : 'none';
-  if (sidebarAddNewsBtn) sidebarAddNewsBtn.style.display = isAdmin ? 'flex' : 'none';
-  if (btnAddDoc) btnAddDoc.style.display = isAdmin ? 'inline-flex' : 'none';
-  if (sidebarAddDocBtn) sidebarAddDocBtn.style.display = isAdmin ? 'flex' : 'none';
+  // Bảng Tin (Chỉ Admin)
+  if (btnAddNews) btnAddNews.style.display = canManageNews ? 'inline-flex' : 'none';
+  if (sidebarAddNewsBtn) sidebarAddNewsBtn.style.display = canManageNews ? 'flex' : 'none';
 
-  if (addNewGlvBtn) addNewGlvBtn.style.display = isAdmin ? 'inline-flex' : 'none';
-  if (modalAddGlvBtn) modalAddGlvBtn.style.display = isAdmin ? 'inline-flex' : 'none';
-  if (sidebarAddGlvBtn) sidebarAddGlvBtn.style.display = isAdmin ? 'flex' : 'none';
+  // Tài Liệu (Admin + Huynh Trưởng)
+  if (btnAddDoc) btnAddDoc.style.display = canAddDocs ? 'inline-flex' : 'none';
+  if (sidebarAddDocBtn) sidebarAddDocBtn.style.display = canAddDocs ? 'flex' : 'none';
+
+  // Huynh Trưởng / GLV (Admin + Huynh Trưởng)
+  if (addNewGlvBtn) addNewGlvBtn.style.display = canManageGlv ? 'inline-flex' : 'none';
+  if (modalAddGlvBtn) modalAddGlvBtn.style.display = canManageGlv ? 'inline-flex' : 'none';
+  if (sidebarAddGlvBtn) sidebarAddGlvBtn.style.display = canManageGlv ? 'flex' : 'none';
+  if (editCurrentGlvBtn) editCurrentGlvBtn.style.display = canManageGlv ? 'inline-flex' : 'none';
   if (resetDataBtn) resetDataBtn.style.display = isAdmin ? 'inline-flex' : 'none';
-  if (addClassBtn) addClassBtn.style.display = isAdmin ? 'inline-flex' : 'none';
-  if (sidebarAddClassBtn) sidebarAddClassBtn.style.display = isAdmin ? 'flex' : 'none';
-  if (modalToolbarAddClassBtn) modalToolbarAddClassBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+
+  // Lớp Học (Chỉ Admin)
+  if (addClassBtn) addClassBtn.style.display = canManageClasses ? 'inline-flex' : 'none';
+  if (sidebarAddClassBtn) sidebarAddClassBtn.style.display = canManageClasses ? 'flex' : 'none';
+  if (modalToolbarAddClassBtn) modalToolbarAddClassBtn.style.display = canManageClasses ? 'inline-flex' : 'none';
+
+  // Thiếu Nhi (Admin + Huynh Trưởng)
+  if (tabStudentsAddBtn) tabStudentsAddBtn.style.display = canManageStudents ? 'inline-flex' : 'none';
+  if (tabStudentsImportBtn) tabStudentsImportBtn.style.display = canManageStudents ? 'inline-flex' : 'none';
+  if (sidebarAddStudentBtn) sidebarAddStudentBtn.style.display = canManageStudents ? 'flex' : 'none';
+  if (sidebarImportAllStudentsBtn) sidebarImportAllStudentsBtn.style.display = canManageStudents ? 'flex' : 'none';
+
+  const rosterAddBtn = document.getElementById('rosterAddStudentBtn');
+  const rosterImportBtn = document.getElementById('rosterImportExcelBtn');
+  if (rosterAddBtn) rosterAddBtn.style.display = canManageStudents ? 'inline-flex' : 'none';
+  if (rosterImportBtn) rosterImportBtn.style.display = canManageStudents ? 'inline-flex' : 'none';
 
   // Làm mới bảng nếu đang mở
   if (allGlvModal && allGlvModal.style.display !== 'none') {
@@ -1057,12 +1088,28 @@ function checkAdminPassword() {
   if (ADMIN_PASSWORDS.includes(enteredPass.toLowerCase())) {
     setRole('admin');
     if (loginModal) loginModal.style.display = 'none';
-    showToast('Đăng nhập Quản Trị Viên thành công!');
+    showToast('Đăng nhập Quản Trị Viên (Admin) thành công!');
   } else {
     alert('Mật khẩu Quản Trị Viên không đúng! Vui lòng thử lại.');
     if (adminPasswordInput) {
       adminPasswordInput.focus();
       adminPasswordInput.select();
+    }
+  }
+}
+
+function checkGlvPassword() {
+  const glvPasswordInput = document.getElementById('glvPasswordInput');
+  const enteredPass = (glvPasswordInput ? glvPasswordInput.value : '').trim();
+  if (GLV_PASSWORDS.includes(enteredPass.toLowerCase())) {
+    setRole('glv');
+    if (loginModal) loginModal.style.display = 'none';
+    showToast('Đăng nhập vai trò Huynh Trưởng (GLV) thành công!');
+  } else {
+    alert('Mật khẩu Huynh Trưởng không đúng! Vui lòng thử lại.');
+    if (glvPasswordInput) {
+      glvPasswordInput.focus();
+      glvPasswordInput.select();
     }
   }
 }
@@ -1974,6 +2021,10 @@ async function openClassStudentsRosterModal(classId) {
     }
 
     const isAdmin = (currentUserRole === 'admin');
+    const isGlv = (currentUserRole === 'glv');
+    const canEdit = (isAdmin || isGlv);
+
+    if (addBtn) addBtn.style.display = canEdit ? 'inline-flex' : 'none';
 
     tbody.innerHTML = filtered.map((s, idx) => `
       <tr>
@@ -1991,6 +2042,7 @@ async function openClassStudentsRosterModal(classId) {
           </span>
         </td>
         <td style="text-align: center;">
+          ${canEdit ? `
           <div class="table-action-group" style="justify-content: center;">
             <button class="btn-action-icon btn-action-edit btn-roster-edit-student" data-student-id="${s.id}" title="Chỉnh sửa thông tin em ${s.fullName}">
               <i class="fa-solid fa-pen"></i>
@@ -2001,6 +2053,7 @@ async function openClassStudentsRosterModal(classId) {
             </button>
             ` : ''}
           </div>
+          ` : `<span style="color: #94a3b8; font-size: 0.78rem; font-style: italic;"><i class="fa-solid fa-eye"></i> Chỉ xem</span>`}
         </td>
       </tr>
     `).join('');
@@ -2078,6 +2131,11 @@ function getStudentDomElements() {
 }
 
 function openEditStudentModal(studentId = null, classId = null) {
+  if (currentUserRole === 'guest') {
+    showToast('Tài khoản Khách chỉ có quyền xem, không thể thêm hoặc sửa thiếu nhi!');
+    return;
+  }
+
   if (!classId) classId = currentRosterClassId;
   if (!classId) return;
 
@@ -2243,6 +2301,11 @@ function handleStudentFormSubmit(e) {
 }
 
 async function deleteStudentFromClass(studentId, classId) {
+  if (currentUserRole !== 'admin') {
+    showToast('Chỉ Quản Trị Viên (Admin) mới có quyền xóa học sinh khỏi danh sách!');
+    return;
+  }
+
   if (!classId) classId = currentRosterClassId;
   const cls = classDatabase.find(c => c.id === classId || c.id.toLowerCase() === classId.toLowerCase());
   if (!cls) return;
@@ -2761,6 +2824,11 @@ let pendingImportStudents = [];
 let importClassId = null;
 
 function openStudentExcelImportModal(classId) {
+  if (currentUserRole === 'guest') {
+    showToast('Tài khoản Khách chỉ có quyền xem, không thể nhập dữ liệu Excel!');
+    return;
+  }
+
   if (!classId) classId = currentRosterClassId;
   let cls = classDatabase.find(c => c.id === classId || c.id.toLowerCase() === (classId || '').toLowerCase());
   if (!cls && classDatabase.length > 0) cls = classDatabase[0];
@@ -3231,6 +3299,10 @@ function renderAllStudentsView() {
 
   if (allStudentsNotFoundState) allStudentsNotFoundState.style.display = 'none';
 
+  const isAdmin = (currentUserRole === 'admin');
+  const isGlv = (currentUserRole === 'glv');
+  const canEdit = (isAdmin || isGlv);
+
   allStudentsTableBody.innerHTML = list.map((s, idx) => `
     <tr>
       <td style="text-align: center; font-weight: 700; color: #64748b;">${idx + 1}</td>
@@ -3252,14 +3324,18 @@ function renderAllStudentsView() {
         ${s.parentPhone ? `<div style="font-size: 0.78rem; color: #64748b;"><i class="fa-solid fa-phone" style="font-size: 0.7rem; color: #059669;"></i> ${s.parentPhone}</div>` : ''}
       </td>
       <td style="text-align: center;">
+        ${canEdit ? `
         <div class="roster-action-btns" style="justify-content: center; display: flex; gap: 0.35rem;">
           <button class="btn-roster-edit btn-all-student-edit" data-student-id="${s.id}" data-class-id="${s.classId}" title="Chỉnh sửa thông tin">
             <i class="fa-solid fa-pen"></i>
           </button>
+          ${isAdmin ? `
           <button class="btn-roster-del btn-all-student-del" data-student-id="${s.id}" data-class-id="${s.classId}" title="Xóa khỏi danh sách">
             <i class="fa-solid fa-trash-can"></i>
           </button>
+          ` : ''}
         </div>
+        ` : `<span style="color: #94a3b8; font-size: 0.78rem; font-style: italic;"><i class="fa-solid fa-eye"></i> Chỉ xem</span>`}
       </td>
     </tr>
   `).join('');
@@ -3537,6 +3613,35 @@ function setupEventListeners() {
       adminPasswordInput.type = isPassword ? 'text' : 'password';
       if (togglePasswordIcon) {
         togglePasswordIcon.className = isPassword ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
+      }
+    });
+  }
+
+  // Sự kiện đăng nhập Huynh Trưởng
+  const submitGlvLoginBtn = document.getElementById('submitGlvLoginBtn');
+  const glvPasswordInput = document.getElementById('glvPasswordInput');
+  const toggleGlvPasswordBtn = document.getElementById('toggleGlvPasswordBtn');
+  const toggleGlvPasswordIcon = document.getElementById('toggleGlvPasswordIcon');
+
+  if (submitGlvLoginBtn) {
+    submitGlvLoginBtn.addEventListener('click', checkGlvPassword);
+  }
+
+  if (glvPasswordInput) {
+    glvPasswordInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        checkGlvPassword();
+      }
+    });
+  }
+
+  if (toggleGlvPasswordBtn && glvPasswordInput) {
+    toggleGlvPasswordBtn.addEventListener('click', () => {
+      const isPassword = (glvPasswordInput.type === 'password');
+      glvPasswordInput.type = isPassword ? 'text' : 'password';
+      if (toggleGlvPasswordIcon) {
+        toggleGlvPasswordIcon.className = isPassword ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
       }
     });
   }
@@ -4271,7 +4376,7 @@ function setupEventListeners() {
 // ==========================================================================
 function openAddModal() {
   if (currentUserRole === 'guest') {
-    showToast('Chỉ Quản Trị Viên (Admin) mới có quyền thêm Giáo Lý Viên mới!');
+    showToast('Tài khoản Khách chỉ có quyền xem, không thể thêm Huynh Trưởng / GLV!');
     return;
   }
 
@@ -4300,6 +4405,11 @@ function openAddModal() {
 }
 
 function openEditModal(glvId) {
+  if (currentUserRole === 'guest') {
+    showToast('Tài khoản Khách chỉ có quyền xem, không thể chỉnh sửa hồ sơ!');
+    return;
+  }
+
   const glv = glvDatabase.find(item => item.id.toUpperCase() === glvId.toUpperCase());
   if (!glv) {
     showToast('Không tìm thấy thông tin để chỉnh sửa!');
@@ -4322,49 +4432,50 @@ function openEditModal(glvId) {
   if (formPhotoInput) formPhotoInput.value = '';
   formPhotoPreview.src = getGlvAvatar(glv);
 
-  const isGuest = (currentUserRole === 'guest');
-  setFormInputsLockState(isGuest);
+  setFormInputsLockState(false);
 
   if (guestFormAlert) {
-    guestFormAlert.style.display = isGuest ? 'flex' : 'none';
+    guestFormAlert.style.display = 'none';
   }
 
   editGlvModal.style.display = 'flex';
   formFirstName.focus();
 }
 
-function setFormInputsLockState(isGuest) {
+function setFormInputsLockState(isLocked) {
+  const saveBtn = editGlvModal ? editGlvModal.querySelector('.btn-save') : null;
+  if (saveBtn) saveBtn.style.display = isLocked ? 'none' : 'inline-flex';
+
   if (formId) {
-    formId.disabled = isGuest;
-    formId.classList.toggle('input-locked', isGuest);
+    formId.disabled = isLocked;
+    formId.classList.toggle('input-locked', isLocked);
   }
   if (formGender) {
-    formGender.disabled = isGuest;
-    formGender.classList.toggle('input-locked', isGuest);
+    formGender.disabled = isLocked;
+    formGender.classList.toggle('input-locked', isLocked);
   }
   if (formCert) {
-    formCert.disabled = isGuest;
-    formCert.classList.toggle('input-locked', isGuest);
+    formCert.disabled = isLocked;
+    formCert.classList.toggle('input-locked', isLocked);
   }
   if (formBlock) {
-    formBlock.disabled = isGuest;
-    formBlock.classList.toggle('input-locked', isGuest);
+    formBlock.disabled = isLocked;
+    formBlock.classList.toggle('input-locked', isLocked);
   }
   if (formClass) {
-    formClass.disabled = isGuest;
-    formClass.classList.toggle('input-locked', isGuest);
+    formClass.disabled = isLocked;
+    formClass.classList.toggle('input-locked', isLocked);
   }
-
   if (formHolyName) {
-    formHolyName.disabled = false;
+    formHolyName.disabled = isLocked;
     formHolyName.classList.remove('input-locked');
   }
   if (formLastName) {
-    formLastName.disabled = false;
+    formLastName.disabled = isLocked;
     formLastName.classList.remove('input-locked');
   }
   if (formFirstName) {
-    formFirstName.disabled = false;
+    formFirstName.disabled = isLocked;
     formFirstName.classList.remove('input-locked');
   }
 }
@@ -4376,6 +4487,11 @@ function closeEditModal() {
 }
 
 function saveGlvForm() {
+  if (currentUserRole === 'guest') {
+    alert('Tài khoản Khách chỉ có quyền xem dữ liệu, không thể lưu thay đổi!');
+    return;
+  }
+
   const originalId = editOriginalId.value.trim();
   const id = formId.value.trim().toUpperCase();
   const gender = formGender.value;
@@ -4392,33 +4508,21 @@ function saveGlvForm() {
     return;
   }
 
-  const isGuest = (currentUserRole === 'guest');
-
   if (originalId) {
     const index = glvDatabase.findIndex(item => item.id.toUpperCase() === originalId.toUpperCase());
     if (index !== -1) {
-      if (isGuest) {
-        glvDatabase[index] = {
-          ...glvDatabase[index],
-          holyName,
-          lastName,
-          firstName,
-          photo
-        };
-      } else {
-        glvDatabase[index] = {
-          ...glvDatabase[index],
-          id,
-          gender,
-          holyName,
-          lastName,
-          firstName,
-          cert,
-          block,
-          teachingClass,
-          photo
-        };
-      }
+      glvDatabase[index] = {
+        ...glvDatabase[index],
+        id,
+        gender,
+        holyName,
+        lastName,
+        firstName,
+        cert,
+        block,
+        teachingClass,
+        photo
+      };
 
       saveDatabase();
       showToast(`Đã cập nhật thông tin ${glvDatabase[index].id} thành công!`);
@@ -4689,9 +4793,11 @@ function renderAllGlvTable(list) {
           <button class="btn-action-icon btn-action-view" data-id="${item.id}" title="Xem thẻ Giáo Lý Viên">
             <i class="fa-solid fa-eye"></i>
           </button>
+          ${(currentUserRole === 'admin' || currentUserRole === 'glv') ? `
           <button class="btn-action-icon btn-action-edit" data-id="${item.id}" title="Sửa thông tin">
             <i class="fa-solid fa-pen"></i>
           </button>
+          ` : ''}
           ${currentUserRole === 'admin' ? `
           <button class="btn-action-icon btn-action-delete" data-id="${item.id}" title="Xóa GLV này">
             <i class="fa-solid fa-trash"></i>
@@ -4709,9 +4815,12 @@ function renderAllGlvTable(list) {
       displayProfileCard(item);
     });
 
-    tr.querySelector('.btn-action-edit').addEventListener('click', () => {
-      openEditModal(item.id);
-    });
+    const editBtn = tr.querySelector('.btn-action-edit');
+    if (editBtn) {
+      editBtn.addEventListener('click', () => {
+        openEditModal(item.id);
+      });
+    }
 
     if (currentUserRole === 'admin') {
       const deleteBtn = tr.querySelector('.btn-action-delete');
@@ -5754,6 +5863,11 @@ function openNewsDetailModal(newsId) {
 }
 
 function openNewsEditModal(newsId = null) {
+  if (currentUserRole !== 'admin') {
+    showToast('Chỉ Quản Trị Viên (Admin) mới có quyền đăng hoặc sửa bài thông báo!');
+    return;
+  }
+
   const modal = document.getElementById('newsEditModal');
   const titleEl = document.getElementById('newsModalTitle');
   const form = document.getElementById('newsForm');
@@ -6056,6 +6170,11 @@ function openDocPreviewModal(docId) {
 }
 
 function openDocEditModal(docId = null) {
+  if (currentUserRole === 'guest') {
+    showToast('Tài khoản Khách chỉ có quyền xem và tải tài liệu!');
+    return;
+  }
+
   const modal = document.getElementById('docEditModal');
   const titleEl = document.getElementById('docModalTitle');
   const form = document.getElementById('docForm');
@@ -6159,6 +6278,11 @@ function downloadDoc(docId) {
 }
 
 async function deleteDoc(docId) {
+  if (currentUserRole !== 'admin') {
+    showToast('Chỉ Quản Trị Viên (Admin) mới có quyền xóa tài liệu!');
+    return;
+  }
+
   const doc = docsDatabase.find(d => d.id === docId);
   if (!doc) return;
 
