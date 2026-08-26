@@ -124,7 +124,10 @@ const sidebarRoleName = document.getElementById('sidebarRoleName');
 const sidebarAuthSwitchBtn = document.getElementById('sidebarAuthSwitchBtn');
 const sidebarViewAllGlvBtn = document.getElementById('sidebarViewAllGlvBtn');
 const sidebarAddGlvBtn = document.getElementById('sidebarAddGlvBtn');
+const sidebarExportGlvBtn = document.getElementById('sidebarExportGlvBtn');
+const sidebarViewAllClassesBtn = document.getElementById('sidebarViewAllClassesBtn');
 const sidebarAddClassBtn = document.getElementById('sidebarAddClassBtn');
+const sidebarExportClassesBtn = document.getElementById('sidebarExportClassesBtn');
 
 // GLV Search & Profile Elements
 const searchInput = document.getElementById('searchInput');
@@ -2690,6 +2693,22 @@ function setupEventListeners() {
       closeMobileSidebar();
       switchTab('glv');
       openAddModal();
+    });
+  }
+  if (sidebarExportGlvBtn) {
+    sidebarExportGlvBtn.addEventListener('click', () => {
+      closeMobileSidebar();
+      exportDatabaseToExcel();
+    });
+  }
+  if (sidebarViewAllClassesBtn) {
+    sidebarViewAllClassesBtn.addEventListener('click', () => {
+      closeMobileSidebar();
+      const allClassesModal = document.getElementById('allClassesModal');
+      if (allClassesModal) {
+        allClassesModal.style.display = 'flex';
+        renderAllClassesTable();
+      }
     });
   }
   if (sidebarAddClassBtn) {
