@@ -1436,18 +1436,22 @@ async function openClassStudentsRosterModal(classId) {
 
     // Sự kiện Sửa thiếu nhi trong Roster
     tbody.querySelectorAll('.btn-roster-edit-student').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         const sId = btn.getAttribute('data-student-id');
         openEditStudentModal(sId, cls.id);
-      });
+      };
     });
 
     // Sự kiện Xóa thiếu nhi trong Roster
     tbody.querySelectorAll('.btn-roster-delete-student').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         const sId = btn.getAttribute('data-student-id');
         deleteStudentFromClass(sId, cls.id);
-      });
+      };
     });
   };
 
@@ -1457,11 +1461,18 @@ async function openClassStudentsRosterModal(classId) {
   }
 
   if (addBtn) {
-    addBtn.onclick = () => openEditStudentModal(null, cls.id);
+    addBtn.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openEditStudentModal(null, cls.id);
+    };
   }
 
   if (exportBtn) {
-    exportBtn.onclick = () => exportClassStudentsToExcel(cls);
+    exportBtn.onclick = (e) => {
+      e.preventDefault();
+      exportClassStudentsToExcel(cls);
+    };
   }
 
   renderTable('');
@@ -1496,57 +1507,63 @@ function getStudentDomElements() {
 }
 
 function openEditStudentModal(studentId = null, classId = null) {
+  if (!classId) classId = currentRosterClassId;
   if (!classId) return;
-  const cls = classDatabase.find(c => c.id === classId);
+
+  const cls = classDatabase.find(c => c.id === classId || c.id.toLowerCase() === classId.toLowerCase());
   if (!cls) return;
 
   const dom = getStudentDomElements();
+  if (!dom.modal) return;
+
   const students = getClassStudents(cls);
-  dom.classId.value = classId;
+  if (dom.classId) dom.classId.value = cls.id;
 
   if (studentId) {
     // Chế độ Sửa thiếu nhi
     const s = students.find(item => item.id === studentId);
     if (!s) return;
 
-    dom.origId.value = s.id;
+    if (dom.origId) dom.origId.value = s.id;
     if (dom.title) {
       dom.title.textContent = `Chỉnh Sửa Thiếu Nhi: ${s.fullName}`;
     }
-    dom.id.value = s.id;
-    dom.id.readOnly = true;
-    dom.holyName.value = s.holyName || '';
-    dom.fullName.value = s.fullName || '';
-    dom.gender.value = s.gender || 'Nam';
-    dom.birthDate.value = s.birthDate || '';
-    dom.note.value = s.note || '';
+    if (dom.id) {
+      dom.id.value = s.id;
+      dom.id.readOnly = true;
+    }
+    if (dom.holyName) dom.holyName.value = s.holyName || '';
+    if (dom.fullName) dom.fullName.value = s.fullName || '';
+    if (dom.gender) dom.gender.value = s.gender || 'Nam';
+    if (dom.birthDate) dom.birthDate.value = s.birthDate || '';
+    if (dom.note) dom.note.value = s.note || '';
     if (dom.parentName) dom.parentName.value = s.parentName || s.parent_name || '';
     if (dom.parentPhone) dom.parentPhone.value = s.parentPhone || s.parent_phone || '';
     if (dom.address) dom.address.value = s.address || '';
   } else {
     // Chế độ Thêm mới thiếu nhi
-    dom.origId.value = '';
+    if (dom.origId) dom.origId.value = '';
     if (dom.title) {
       dom.title.textContent = `Thêm Thiếu Nhi Mới - Lớp ${cls.name}`;
     }
     const code = (cls.id || 'CLS').replace('CLASS_', '');
     const nextStt = students.length + 1;
-    dom.id.value = `TN-${code}-${String(nextStt).padStart(2, '0')}`;
-    dom.id.readOnly = false;
-    dom.holyName.value = '';
-    dom.fullName.value = '';
-    dom.gender.value = 'Nam';
-    dom.birthDate.value = '';
-    dom.note.value = 'Đang theo học';
+    if (dom.id) {
+      dom.id.value = `TN-${code}-${String(nextStt).padStart(2, '0')}`;
+      dom.id.readOnly = false;
+    }
+    if (dom.holyName) dom.holyName.value = '';
+    if (dom.fullName) dom.fullName.value = '';
+    if (dom.gender) dom.gender.value = 'Nam';
+    if (dom.birthDate) dom.birthDate.value = '';
+    if (dom.note) dom.note.value = 'Đang theo học';
     if (dom.parentName) dom.parentName.value = '';
     if (dom.parentPhone) dom.parentPhone.value = '';
     if (dom.address) dom.address.value = '';
   }
 
-  if (dom.modal) {
-    dom.modal.style.display = 'flex';
-  }
-  if (dom.fullName) dom.fullName.focus();
+  dom.modal.style.display = 'flex';
+  if (dom.fullName) setTimeout(() => dom.fullName.focus(), 50);
 }
 
 function closeEditStudentModal() {
@@ -1575,7 +1592,7 @@ function handleStudentFormSubmit(e) {
     return;
   }
 
-  const cls = classDatabase.find(c => c.id === classId);
+  const cls = classDatabase.find(c => c.id === classId || c.id.toLowerCase() === classId.toLowerCase());
   if (!cls) return;
 
   const students = getClassStudents(cls);
@@ -1629,7 +1646,7 @@ function handleStudentFormSubmit(e) {
   if (typeof API !== 'undefined' && API.isOnline && savedStudentObj) {
     API.saveStudent({
       ...savedStudentObj,
-      classId: classId
+      classId: cls.id
     }, !originalId).then(success => {
       if (success) console.log('Đã tự động đồng bộ thiếu nhi vào MySQL Database!');
     });
@@ -1640,17 +1657,13 @@ function handleStudentFormSubmit(e) {
   // Cập nhật lại cửa sổ Roster nếu đang mở
   const rosterModal = document.getElementById('classStudentsModal');
   if (rosterModal && rosterModal.style.display !== 'none') {
-    openClassStudentsRosterModal(classId);
+    openClassStudentsRosterModal(cls.id);
   }
 }
 
 async function deleteStudentFromClass(studentId, classId) {
-  if (currentUserRole !== 'admin') {
-    showToast('Chỉ Quản Trị Viên (Admin) mới có quyền xóa thiếu nhi!');
-    return;
-  }
-
-  const cls = classDatabase.find(c => c.id === classId);
+  if (!classId) classId = currentRosterClassId;
+  const cls = classDatabase.find(c => c.id === classId || c.id.toLowerCase() === classId.toLowerCase());
   if (!cls) return;
 
   const students = getClassStudents(cls);
@@ -1669,7 +1682,6 @@ async function deleteStudentFromClass(studentId, classId) {
   if (!confirmed) return;
 
   cls.students = students.filter(s => s.id !== studentId);
-  // Cập nhật lại STT
   cls.students.forEach((s, idx) => { s.stt = idx + 1; });
   cls.studentCount = cls.students.length;
 
@@ -1688,7 +1700,7 @@ async function deleteStudentFromClass(studentId, classId) {
   // Cập nhật lại cửa sổ Roster nếu đang mở
   const rosterModal = document.getElementById('classStudentsModal');
   if (rosterModal && rosterModal.style.display !== 'none') {
-    openClassStudentsRosterModal(classId);
+    openClassStudentsRosterModal(cls.id);
   }
 }
 
