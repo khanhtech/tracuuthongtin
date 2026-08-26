@@ -19,58 +19,98 @@ const DEFAULT_DATASET = [];
 const DEFAULT_CLASSES_DATASET = [];
 
 // ==========================================================================
+// STRING & SORTING HELPERS (PHẢI NẰM ĐẦU FILE TRÁNH LỖI HOISTING/TDZ)
+// ==========================================================================
+function removeVietnameseTones(str) {
+  if (!str) return '';
+  str = String(str).toLowerCase();
+  str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, 'a');
+  str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, 'e');
+  str = str.replace(/ì|í|ị|ỉ|ĩ/g, 'i');
+  str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, 'o');
+  str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, 'u');
+  str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, 'y');
+  str = str.replace(/đ/g, 'd');
+  str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, '');
+  str = str.replace(/\u02C6|\u0306|\u031B/g, '');
+  return str.trim();
+}
+
+function getBlockSortPriority(blockName) {
+  const norm = removeVietnameseTones(blockName || '').toLowerCase().trim();
+  if (norm.includes('khai tam') || norm.includes('du bi')) return 1;
+  if (norm.includes('ruoc le')) return 2;
+  if (norm.includes('them suc')) return 3;
+  if (norm.includes('bao dong')) return 4;
+  if (norm.includes('vao doi')) return 5;
+  return 99;
+}
+
+function getClassNameBaseRank(className) {
+  const norm = removeVietnameseTones(className || '').toLowerCase().trim();
+
+  // Khối Khai Tâm
+  if (norm.includes('du bi')) return 10;
+  if (norm.startsWith('khai tam 1')) return 20;
+  if (norm.startsWith('khai tam 2')) return 30;
+  if (norm.startsWith('khai tam 3')) return 40;
+  if (norm.startsWith('khai tam')) return 25;
+
+  // Khối Rước Lễ
+  if (norm.startsWith('ruoc le 1')) return 110;
+  if (norm.startsWith('ruoc le 2')) return 120;
+  if (norm.startsWith('ruoc le 3')) return 130;
+  if (norm.startsWith('ruoc le 4')) return 140;
+  if (norm.startsWith('ruoc le')) return 115;
+
+  // Khối Thêm Sức
+  if (norm.startsWith('them suc 1')) return 210;
+  if (norm.startsWith('them suc 2')) return 220;
+  if (norm.startsWith('them suc 3')) return 230;
+  if (norm.startsWith('them suc 4')) return 240;
+  if (norm.startsWith('them suc')) return 215;
+
+  // Khối Bao Đồng
+  if (norm.startsWith('bao dong 1')) return 310;
+  if (norm.startsWith('bao dong 2')) return 320;
+  if (norm.startsWith('bao dong 3')) return 330;
+  if (norm.startsWith('bao dong 4')) return 340;
+  if (norm.startsWith('bao dong')) return 315;
+
+  // Khối Vào Đời
+  if (norm.startsWith('vao doi 1')) return 410;
+  if (norm.startsWith('vao doi 2')) return 420;
+  if (norm.startsWith('vao doi 3')) return 430;
+  if (norm.startsWith('vao doi 4')) return 440;
+  if (norm.startsWith('vao doi')) return 415;
+
+  return 500;
+}
+
+function sortClassesList(classes) {
+  if (!Array.isArray(classes)) return [];
+  return [...classes].sort((a, b) => {
+    const pA = getBlockSortPriority(a.block);
+    const pB = getBlockSortPriority(b.block);
+    if (pA !== pB) return pA - pB;
+
+    const rankA = getClassNameBaseRank(a.name);
+    const rankB = getClassNameBaseRank(b.name);
+    if (rankA !== rankB) return rankA - rankB;
+
+    const nameA = String(a.name || '').trim();
+    const nameB = String(b.name || '').trim();
+    return nameA.localeCompare(nameB, 'vi', { numeric: true, sensitivity: 'base' });
+  });
+}
+
+// ==========================================================================
 // STORAGE & APP STATE
 // ==========================================================================
 const STORAGE_KEY = 'glv_custom_database_tanmy_v2';
 const CLASS_STORAGE_KEY = 'glv_classes_custom_tanmy_v1';
 const AUTH_ROLE_KEY = 'glv_user_role_tanmy_session';
 const ACTIVE_TAB_KEY = 'glv_active_tab_tanmy';
-
-let glvDatabase = loadSavedDatabase();
-let classDatabase = loadSavedClassesDatabase();
-let currentDisplayedGLV = null;
-let currentDisplayedClass = null;
-let qrcodeInstance = null;
-let currentSort = { column: 'stt', order: 'asc' };
-let currentBlockFilter = 'all';
-let currentTab = localStorage.getItem(ACTIVE_TAB_KEY) || 'glv';
-let currentUserRole = sessionStorage.getItem(AUTH_ROLE_KEY) || 'guest';
-const ADMIN_PASSWORDS = ['admin', 'admin123', 'tanmy2026', 'tanmy'];
-
-function loadSavedDatabase() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.map((item, idx) => ({
-          stt: item.stt || (idx + 1),
-          id: item.id || `GLV${String(idx + 1).padStart(2, '0')}`,
-          holyName: item.holyName || '',
-          lastName: item.lastName || '',
-          firstName: item.firstName || '',
-          gender: item.gender || 'Nữ',
-          cert: (item.cert || '').replace(/BMVTT/gi, 'BMVTN'),
-          block: item.block || '',
-          teachingClass: item.teachingClass || '',
-          photo: item.photo || ''
-        }));
-      }
-    }
-  } catch (e) {
-    console.warn('Lỗi đọc dữ liệu GLV từ localStorage:', e);
-  }
-  return [...DEFAULT_DATASET];
-}
-
-function saveDatabase() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(glvDatabase));
-  } catch (e) {
-    console.warn('Lỗi lưu dữ liệu GLV vào localStorage:', e);
-  }
-  updateStatsDisplay();
-}
 
 const SAMPLE_MALE_HOLY_NAMES = ['Giuse', 'Phêrô', 'Phaolô', 'Gioan', 'Đaminh', 'Antôn', 'Micae', 'Phanxicô', 'Inhaxiô', 'Augustinô'];
 const SAMPLE_FEMALE_HOLY_NAMES = ['Maria', 'Anna', 'Têrêsa', 'Catarina', 'Cecilia', 'Matta', 'Agata', 'Rosa', 'Lucia', 'Agnes'];
@@ -137,20 +177,41 @@ function generateDefaultStudentsForClass(cls, count = 25) {
   return list;
 }
 
-function ensureDefaultStudentsForAllClasses() {
-  if (!Array.isArray(classDatabase)) return;
-  let changed = false;
-  classDatabase.forEach(cls => {
-    if (!Array.isArray(cls.students) || cls.students.length === 0) {
-      const count = cls.studentCount && cls.studentCount > 0 ? cls.studentCount : 25;
-      cls.students = generateDefaultStudentsForClass(cls, count);
-      cls.studentCount = cls.students.length;
-      changed = true;
+function loadSavedDatabase() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map((item, idx) => ({
+          stt: item.stt || (idx + 1),
+          id: item.id || `GLV${String(idx + 1).padStart(2, '0')}`,
+          holyName: item.holyName || '',
+          lastName: item.lastName || '',
+          firstName: item.firstName || '',
+          gender: item.gender || 'Nữ',
+          cert: (item.cert || '').replace(/BMVTT/gi, 'BMVTN'),
+          block: item.block || '',
+          teachingClass: item.teachingClass || '',
+          photo: item.photo || ''
+        }));
+      }
     }
-  });
-  if (changed) {
-    saveClassesDatabase();
+  } catch (e) {
+    console.warn('Lỗi đọc dữ liệu GLV từ localStorage:', e);
   }
+  return [...DEFAULT_DATASET];
+}
+
+function saveDatabase() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(glvDatabase));
+  } catch (e) {
+    console.warn('Lỗi lưu dữ liệu GLV vào localStorage:', e);
+  }
+  try {
+    if (typeof updateStatsDisplay === 'function') updateStatsDisplay();
+  } catch (_) {}
 }
 
 function loadSavedClassesDatabase() {
@@ -171,7 +232,6 @@ function loadSavedClassesDatabase() {
     list = sortClassesList([...DEFAULT_CLASSES_DATASET]);
   }
 
-  // Đảm bảo mỗi lớp có danh sách thiếu nhi
   list.forEach(cls => {
     if (!Array.isArray(cls.students) || cls.students.length === 0) {
       const count = cls.studentCount && cls.studentCount > 0 ? cls.studentCount : 25;
@@ -190,8 +250,38 @@ function saveClassesDatabase() {
   } catch (e) {
     console.warn('Lỗi lưu dữ liệu Lớp học vào localStorage:', e);
   }
-  renderClassStats();
+  try {
+    if (typeof renderClassStats === 'function') renderClassStats();
+    if (typeof updateStudentStatsDisplay === 'function') updateStudentStatsDisplay();
+  } catch (_) {}
 }
+
+function ensureDefaultStudentsForAllClasses() {
+  if (!Array.isArray(classDatabase)) return;
+  let changed = false;
+  classDatabase.forEach(cls => {
+    if (!Array.isArray(cls.students) || cls.students.length === 0) {
+      const count = cls.studentCount && cls.studentCount > 0 ? cls.studentCount : 25;
+      cls.students = generateDefaultStudentsForClass(cls, count);
+      cls.studentCount = cls.students.length;
+      changed = true;
+    }
+  });
+  if (changed) {
+    saveClassesDatabase();
+  }
+}
+
+let glvDatabase = loadSavedDatabase();
+let classDatabase = loadSavedClassesDatabase();
+let currentDisplayedGLV = null;
+let currentDisplayedClass = null;
+let qrcodeInstance = null;
+let currentSort = { column: 'stt', order: 'asc' };
+let currentBlockFilter = 'all';
+let currentTab = localStorage.getItem(ACTIVE_TAB_KEY) || 'glv';
+let currentUserRole = sessionStorage.getItem(AUTH_ROLE_KEY) || 'guest';
+const ADMIN_PASSWORDS = ['admin', 'admin123', 'tanmy2026', 'tanmy'];
 
 function getGlvAvatar(glv) {
   if (glv && glv.photo && glv.photo.trim()) {
@@ -739,21 +829,6 @@ function searchGLV(query) {
   });
 }
 
-function removeVietnameseTones(str) {
-  if (!str) return '';
-  str = str.toLowerCase();
-  str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, 'a');
-  str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, 'e');
-  str = str.replace(/ì|í|ị|ỉ|ĩ/g, 'i');
-  str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, 'o');
-  str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, 'u');
-  str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, 'y');
-  str = str.replace(/đ/g, 'd');
-  str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, '');
-  str = str.replace(/\u02C6|\u0306|\u031B/g, '');
-  return str.trim();
-}
-
 function getSuggestions(query) {
   if (!query || query.trim() === '') return [];
   const results = searchGLV(query);
@@ -1036,89 +1111,6 @@ function getTeachersByClass(teacherIds) {
       cert: '',
       photo: ''
     };
-  });
-}
-
-// ==========================================================================
-// THỨ TỰ SẮP XẾP CHUẨN CÁC LỚP GIÁO LÝ
-// Thứ tự: Dự bị khai tâm -> Khai tâm 1 -> Khai tâm 2 -> Rước lễ 1 -> Rước lễ 2
-// -> Thêm sức 1 -> Thêm sức 2 -> Bao đồng 1 -> Bao đồng 2 -> Bao đồng 3 -> Bao đồng 4
-// -> Vào đời 1 -> Vào đời 2
-// Các lớp trùng tên sắp xếp theo thứ tự chữ cái (ví dụ: Bao đồng 1A -> Bao đồng 1B)
-// ==========================================================================
-function getBlockSortPriority(blockName) {
-  const norm = removeVietnameseTones(blockName || '').toLowerCase().trim();
-  if (norm.includes('khai tam') || norm.includes('du bi')) return 1;
-  if (norm.includes('ruoc le')) return 2;
-  if (norm.includes('them suc')) return 3;
-  if (norm.includes('bao dong')) return 4;
-  if (norm.includes('vao doi')) return 5;
-  return 99;
-}
-
-function getClassNameBaseRank(className) {
-  const norm = removeVietnameseTones(className || '').toLowerCase().trim();
-
-  // Khối Khai Tâm
-  if (norm.includes('du bi')) return 10;
-  if (norm.startsWith('khai tam 1')) return 20;
-  if (norm.startsWith('khai tam 2')) return 30;
-  if (norm.startsWith('khai tam 3')) return 40;
-  if (norm.startsWith('khai tam')) return 25;
-
-  // Khối Rước Lễ
-  if (norm.startsWith('ruoc le 1')) return 110;
-  if (norm.startsWith('ruoc le 2')) return 120;
-  if (norm.startsWith('ruoc le 3')) return 130;
-  if (norm.startsWith('ruoc le 4')) return 140;
-  if (norm.startsWith('ruoc le')) return 115;
-
-  // Khối Thêm Sức
-  if (norm.startsWith('them suc 1')) return 210;
-  if (norm.startsWith('them suc 2')) return 220;
-  if (norm.startsWith('them suc 3')) return 230;
-  if (norm.startsWith('them suc 4')) return 240;
-  if (norm.startsWith('them suc')) return 215;
-
-  // Khối Bao Đồng
-  if (norm.startsWith('bao dong 1')) return 310;
-  if (norm.startsWith('bao dong 2')) return 320;
-  if (norm.startsWith('bao dong 3')) return 330;
-  if (norm.startsWith('bao dong 4')) return 340;
-  if (norm.startsWith('bao dong 5')) return 350;
-  if (norm.startsWith('bao dong')) return 315;
-
-  // Khối Vào Đời
-  if (norm.startsWith('vao doi 1')) return 410;
-  if (norm.startsWith('vao doi 2')) return 420;
-  if (norm.startsWith('vao doi 3')) return 430;
-  if (norm.startsWith('vao doi 4')) return 440;
-  if (norm.startsWith('vao doi')) return 415;
-
-  return 999;
-}
-
-function sortClassesList(classes) {
-  if (!Array.isArray(classes)) return [];
-  return [...classes].sort((a, b) => {
-    // 1. So sánh theo thứ tự Khối Lớp
-    const blockWeightA = getBlockSortPriority(a.block);
-    const blockWeightB = getBlockSortPriority(b.block);
-    if (blockWeightA !== blockWeightB) {
-      return blockWeightA - blockWeightB;
-    }
-
-    // 2. So sánh theo cấp độ lớp chuẩn
-    const rankA = getClassNameBaseRank(a.name);
-    const rankB = getClassNameBaseRank(b.name);
-    if (rankA !== rankB) {
-      return rankA - rankB;
-    }
-
-    // 3. Nếu cùng cấp độ hoặc trùng tên, sắp xếp theo thứ tự bảng chữ cái (A, B, C...)
-    const nameA = String(a.name || '').trim();
-    const nameB = String(b.name || '').trim();
-    return nameA.localeCompare(nameB, 'vi', { numeric: true, sensitivity: 'base' });
   });
 }
 
