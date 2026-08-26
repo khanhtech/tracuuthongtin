@@ -249,6 +249,29 @@ const formClassNote = document.getElementById('formClassNote');
 const teacherSearchFilter = document.getElementById('teacherSearchFilter');
 const teacherCheckboxList = document.getElementById('teacherCheckboxList');
 
+// Students Section DOM Elements
+const navItemStudents = document.getElementById('navItemStudents');
+const tabStudentsView = document.getElementById('tabStudentsView');
+const sidebarStudentCount = document.getElementById('sidebarStudentCount');
+const studentStatTotalCount = document.getElementById('studentStatTotalCount');
+const studentStatMaleCount = document.getElementById('studentStatMaleCount');
+const studentStatFemaleCount = document.getElementById('studentStatFemaleCount');
+const studentStatClassesCount = document.getElementById('studentStatClassesCount');
+const allStudentsSearchInput = document.getElementById('allStudentsSearchInput');
+const allStudentsClearSearchBtn = document.getElementById('allStudentsClearSearchBtn');
+const filterStudentBlockSelect = document.getElementById('filterStudentBlockSelect');
+const filterStudentClassSelect = document.getElementById('filterStudentClassSelect');
+const filterStudentGenderSelect = document.getElementById('filterStudentGenderSelect');
+const allStudentsTableBody = document.getElementById('allStudentsTableBody');
+const allStudentsDisplayCount = document.getElementById('allStudentsDisplayCount');
+const allStudentsNotFoundState = document.getElementById('allStudentsNotFoundState');
+const tabStudentsAddBtn = document.getElementById('tabStudentsAddBtn');
+const tabStudentsImportBtn = document.getElementById('tabStudentsImportBtn');
+const tabStudentsExportBtn = document.getElementById('tabStudentsExportBtn');
+const sidebarAddStudentBtn = document.getElementById('sidebarAddStudentBtn');
+const sidebarImportAllStudentsBtn = document.getElementById('sidebarImportAllStudentsBtn');
+const sidebarExportAllStudentsBtn = document.getElementById('sidebarExportAllStudentsBtn');
+
 // ==========================================================================
 // KHỞI ĐỘNG ỨNG DỤNG
 // ==========================================================================
@@ -256,6 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initUserRole();
   updateStatsDisplay();
   initClassModule();
+  updateStudentStatsDisplay();
   setupEventListeners();
   switchTab(currentTab);
   initApiSync();
@@ -283,7 +307,9 @@ async function initApiSync() {
       classDatabase = dbClasses;
       saveClassesDatabase();
       if (currentTab === 'classes') renderClassesView();
+      if (currentTab === 'students') renderAllStudentsView();
     }
+    updateStudentStatsDisplay();
   }
 }
 
@@ -296,24 +322,39 @@ function switchTab(tabName) {
 
   const quickActionsGlv = document.getElementById('quickActionsGlv');
   const quickActionsClasses = document.getElementById('quickActionsClasses');
+  const quickActionsStudents = document.getElementById('quickActionsStudents');
+
+  // Reset active classes
+  if (navItemGlv) navItemGlv.classList.remove('active');
+  if (navItemClasses) navItemClasses.classList.remove('active');
+  if (navItemStudents) navItemStudents.classList.remove('active');
+
+  if (tabGlvView) tabGlvView.style.display = 'none';
+  if (tabClassView) tabClassView.style.display = 'none';
+  if (tabStudentsView) tabStudentsView.style.display = 'none';
+
+  if (quickActionsGlv) quickActionsGlv.style.display = 'none';
+  if (quickActionsClasses) quickActionsClasses.style.display = 'none';
+  if (quickActionsStudents) quickActionsStudents.style.display = 'none';
 
   if (tabName === 'glv') {
     if (navItemGlv) navItemGlv.classList.add('active');
-    if (navItemClasses) navItemClasses.classList.remove('active');
     if (tabGlvView) tabGlvView.style.display = 'block';
-    if (tabClassView) tabClassView.style.display = 'none';
     if (quickActionsGlv) quickActionsGlv.style.display = 'block';
-    if (quickActionsClasses) quickActionsClasses.style.display = 'none';
     if (!currentDisplayedGLV) showWelcomeState();
   } else if (tabName === 'classes') {
-    if (navItemGlv) navItemGlv.classList.remove('active');
     if (navItemClasses) navItemClasses.classList.add('active');
-    if (tabGlvView) tabGlvView.style.display = 'none';
     if (tabClassView) tabClassView.style.display = 'block';
-    if (quickActionsGlv) quickActionsGlv.style.display = 'none';
     if (quickActionsClasses) quickActionsClasses.style.display = 'block';
     renderClassesView();
+  } else if (tabName === 'students') {
+    if (navItemStudents) navItemStudents.classList.add('active');
+    if (tabStudentsView) tabStudentsView.style.display = 'block';
+    if (quickActionsStudents) quickActionsStudents.style.display = 'block';
+    renderAllStudentsView();
   }
+
+  updateStudentStatsDisplay();
 
   // Đóng sidebar trên mobile sau khi chọn tab
   closeMobileSidebar();
@@ -396,9 +437,12 @@ function updateRoleUI() {
     renderAllClassesTable();
   }
 
-  // Cập nhật lại Grid Lớp học để ẩn/hiện nút sửa nhanh theo quyền
+  // Cập nhật lại Grid Lớp học / Danh sách Thiếu nhi để ẩn/hiện nút sửa nhanh theo quyền
   if (currentTab === 'classes') {
     renderClassesView();
+  }
+  if (currentTab === 'students') {
+    renderAllStudentsView();
   }
 }
 
@@ -2393,6 +2437,197 @@ async function confirmStudentExcelImport() {
   if (rosterModal && rosterModal.style.display !== 'none') {
     openClassStudentsRosterModal(cls.id);
   }
+  updateStudentStatsDisplay();
+  if (currentTab === 'students') renderAllStudentsView();
+}
+
+// ==========================================================================
+// PHÂN HỆ QUẢN LÝ THIẾU NHI TOÀN ĐOÀN (TAB THIẾU NHI)
+// ==========================================================================
+function getAllStudentsFlatList() {
+  const all = [];
+  classDatabase.forEach(cls => {
+    const list = getClassStudents(cls);
+    list.forEach(s => {
+      all.push({
+        ...s,
+        classId: cls.id,
+        className: cls.name,
+        classBlock: cls.block
+      });
+    });
+  });
+  return all;
+}
+
+function updateStudentStatsDisplay() {
+  const all = getAllStudentsFlatList();
+  const maleCount = all.filter(s => s.gender === 'Nam').length;
+  const femaleCount = all.filter(s => s.gender === 'Nữ').length;
+
+  if (studentStatTotalCount) studentStatTotalCount.textContent = all.length;
+  if (studentStatMaleCount) studentStatMaleCount.textContent = maleCount;
+  if (studentStatFemaleCount) studentStatFemaleCount.textContent = femaleCount;
+  if (studentStatClassesCount) studentStatClassesCount.textContent = classDatabase.length;
+  if (sidebarStudentCount) sidebarStudentCount.textContent = all.length;
+}
+
+function populateStudentClassFilter() {
+  if (!filterStudentClassSelect) return;
+  const currentVal = filterStudentClassSelect.value;
+  const blockVal = filterStudentBlockSelect ? filterStudentBlockSelect.value : 'all';
+
+  let classes = [...classDatabase];
+  if (blockVal !== 'all') {
+    classes = classes.filter(c => c.block === blockVal);
+  }
+  classes = sortClassesList(classes);
+
+  filterStudentClassSelect.innerHTML = '<option value="all">Tất cả các lớp</option>' + 
+    classes.map(c => `<option value="${c.id}">${c.name} (${c.block})</option>`).join('');
+
+  if (classes.some(c => c.id === currentVal)) {
+    filterStudentClassSelect.value = currentVal;
+  } else {
+    filterStudentClassSelect.value = 'all';
+  }
+}
+
+function renderAllStudentsView() {
+  updateStudentStatsDisplay();
+  populateStudentClassFilter();
+
+  const query = allStudentsSearchInput ? allStudentsSearchInput.value.trim() : '';
+  const qNorm = removeVietnameseTones(query.toLowerCase());
+  const blockVal = filterStudentBlockSelect ? filterStudentBlockSelect.value : 'all';
+  const classVal = filterStudentClassSelect ? filterStudentClassSelect.value : 'all';
+  const genderVal = filterStudentGenderSelect ? filterStudentGenderSelect.value : 'all';
+
+  let list = getAllStudentsFlatList();
+
+  if (blockVal !== 'all') {
+    list = list.filter(s => s.classBlock === blockVal);
+  }
+  if (classVal !== 'all') {
+    list = list.filter(s => s.classId === classVal);
+  }
+  if (genderVal !== 'all') {
+    list = list.filter(s => s.gender === genderVal);
+  }
+
+  if (query) {
+    list = list.filter(s => {
+      const holyNorm = removeVietnameseTones(s.holyName || '');
+      const nameNorm = removeVietnameseTones(s.fullName || '');
+      const idNorm = (s.id || '').toLowerCase();
+      const parentNorm = removeVietnameseTones(s.parentName || '');
+      const phoneNorm = (s.parentPhone || '').toLowerCase();
+      const noteNorm = removeVietnameseTones(s.note || '');
+      const classNorm = removeVietnameseTones(s.className || '');
+      const addressNorm = removeVietnameseTones(s.address || '');
+
+      return holyNorm.includes(qNorm) || nameNorm.includes(qNorm) || idNorm.includes(qNorm) ||
+             parentNorm.includes(qNorm) || phoneNorm.includes(qNorm) || noteNorm.includes(qNorm) ||
+             classNorm.includes(qNorm) || addressNorm.includes(qNorm);
+    });
+  }
+
+  if (allStudentsDisplayCount) allStudentsDisplayCount.textContent = list.length;
+
+  if (!allStudentsTableBody) return;
+
+  if (list.length === 0) {
+    allStudentsTableBody.innerHTML = '';
+    if (allStudentsNotFoundState) allStudentsNotFoundState.style.display = 'block';
+    return;
+  }
+
+  if (allStudentsNotFoundState) allStudentsNotFoundState.style.display = 'none';
+
+  allStudentsTableBody.innerHTML = list.map((s, idx) => `
+    <tr>
+      <td style="text-align: center; font-weight: 700; color: #64748b;">${idx + 1}</td>
+      <td><span class="student-id-badge">${s.id}</span></td>
+      <td><span class="student-holy-name">${s.holyName || '-'}</span></td>
+      <td><strong style="color: #0f172a; font-size: 0.92rem;">${s.fullName}</strong></td>
+      <td style="text-align: center; font-weight: 700; color: ${s.gender === 'Nam' ? '#1d4ed8' : '#be185d'};">
+        ${s.gender === 'Nam' ? '♂ Nam' : '♀ Nữ'}
+      </td>
+      <td style="text-align: center; color: #475569; font-size: 0.85rem;">${s.birthDate || '-'}</td>
+      <td>
+        <span class="student-class-chip" style="background: #f1f5f9; color: #1e293b; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.82rem; border: 1px solid #e2e8f0; display: inline-block;">
+          <i class="fa-solid fa-school" style="color: #059669; margin-right: 3px;"></i> ${s.className || '-'}
+        </span>
+      </td>
+      <td><span class="student-note-tag">${s.note || 'Đang theo học'}</span></td>
+      <td>
+        <div style="font-size: 0.84rem; color: #1e293b; font-weight: 600;">${s.parentName || '-'}</div>
+        ${s.parentPhone ? `<div style="font-size: 0.78rem; color: #64748b;"><i class="fa-solid fa-phone" style="font-size: 0.7rem; color: #059669;"></i> ${s.parentPhone}</div>` : ''}
+      </td>
+      <td style="text-align: center;">
+        <div class="roster-action-btns" style="justify-content: center; display: flex; gap: 0.35rem;">
+          <button class="btn-roster-edit btn-all-student-edit" data-student-id="${s.id}" data-class-id="${s.classId}" title="Chỉnh sửa thông tin">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button class="btn-roster-del btn-all-student-del" data-student-id="${s.id}" data-class-id="${s.classId}" title="Xóa khỏi danh sách">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  // Gắn sự kiện sửa / xóa cho bảng toàn bộ thiếu nhi
+  allStudentsTableBody.querySelectorAll('.btn-all-student-edit').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const sId = btn.getAttribute('data-student-id');
+      const cId = btn.getAttribute('data-class-id');
+      openEditStudentModal(sId, cId);
+    };
+  });
+
+  allStudentsTableBody.querySelectorAll('.btn-all-student-del').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const sId = btn.getAttribute('data-student-id');
+      const cId = btn.getAttribute('data-class-id');
+      deleteStudentFromClass(sId, cId);
+    };
+  });
+}
+
+function exportAllStudentsDatabaseToExcel() {
+  if (typeof XLSX === 'undefined') {
+    showToast('Thư viện Excel đang tải, vui lòng thử lại sau vài giây!');
+    return;
+  }
+  const all = getAllStudentsFlatList();
+  if (all.length === 0) {
+    showToast('Chưa có dữ liệu thiếu nhi để xuất file Excel!');
+    return;
+  }
+
+  const data = all.map((s, idx) => ({
+    'STT': idx + 1,
+    'Mã Thiếu Nhi': s.id || '',
+    'Tên Thánh (Bổn Mạng)': s.holyName || '',
+    'Họ và Tên (*)': s.fullName || '',
+    'Giới Tính': s.gender || 'Nam',
+    'Ngày Sinh (DD/MM/YYYY)': s.birthDate || '',
+    'Lớp Học': s.className || '',
+    'Khối Giáo Lý': s.classBlock || '',
+    'Ghi Chú / Vai Trò': s.note || 'Đang theo học',
+    'Tên Phụ Huynh (Cha/Mẹ)': s.parentName || '',
+    'Số Điện Thoại Phụ Huynh': s.parentPhone || '',
+    'Địa Chỉ / Giáo Họ': s.address || ''
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'ToanDoanThieuNhi');
+  XLSX.writeFile(wb, `Danh_Sach_Thieu_Nhi_Toan_Doan_TanMy_2026_2027.xlsx`);
+  showToast('Đã xuất toàn bộ danh sách thiếu nhi ra file Excel!');
 }
 
 // ==========================================================================
@@ -2405,6 +2640,9 @@ function setupEventListeners() {
   }
   if (navItemClasses) {
     navItemClasses.addEventListener('click', () => switchTab('classes'));
+  }
+  if (navItemStudents) {
+    navItemStudents.addEventListener('click', () => switchTab('students'));
   }
   if (mobileMenuBtn) {
     mobileMenuBtn.addEventListener('click', openMobileSidebar);
@@ -2438,6 +2676,35 @@ function setupEventListeners() {
       openEditClassModal();
     });
   }
+  if (sidebarExportClassesBtn) {
+    sidebarExportClassesBtn.addEventListener('click', () => {
+      closeMobileSidebar();
+      exportClassesDatabaseToExcel();
+    });
+  }
+  if (sidebarAddStudentBtn) {
+    sidebarAddStudentBtn.addEventListener('click', () => {
+      closeMobileSidebar();
+      switchTab('students');
+      const firstClass = classDatabase[0];
+      openEditStudentModal(null, firstClass ? firstClass.id : null);
+    });
+  }
+  if (sidebarImportAllStudentsBtn) {
+    sidebarImportAllStudentsBtn.addEventListener('click', () => {
+      closeMobileSidebar();
+      switchTab('students');
+      const firstClass = classDatabase[0];
+      openStudentExcelImportModal(firstClass ? firstClass.id : null);
+    });
+  }
+  if (sidebarExportAllStudentsBtn) {
+    sidebarExportAllStudentsBtn.addEventListener('click', () => {
+      closeMobileSidebar();
+      exportAllStudentsDatabaseToExcel();
+    });
+  }
+
   if (sidebarAuthSwitchBtn) {
     sidebarAuthSwitchBtn.addEventListener('click', () => {
       closeMobileSidebar();
@@ -3008,6 +3275,71 @@ function setupEventListeners() {
   if (importExcelPreviewModal) {
     importExcelPreviewModal.addEventListener('click', (e) => {
       if (e.target === importExcelPreviewModal) closeStudentExcelImportModal();
+    });
+  }
+
+  // 8.2 Sự kiện Tab Thiếu Nhi Toàn Đoàn
+  if (allStudentsSearchInput) {
+    let studentSearchDebounce;
+    allStudentsSearchInput.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      if (allStudentsClearSearchBtn) {
+        allStudentsClearSearchBtn.style.display = val.length > 0 ? 'flex' : 'none';
+      }
+      clearTimeout(studentSearchDebounce);
+      studentSearchDebounce = setTimeout(() => {
+        renderAllStudentsView();
+      }, 150);
+    });
+  }
+
+  if (allStudentsClearSearchBtn) {
+    allStudentsClearSearchBtn.addEventListener('click', () => {
+      if (allStudentsSearchInput) {
+        allStudentsSearchInput.value = '';
+        allStudentsSearchInput.focus();
+      }
+      allStudentsClearSearchBtn.style.display = 'none';
+      renderAllStudentsView();
+    });
+  }
+
+  if (filterStudentBlockSelect) {
+    filterStudentBlockSelect.addEventListener('change', () => {
+      populateStudentClassFilter();
+      renderAllStudentsView();
+    });
+  }
+
+  if (filterStudentClassSelect) {
+    filterStudentClassSelect.addEventListener('change', () => {
+      renderAllStudentsView();
+    });
+  }
+
+  if (filterStudentGenderSelect) {
+    filterStudentGenderSelect.addEventListener('change', () => {
+      renderAllStudentsView();
+    });
+  }
+
+  if (tabStudentsAddBtn) {
+    tabStudentsAddBtn.addEventListener('click', () => {
+      const firstClass = classDatabase[0];
+      openEditStudentModal(null, firstClass ? firstClass.id : null);
+    });
+  }
+
+  if (tabStudentsImportBtn) {
+    tabStudentsImportBtn.addEventListener('click', () => {
+      const firstClass = classDatabase[0];
+      openStudentExcelImportModal(firstClass ? firstClass.id : null);
+    });
+  }
+
+  if (tabStudentsExportBtn) {
+    tabStudentsExportBtn.addEventListener('click', () => {
+      exportAllStudentsDatabaseToExcel();
     });
   }
 }

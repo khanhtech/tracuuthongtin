@@ -73,6 +73,17 @@
           <span class="nav-badge badge-classes" id="sidebarClassCount">14</span>
         </button>
 
+        <button class="nav-item" id="navItemStudents" data-tab="students">
+          <div class="nav-icon-box">
+            <i class="fa-solid fa-child-reaching"></i>
+          </div>
+          <div class="nav-label-box">
+            <span class="nav-title">Thiếu Nhi</span>
+            <span class="nav-desc">Tra cứu & danh sách</span>
+          </div>
+          <span class="nav-badge badge-students" id="sidebarStudentCount">0</span>
+        </button>
+
         <!-- Tiện ích nhanh cho Tab Giáo Lý Viên -->
         <div id="quickActionsGlv" class="sidebar-quick-group">
           <div class="nav-section-title" style="margin-top: 1.5rem;">TIỆN ÍCH GLV</div>
@@ -109,7 +120,27 @@
 
           <button class="nav-item-sub" id="sidebarExportClassesBtn">
             <i class="fa-solid fa-file-excel"></i>
-            <span>Xuất Excel Lớp Học</span>
+            <span>Xuất Excel Danh Sách Lớp</span>
+          </button>
+        </div>
+
+        <!-- Tiện ích nhanh cho Tab Thiếu Nhi -->
+        <div id="quickActionsStudents" class="sidebar-quick-group" style="display: none;">
+          <div class="nav-section-title" style="margin-top: 1.5rem;">TIỆN ÍCH THIẾU NHI</div>
+
+          <button class="nav-item-sub" id="sidebarAddStudentBtn">
+            <i class="fa-solid fa-user-plus"></i>
+            <span>Thêm Thiếu Nhi Mới</span>
+          </button>
+
+          <button class="nav-item-sub" id="sidebarImportAllStudentsBtn">
+            <i class="fa-solid fa-file-import"></i>
+            <span>Nhập Excel Thiếu Nhi</span>
+          </button>
+
+          <button class="nav-item-sub" id="sidebarExportAllStudentsBtn">
+            <i class="fa-solid fa-file-excel"></i>
+            <span>Xuất Excel Toàn Bộ</span>
           </button>
         </div>
       </nav>
@@ -464,6 +495,162 @@
             <button class="btn-secondary-reset" id="resetClassFilterBtn">
               <i class="fa-solid fa-rotate-left"></i> Xem lại tất cả các lớp
             </button>
+          </div>
+        </div>
+
+        </div>
+
+        <!-- ==========================================================================
+             TAB 3: QUẢN LÝ THIẾU NHI TOÀN ĐOÀN (STUDENTS VIEW)
+             ========================================================================== -->
+        <div id="tabStudentsView" class="tab-pane" style="display: none;">
+          <!-- Header Phân Hệ Thiếu Nhi -->
+          <header class="app-header">
+            <div class="top-nav-bar desktop-only-bar">
+              <div class="header-badge" style="background: #ecfdf5; border-color: #a7f3d0; color: #065f46;">
+                <i class="fa-solid fa-child-reaching" style="color: #059669;"></i>
+                <span>ĐOÀN THIẾU NHI THÁNH THỂ</span>
+              </div>
+            </div>
+
+            <h1 class="header-title">QUẢN LÝ & TRA CỨU<br>DANH SÁCH THIẾU NHI TOÀN ĐOÀN</h1>
+            <p class="header-subtitle">Hệ thống cơ sở dữ liệu học viên, phân bố lớp học, liên lạc phụ huynh và hồ sơ thiếu nhi Giáo xứ Tân Mỹ</p>
+          </header>
+
+          <!-- Thống kê tổng quan Thiếu Nhi -->
+          <div class="class-overview-stats">
+            <div class="class-stat-card">
+              <div class="stat-icon-wrap" style="background: #ecfdf5; color: #059669;">
+                <i class="fa-solid fa-children"></i>
+              </div>
+              <div class="stat-info">
+                <span class="stat-num" id="studentStatTotalCount">0</span>
+                <span class="stat-label">Tổng số Thiếu Nhi</span>
+              </div>
+            </div>
+
+            <div class="class-stat-card">
+              <div class="stat-icon-wrap" style="background: #eff6ff; color: #2563eb;">
+                <i class="fa-solid fa-mars"></i>
+              </div>
+              <div class="stat-info">
+                <span class="stat-num" id="studentStatMaleCount">0</span>
+                <span class="stat-label">Thiếu Nhi Nam</span>
+              </div>
+            </div>
+
+            <div class="class-stat-card">
+              <div class="stat-icon-wrap" style="background: #fdf2f8; color: #db2777;">
+                <i class="fa-solid fa-venus"></i>
+              </div>
+              <div class="stat-info">
+                <span class="stat-num" id="studentStatFemaleCount">0</span>
+                <span class="stat-label">Thiếu Nhi Nữ</span>
+              </div>
+            </div>
+
+            <div class="class-stat-card">
+              <div class="stat-icon-wrap" style="background: #fef3c7; color: #d97706;">
+                <i class="fa-solid fa-school"></i>
+              </div>
+              <div class="stat-info">
+                <span class="stat-num" id="studentStatClassesCount">13</span>
+                <span class="stat-label">Lớp học phân bổ</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thanh Tìm Kiếm & Bộ Lọc Thiếu Nhi -->
+          <section class="class-control-section" style="margin-bottom: 1.5rem;">
+            <div class="class-search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="allStudentsSearchInput" placeholder="Tìm theo Tên Thánh, Họ và Tên, Mã thiếu nhi, Tên phụ huynh, SĐT...">
+              <button class="clear-btn" id="allStudentsClearSearchBtn" style="display: none;" title="Xóa tìm kiếm">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <!-- Bộ Lọc Nâng Cao & Thao Tác -->
+            <div class="modal-filters-bar" style="margin-top: 1rem; border-radius: 14px; background: #ffffff; padding: 0.85rem 1.25rem; border: 1.5px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.85rem;">
+              <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+                <div class="filter-item">
+                  <label for="filterStudentBlockSelect"><i class="fa-solid fa-layer-group"></i> Khối:</label>
+                  <select id="filterStudentBlockSelect" style="padding: 0.4rem 0.65rem; border-radius: 8px; border: 1px solid #cbd5e1; outline: none;">
+                    <option value="all">Tất cả khối</option>
+                    <option value="Khai Tâm">Khối Khai Tâm</option>
+                    <option value="Rước Lễ">Khối Rước Lễ</option>
+                    <option value="Thêm Sức">Khối Thêm Sức</option>
+                    <option value="Bao Đồng">Khối Bao Đồng</option>
+                    <option value="Vào Đời">Khối Vào Đời</option>
+                  </select>
+                </div>
+
+                <div class="filter-item">
+                  <label for="filterStudentClassSelect"><i class="fa-solid fa-chalkboard-user"></i> Lớp:</label>
+                  <select id="filterStudentClassSelect" style="padding: 0.4rem 0.65rem; border-radius: 8px; border: 1px solid #cbd5e1; outline: none;">
+                    <option value="all">Tất cả các lớp</option>
+                  </select>
+                </div>
+
+                <div class="filter-item">
+                  <label for="filterStudentGenderSelect"><i class="fa-solid fa-venus-mars"></i> Giới tính:</label>
+                  <select id="filterStudentGenderSelect" style="padding: 0.4rem 0.65rem; border-radius: 8px; border: 1px solid #cbd5e1; outline: none;">
+                    <option value="all">Tất cả</option>
+                    <option value="Nam">Nam (♂)</option>
+                    <option value="Nữ">Nữ (♀)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="modal-toolbar-actions">
+                <button class="btn-tool btn-tool-add" id="tabStudentsAddBtn">
+                  <i class="fa-solid fa-user-plus"></i> Thêm Thiếu Nhi
+                </button>
+                <button class="btn-tool btn-tool-import" id="tabStudentsImportBtn" title="Nhập danh sách thiếu nhi từ file Excel">
+                  <i class="fa-solid fa-file-import"></i> Nhập Excel
+                </button>
+                <button class="btn-tool btn-tool-export" id="tabStudentsExportBtn" title="Xuất toàn bộ danh sách thiếu nhi ra file Excel">
+                  <i class="fa-solid fa-file-excel"></i> Xuất Excel Toàn Bộ
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Bảng Danh Sách Thiếu Nhi Toàn Đoàn -->
+          <div class="all-students-card" style="background: #ffffff; border-radius: 16px; border: 1.5px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden;">
+            <div style="padding: 1rem 1.5rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #1e293b; font-size: 0.95rem;">
+                <i class="fa-solid fa-list-check" style="color: #059669; margin-right: 0.4rem;"></i>
+                Danh Sách Chi Tiết (<strong id="allStudentsDisplayCount">0</strong> Em)
+              </span>
+              <span style="font-size: 0.82rem; color: #64748b;">Nhấp nút Sửa hoặc Xóa ở cột Thao tác để quản lý</span>
+            </div>
+
+            <div class="table-responsive" style="max-height: 580px; overflow-y: auto;">
+              <table class="glv-table">
+                <thead>
+                  <tr style="position: sticky; top: 0; background: #ffffff; z-index: 5;">
+                    <th style="width: 50px; text-align: center;">STT</th>
+                    <th style="width: 120px;">Mã Thiếu Nhi</th>
+                    <th style="width: 120px;">Tên Thánh</th>
+                    <th>Họ và Tên</th>
+                    <th style="width: 90px; text-align: center;">Giới Tính</th>
+                    <th style="width: 110px; text-align: center;">Ngày Sinh</th>
+                    <th style="width: 150px;">Lớp Học</th>
+                    <th>Ghi Chú / Vai Trò</th>
+                    <th>Phụ Huynh & SĐT</th>
+                    <th style="width: 90px; text-align: center;">Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody id="allStudentsTableBody"></tbody>
+              </table>
+            </div>
+
+            <div id="allStudentsNotFoundState" style="display: none; text-align: center; padding: 3rem 1.5rem; color: #94a3b8;">
+              <i class="fa-solid fa-user-slash" style="font-size: 2.5rem; margin-bottom: 0.75rem; display: block; opacity: 0.4;"></i>
+              <h3 style="font-size: 1.1rem; color: #64748b; font-weight: 700;">Không tìm thấy em thiếu nhi nào</h3>
+              <p style="font-size: 0.88rem; margin-top: 0.25rem;">Hãy thử đổi từ khóa tìm kiếm hoặc chọn bộ lọc khác.</p>
+            </div>
           </div>
         </div>
 

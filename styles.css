@@ -2579,6 +2579,11 @@ body {
   color: var(--primary-gold-deep);
 }
 
+.nav-badge.badge-students {
+  background: #ecfdf5;
+  color: #059669;
+}
+
 .nav-item-sub {
   display: flex;
   align-items: center;
