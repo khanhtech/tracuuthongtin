@@ -198,22 +198,30 @@ const API = {
       const json = await res.json();
       if (json.success && Array.isArray(json.data)) {
         this.isOnline = true;
-        return json.data.map(s => ({
-          stt: parseInt(s.stt, 10),
-          id: s.id || s.student_id,
-          holyName: s.holyName || s.holy_name || '',
-          name: s.name || (s.lastName ? `${s.lastName} ${s.firstName}` : s.firstName) || '',
-          gender: s.gender || 'Nam',
-          dob: s.dob || '',
-          classId: s.classId || s.class_id || classId,
-          role: s.role || 'Đang theo học',
-          note: s.note || '',
-          parentPhone: s.parentPhone || s.parent_phone || '',
-          scoreHK1: s.scoreHK1 || { cc: null, m: null, p15: null, p45: null, thi: null, tb: null },
-          scoreHK2: s.scoreHK2 || { cc: null, m: null, p15: null, p45: null, thi: null, tb: null },
-          scoreFinal: s.scoreFinal !== undefined ? s.scoreFinal : null,
-          evaluation: s.evaluation || 'Đang học'
-        }));
+        return json.data.map(s => {
+          const sName = s.fullName || s.name || (s.lastName ? `${s.lastName} ${s.firstName}` : s.firstName) || '';
+          const sDob = s.birthDate || s.dob || s.birth_date || '';
+          return {
+            stt: parseInt(s.stt, 10) || 1,
+            id: s.id || s.student_id,
+            holyName: s.holyName || s.holy_name || '',
+            name: sName,
+            fullName: sName,
+            gender: s.gender || 'Nam',
+            dob: sDob,
+            birthDate: sDob,
+            classId: s.classId || s.class_id || classId,
+            role: s.note || s.role || 'Đang theo học',
+            note: s.note || s.role || 'Đang theo học',
+            parentName: s.parentName || s.parent_name || '',
+            parentPhone: s.parentPhone || s.parent_phone || '',
+            address: s.address || '',
+            scoreHK1: s.scoreHK1 || { cc: s.score_attendance_1, m: s.score_oral_1, p15: s.score_15m_1, p45: s.score_1period_1, thi: s.score_exam_1, tb: s.score_avg_1 },
+            scoreHK2: s.scoreHK2 || { cc: s.score_attendance_2, m: s.score_oral_2, p15: s.score_15m_2, p45: s.score_1period_2, thi: s.score_exam_2, tb: s.score_avg_2 },
+            scoreFinal: s.scoreFinal !== undefined ? s.scoreFinal : s.score_final,
+            evaluation: s.evaluation || 'Đang học'
+          };
+        });
       }
     } catch (e) {
       console.warn(`Không thể lấy danh sách học sinh lớp ${classId} từ API:`, e);
@@ -222,26 +230,72 @@ const API = {
   },
 
   /**
+   * 7.1 LẤY TOÀN BỘ THIẾU NHI TRONG HỆ THỐNG
+   */
+  async getAllStudents() {
+    try {
+      const res = await fetch(`${API_CONFIG.BASE_URL}/students.php`);
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        this.isOnline = true;
+        return json.data.map(s => {
+          const sName = s.fullName || s.name || (s.lastName ? `${s.lastName} ${s.firstName}` : s.firstName) || '';
+          const sDob = s.birthDate || s.dob || s.birth_date || '';
+          return {
+            stt: parseInt(s.stt, 10) || 1,
+            id: s.id || s.student_id,
+            holyName: s.holyName || s.holy_name || '',
+            name: sName,
+            fullName: sName,
+            gender: s.gender || 'Nam',
+            dob: sDob,
+            birthDate: sDob,
+            classId: s.classId || s.class_id || '',
+            className: s.className || '',
+            classBlock: s.classBlock || s.block || '',
+            role: s.note || s.role || 'Đang theo học',
+            note: s.note || s.role || 'Đang theo học',
+            parentName: s.parentName || s.parent_name || '',
+            parentPhone: s.parentPhone || s.parent_phone || '',
+            address: s.address || '',
+            scoreFinal: s.scoreFinal !== undefined ? s.scoreFinal : s.score_final,
+            evaluation: s.evaluation || 'Đang học'
+          };
+        });
+      }
+    } catch (e) {
+      console.warn('Lỗi lấy toàn bộ danh sách thiếu nhi từ API:', e);
+    }
+    return null;
+  },
+
+  /**
    * 8. LƯU / CẬP NHẬT THIẾU NHI
    */
-  async saveStudent(classId, student, isNew = false) {
+  async saveStudent(student, isNew = false) {
     try {
       const method = isNew ? 'POST' : 'PUT';
       const url = isNew ? `${API_CONFIG.BASE_URL}/students.php` : `${API_CONFIG.BASE_URL}/students.php?id=${encodeURIComponent(student.id)}`;
+      const classId = student.classId || student.class_id;
       const res = await fetch(url, {
         method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           class_id: classId,
+          classId: classId,
           id: student.id,
           stt: student.stt,
           holyName: student.holyName,
-          name: student.name,
+          fullName: student.fullName || student.name,
+          name: student.fullName || student.name,
           gender: student.gender,
-          dob: student.dob,
-          role: student.role,
-          note: student.note,
+          birthDate: student.birthDate || student.dob,
+          dob: student.birthDate || student.dob,
+          role: student.role || student.note,
+          note: student.note || student.role,
+          parentName: student.parentName,
           parentPhone: student.parentPhone,
+          address: student.address,
           scoreHK1: student.scoreHK1,
           scoreHK2: student.scoreHK2,
           scoreFinal: student.scoreFinal,

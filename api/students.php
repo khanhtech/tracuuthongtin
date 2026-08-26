@@ -36,13 +36,25 @@ switch ($method) {
             $stmt = $pdo->query("
                 SELECT s.student_id as id,
                        s.holy_name as holyName,
+                       s.last_name as lastName,
+                       s.first_name as firstName,
                        s.full_name as fullName,
                        s.gender,
                        s.birth_date as birthDate,
                        s.parent_name as parentName,
-                       s.parent_phone as parentPhone
+                       s.parent_phone as parentPhone,
+                       s.address,
+                       eg.class_id as classId,
+                       c.class_name as className,
+                       c.block as classBlock,
+                       eg.stt_in_class as stt,
+                       eg.role_in_class as note,
+                       eg.score_final as scoreFinal,
+                       eg.evaluation
                 FROM students s
-                ORDER BY s.student_id ASC
+                LEFT JOIN enrollments_and_grades eg ON s.student_id = eg.student_id
+                LEFT JOIN classes c ON eg.class_id = c.class_id
+                ORDER BY c.block ASC, c.class_name ASC, eg.stt_in_class ASC, s.student_id ASC
             ");
             $students = $stmt->fetchAll();
             jsonResponse(true, "Lấy toàn bộ danh sách thiếu nhi thành công", $students);

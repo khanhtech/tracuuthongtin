@@ -777,19 +777,28 @@ async function initApiSync() {
     if (dbClasses && dbClasses.length > 0) {
       classDatabase = dbClasses;
 
-      // Đồng bộ danh sách thiếu nhi cho từng lớp từ MySQL
-      for (const cls of classDatabase) {
-        const students = await API.getStudents(cls.id);
-        if (students && students.length > 0) {
-          cls.students = students;
-          cls.studentCount = students.length;
-        } else if (!cls.students || cls.students.length === 0) {
-          cls.students = generateDefaultStudentsForClass(cls, cls.studentCount || 25);
-          cls.studentCount = cls.students.length;
+      // Đồng bộ danh sách thiếu nhi trực tiếp từ bảng students trong MySQL
+      const allDbStudents = await API.getAllStudents();
+      if (allDbStudents && allDbStudents.length > 0) {
+        classDatabase.forEach(cls => {
+          const matchStudents = allDbStudents.filter(s => s.classId === cls.id || s.classId === cls.id.replace('CLASS_', ''));
+          if (matchStudents.length > 0) {
+            cls.students = matchStudents;
+            cls.studentCount = matchStudents.length;
+          }
+        });
+      } else {
+        for (const cls of classDatabase) {
+          const students = await API.getStudents(cls.id);
+          if (students && students.length > 0) {
+            cls.students = students;
+            cls.studentCount = students.length;
+          }
         }
       }
 
       saveClassesDatabase();
+      updateStudentStatsDisplay();
       if (currentTab === 'classes') renderClassesView();
       if (currentTab === 'students') renderAllStudentsView();
     }

@@ -2907,6 +2907,7 @@ body {
 }
 
 /* Mobile Top Bar */
+/* Mobile Top Bar & Responsive Navigation */
 .mobile-top-bar {
   display: none;
   align-items: center;
@@ -2932,6 +2933,12 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mobile-menu-btn:hover {
+  background: #f1f5f9;
+  color: #7f1d1d;
 }
 
 .mobile-brand-title {
@@ -2952,16 +2959,60 @@ body {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(15, 23, 42, 0.45);
   backdrop-filter: blur(4px);
-  z-index: 99;
+  z-index: 998;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
 .sidebar-overlay.active {
-  display: block;
-  opacity: 1;
+  display: block !important;
+  opacity: 1 !important;
+}
+
+/* Tự động thu gọn và mở toàn bộ trang web trên màn hình Mobile & Tablet */
+@media (max-width: 1024px) {
+  .app-layout {
+    display: block;
+    width: 100%;
+  }
+
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 295px;
+    height: 100vh;
+    z-index: 999;
+    transform: translateX(-100%);
+    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.18);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .app-sidebar.sidebar-open {
+    transform: translateX(0) !important;
+  }
+
+  .sidebar-close-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-top-bar {
+    display: flex !important;
+  }
+
+  .app-main-content {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  .container {
+    padding: 1rem 0.85rem !important;
+  }
 }
 
 /* Tab Panes Transition */
