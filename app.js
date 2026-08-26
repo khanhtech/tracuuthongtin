@@ -1107,23 +1107,88 @@ function renderClassCards(classesList, searchKeyword) {
       });
     }
 
-    // Sự kiện bấm vào tên GLV trong card -> Chuyển sang xem thẻ GLV
+    // Sự kiện bấm vào tên GLV trong card -> Mở xem nhanh thẻ GLV (không rời trang lớp)
     card.querySelectorAll('.teacher-chip').forEach(chip => {
       chip.addEventListener('click', (e) => {
         e.stopPropagation();
         const glvId = chip.getAttribute('data-glv-id');
-        const foundGLV = glvDatabase.find(g => g.id.toUpperCase() === glvId.toUpperCase());
-        if (foundGLV) {
-          switchTab('glv');
-          searchInput.value = foundGLV.id;
-          clearSearchBtn.style.display = 'flex';
-          displayProfileCard(foundGLV);
-        }
+        openGlvQuickView(glvId);
       });
     });
 
     classCardsGrid.appendChild(card);
   });
+}
+
+// ==========================================================================
+// XEM NHANH THẺ GLV (QUICK VIEW MODAL - KHÔNG RỜI KHỎI MODAL LỚP)
+// ==========================================================================
+let currentQuickViewGlvId = null;
+
+function openGlvQuickView(glvId) {
+  const glv = glvDatabase.find(g => g.id.toUpperCase() === (glvId || '').toUpperCase());
+  if (!glv) return;
+
+  currentQuickViewGlvId = glv.id;
+  const quickGlvModal = document.getElementById('glvQuickViewModal');
+  const quickGlvBody = document.getElementById('quickGlvBody');
+  if (!quickGlvModal || !quickGlvBody) return;
+
+  const isMale = (glv.gender === 'Nam');
+  const avatarSrc = getGlvAvatar(glv);
+  const certText = glv.cert ? `Cấp ${glv.cert}` : 'Chưa có chứng chỉ';
+  const blockText = glv.block ? `Khối ${glv.block}` : 'Chưa phân khối';
+  const classText = glv.teachingClass || 'Chưa phân lớp';
+
+  quickGlvBody.innerHTML = `
+    <div class="quick-profile-card">
+      <div class="quick-card-emblem">
+        <i class="fa-solid fa-cross"></i>
+        <span>ĐOÀN TNTT GIÁO XỨ TÂN MỸ</span>
+      </div>
+
+      <img class="quick-card-avatar" src="${avatarSrc}" alt="avatar">
+
+      <div>
+        <span class="quick-card-holy">${glv.holyName || 'GIÁO LÝ VIÊN'}</span>
+        <h3 class="quick-card-name">${glv.lastName} ${glv.firstName}</h3>
+      </div>
+
+      <table class="quick-card-info-table">
+        <tbody>
+          <tr>
+            <td><i class="fa-solid fa-id-card"></i> Mã Định Danh:</td>
+            <td><strong style="color: #b91c1c; font-size: 0.95rem;">${glv.id}</strong></td>
+          </tr>
+          <tr>
+            <td><i class="fa-solid fa-venus-mars"></i> Giới tính:</td>
+            <td>${isMale ? '<span style="color: #1d4ed8; font-weight: 700;"><i class="fa-solid fa-mars"></i> Nam</span>' : '<span style="color: #be185d; font-weight: 700;"><i class="fa-solid fa-venus"></i> Nữ</span>'}</td>
+          </tr>
+          <tr>
+            <td><i class="fa-solid fa-certificate"></i> Chứng chỉ GLV:</td>
+            <td><span style="font-weight: 700; color: #1e293b;">${certText}</span></td>
+          </tr>
+          <tr>
+            <td><i class="fa-solid fa-layer-group"></i> Khối phụ trách:</td>
+            <td><strong>${blockText}</strong></td>
+          </tr>
+          <tr>
+            <td><i class="fa-solid fa-school"></i> Lớp giảng dạy:</td>
+            <td><strong style="color: #b91c1c;">${classText}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  quickGlvModal.style.display = 'flex';
+}
+
+function closeGlvQuickView() {
+  const quickGlvModal = document.getElementById('glvQuickViewModal');
+  if (quickGlvModal) {
+    quickGlvModal.style.display = 'none';
+  }
 }
 
 function openClassDetailModal(classId) {
@@ -1143,7 +1208,7 @@ function openClassDetailModal(classId) {
       <div class="class-detail-hero">
         <div>
           <h2 class="class-hero-title">${cls.name}</h2>
-          <p class="class-hero-subtitle">Đoàn Thiếu Nhi Thánh Thể Tân Mỹ &bull; Niên Khóa 2026 - 2027</p>
+          <p class="class-hero-subtitle">Đoàn TNTT Giáo xứ Tân Mỹ &bull; Niên Khóa 2026 - 2027</p>
         </div>
         <span class="class-block-badge ${badgeCls}" style="font-size: 0.88rem; padding: 0.4rem 0.95rem;">
           <i class="fa-solid fa-layer-group"></i> Khối ${cls.block}
@@ -1206,18 +1271,12 @@ function openClassDetailModal(classId) {
       </div>
     `;
 
-    // Sự kiện nút "Xem Thẻ" của từng GLV trong modal chi tiết lớp
+    // Sự kiện nút "Xem Thẻ" của từng GLV trong modal chi tiết lớp -> Mở xem nhanh thẻ GLV trên modal
     classDetailBody.querySelectorAll('.btn-view-teacher-glv').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         const glvId = btn.getAttribute('data-glv-id');
-        const foundGLV = glvDatabase.find(g => g.id.toUpperCase() === glvId.toUpperCase());
-        if (foundGLV) {
-          classDetailModal.style.display = 'none';
-          switchTab('glv');
-          searchInput.value = foundGLV.id;
-          clearSearchBtn.style.display = 'flex';
-          displayProfileCard(foundGLV);
-        }
+        openGlvQuickView(glvId);
       });
     });
   }
@@ -1777,6 +1836,37 @@ function setupEventListeners() {
   }
   if (classEditForm) {
     classEditForm.addEventListener('submit', handleClassFormSubmit);
+  }
+
+  // 5. Sự kiện Xem Nhanh Thẻ GLV
+  const quickGlvModal = document.getElementById('glvQuickViewModal');
+  const closeQuickGlvModalBtn = document.getElementById('closeQuickGlvModalBtn');
+  const closeQuickGlvFooterBtn = document.getElementById('closeQuickGlvFooterBtn');
+  const btnGoToGlvProfile = document.getElementById('btnGoToGlvProfile');
+
+  if (closeQuickGlvModalBtn) {
+    closeQuickGlvModalBtn.addEventListener('click', closeGlvQuickView);
+  }
+  if (closeQuickGlvFooterBtn) {
+    closeQuickGlvFooterBtn.addEventListener('click', closeGlvQuickView);
+  }
+  if (quickGlvModal) {
+    quickGlvModal.addEventListener('click', (e) => {
+      if (e.target === quickGlvModal) closeGlvQuickView();
+    });
+  }
+  if (btnGoToGlvProfile) {
+    btnGoToGlvProfile.addEventListener('click', () => {
+      if (currentQuickViewGlvId) {
+        closeGlvQuickView();
+        if (classDetailModal) classDetailModal.style.display = 'none';
+        switchTab('glv');
+        searchInput.value = currentQuickViewGlvId;
+        clearSearchBtn.style.display = 'flex';
+        const target = glvDatabase.find(g => g.id.toUpperCase() === currentQuickViewGlvId.toUpperCase());
+        if (target) displayProfileCard(target);
+      }
+    });
   }
 }
 

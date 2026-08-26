@@ -3466,6 +3466,131 @@ body {
   color: #ffffff;
 }
 
+/* ==========================================================================
+   QUICK GLV PROFILE MODAL (HIỂN THỊ THẺ TRÊN MODAL LỚP HỌC)
+   ========================================================================== */
+.modal-backdrop-top {
+  z-index: 10000000;
+}
+
+.modal-quick-glv {
+  max-width: 480px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.45);
+}
+
+.quick-glv-body {
+  padding: 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.quick-glv-footer {
+  padding: 0.85rem 1.25rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.btn-goto-glv-profile {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: #ffffff;
+}
+
+.btn-goto-glv-profile:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.quick-profile-card {
+  background: linear-gradient(180deg, #fffafa 0%, #ffffff 100%);
+  border: 1.5px solid #fecaca;
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.65rem;
+}
+
+.quick-card-emblem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #7f1d1d;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.quick-card-emblem i {
+  color: var(--primary-gold-dark);
+}
+
+.quick-card-avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #fee2e2;
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.15);
+  margin: 0.25rem 0;
+}
+
+.quick-card-holy {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--primary-gold-dark);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.quick-card-name {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+.quick-card-info-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.4rem;
+  text-align: left;
+  font-size: 0.84rem;
+}
+
+.quick-card-info-table tr {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.quick-card-info-table tr:last-child {
+  border-bottom: none;
+}
+
+.quick-card-info-table td {
+  padding: 0.45rem 0.5rem;
+}
+
+.quick-card-info-table td:first-child {
+  color: var(--text-dim);
+  font-weight: 600;
+  width: 38%;
+}
+
+.quick-card-info-table td:last-child {
+  color: var(--text-main);
+  font-weight: 700;
+}
+
 /* Teacher Multi-Select Checkboxes in Form */
 .teacher-select-container {
   display: flex;

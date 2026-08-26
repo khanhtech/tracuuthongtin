@@ -4,9 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Website Quản Trị & Tra Cứu - Đoàn Thiếu Nhi Thánh Thể Tân Mỹ</title>
+  <title>Website Quản Trị & Tra Cứu - Đoàn TNTT Giáo xứ Tân Mỹ</title>
   <meta name="description"
-    content="Hệ thống tra cứu thông tin Giáo Lý Viên và quản lý Lớp Giáo Lý Đoàn Thiếu Nhi Thánh Thể Giáo xứ Tân Mỹ">
+    content="Hệ thống tra cứu thông tin Giáo Lý Viên và quản lý Lớp Giáo Lý Đoàn TNTT Giáo xứ Tân Mỹ">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -818,6 +818,32 @@
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: XEM NHANH THẺ GLV / HUYNH TRƯỞNG (QUICK PROFILE MODAL)
+       ========================================================================== -->
+  <div class="modal-backdrop modal-backdrop-top" id="glvQuickViewModal" style="display: none;">
+    <div class="modal-content modal-quick-glv">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-id-card"></i>
+          <span>Thẻ Huynh Trưởng - Giáo Lý Viên</span>
+        </div>
+        <button class="modal-close-btn" id="closeQuickGlvModalBtn" title="Đóng xem nhanh"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="quick-glv-body" id="quickGlvBody">
+        <!-- Render động thẻ GLV -->
+      </div>
+
+      <div class="modal-footer quick-glv-footer">
+        <button type="button" class="btn-tool btn-goto-glv-profile" id="btnGoToGlvProfile">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Mở Trang Hồ Sơ
+        </button>
+        <button type="button" class="btn-cancel" id="closeQuickGlvFooterBtn">Đóng</button>
       </div>
     </div>
   </div>
