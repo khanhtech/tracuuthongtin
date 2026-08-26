@@ -6,11 +6,8 @@
  */
 
 const API_CONFIG = {
-  // Đường dẫn gốc của API (Tự động thích ứng khi chạy local hoặc sub-folder)
-  BASE_URL: window.location.origin.includes('github.io') 
-    ? 'https://your-domain.com/backend/api' // Thay bằng domain hosting của bạn khi deploy
-    : (window.location.pathname.includes('/backend/') ? '../api' : 'backend/api'),
-  TIMEOUT: 4000
+  BASE_URL: 'api',
+  TIMEOUT: 5000
 };
 
 const API = {
@@ -53,19 +50,19 @@ const API = {
       if (json.success && Array.isArray(json.data)) {
         return json.data.map(item => ({
           stt: parseInt(item.stt, 10),
-          id: item.id,
-          holyName: item.holy_name || '',
-          lastName: item.last_name || '',
-          firstName: item.first_name || '',
+          id: item.id || item.teacher_id,
+          holyName: item.holyName || item.holy_name || '',
+          lastName: item.lastName || item.last_name || '',
+          firstName: item.firstName || item.first_name || '',
           gender: item.gender || 'Nữ',
           cert: item.cert || '',
           block: item.block || '',
-          teachingClass: item.teaching_class || '',
-          photo: item.photo_url || ''
+          teachingClass: item.teachingClass || item.teaching_class || '',
+          photo: item.photo || item.photo_url || ''
         }));
       }
     } catch (e) {
-      console.warn('Không thể kết nối API Teachers, chuyển sang LocalStorage:', e);
+      console.warn('Không thể kết nối API Teachers:', e);
     }
     return null;
   },
@@ -129,18 +126,18 @@ const API = {
       const json = await res.json();
       if (json.success && Array.isArray(json.data)) {
         return json.data.map(c => ({
-          id: c.id,
-          name: c.name,
+          id: c.id || c.class_id,
+          name: c.name || c.class_name,
           block: c.block,
           room: c.room || '',
           schedule: c.schedule || 'Chủ Nhật: 07:30 - 09:00',
-          studentCount: parseInt(c.student_count, 10) || 0,
+          studentCount: parseInt(c.studentCount || c.student_count, 10) || 0,
           teacherIds: c.teacherIds || [],
           note: c.note || ''
         }));
       }
     } catch (e) {
-      console.warn('Không thể kết nối API Classes, chuyển sang LocalStorage:', e);
+      console.warn('Không thể kết nối API Classes:', e);
     }
     return null;
   },
