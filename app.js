@@ -267,6 +267,11 @@ function ensureDefaultStudentsForAllClasses() {
       changed = true;
     }
   });
+  if (changed) {
+    saveClassesDatabase();
+  }
+}
+
 // ==========================================================================
 // DỮ LIỆU THÔNG BÁO & TÀI LIỆU
 // ==========================================================================
