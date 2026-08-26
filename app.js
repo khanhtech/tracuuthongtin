@@ -12,187 +12,11 @@ const DEFAULT_AVATAR_MALE = 'assets/avatar_male.jpg';
 const DEFAULT_AVATAR_FEMALE = 'assets/avatar_female.jpg';
 
 // ==========================================================================
-// DỮ LIỆU GIÁO LÝ VIÊN MẪU (DEFAULT GLV DATASET)
 // ==========================================================================
-const DEFAULT_DATASET = [
-  { stt: 1, id: 'GLV01', holyName: 'MARIA', lastName: 'NGUYỄN THỊ VÂN', firstName: 'ANH', gender: 'Nữ', cert: '2', block: 'Khai Tâm', teachingClass: 'Khai Tâm 1', photo: '' },
-  { stt: 2, id: 'GLV02', holyName: 'GIUSE', lastName: 'NGUYỄN CÔNG', firstName: 'ANH', gender: 'Nam', cert: '3', block: 'Thêm Sức', teachingClass: 'Thêm Sức 3', photo: '' },
-  { stt: 3, id: 'GLV03', holyName: 'VINCENT', lastName: 'VŨ THÀNH', firstName: 'ÂN', gender: 'Nam', cert: '2', block: 'Bao Đồng', teachingClass: 'Bao Đồng 2', photo: '' },
-  { stt: 4, id: 'GLV04', holyName: 'INHAXIO', lastName: 'PHAN THIÊN', firstName: 'ÂN', gender: 'Nam', cert: '2', block: 'Thêm Sức', teachingClass: 'Thêm Sức 1', photo: '' },
-  { stt: 5, id: 'GLV05', holyName: 'GIUSE', lastName: 'LÊ', firstName: 'DUY', gender: 'Nam', cert: '1', block: 'Khai Tâm', teachingClass: 'Khai Tâm 1', photo: '' },
-  { stt: 6, id: 'GLV06', holyName: 'GIUSE', lastName: 'PHẠM ĐĂNG', firstName: 'DUY', gender: 'Nam', cert: '', block: 'Rước Lễ', teachingClass: 'Rước Lễ 1', photo: '' },
-  { stt: 7, id: 'GLV07', holyName: 'GIUSE', lastName: 'NGUYỄN THÁI', firstName: 'DƯƠNG', gender: 'Nam', cert: '1', block: 'Rước Lễ', teachingClass: 'Rước Lễ 1', photo: '' },
-  { stt: 8, id: 'GLV08', holyName: 'ĐAMINH', lastName: 'LÊ TRÍ', firstName: 'ĐẠO', gender: 'Nam', cert: '2', block: 'Rước Lễ', teachingClass: 'Rước Lễ 3', photo: '' },
-  { stt: 9, id: 'GLV09', holyName: 'GIUSE', lastName: 'TRỊNH THANH', firstName: 'HẢI', gender: 'Nam', cert: '1', block: 'Thêm Sức', teachingClass: 'Thêm Sức 2', photo: '' },
-  { stt: 10, id: 'GLV10', holyName: 'TERESA', lastName: 'NGUYỄN THỊ NGỌC', firstName: 'HÂN', gender: 'Nữ', cert: '', block: 'Rước Lễ', teachingClass: 'Rước Lễ 3', photo: '' },
-  { stt: 11, id: 'GLV11', holyName: 'MARIA', lastName: 'TRẦN THỊ', firstName: 'HIỀN', gender: 'Nữ', cert: '1', block: 'Khai Tâm', teachingClass: 'Khai Tâm 1', photo: '' },
-  { stt: 12, id: 'GLV12', holyName: 'GIUSE', lastName: 'PHẠM HOÀNG MINH', firstName: 'HIẾU', gender: 'Nam', cert: '2', block: 'Thêm Sức', teachingClass: 'Thêm Sức 2', photo: '' },
-  { stt: 13, id: 'GLV13', holyName: 'ĐAMINH', lastName: 'ĐẶNG TRẦN NHẬT', firstName: 'HOAN', gender: 'Nam', cert: '2', block: 'Bao Đồng', teachingClass: 'Bao Đồng 1', photo: '' },
-  { stt: 14, id: 'GLV14', holyName: 'GIOAN BOSCO', lastName: 'ĐỊNH QUANG', firstName: 'HUY', gender: 'Nam', cert: '3', block: 'Bao Đồng', teachingClass: 'Bao Đồng 3', photo: '' },
-  { stt: 15, id: 'GLV15', holyName: 'MARIA', lastName: 'BÙI DIỆU', firstName: 'HUYỀN', gender: 'Nữ', cert: '3', block: 'Thêm Sức', teachingClass: 'Thêm Sức 3', photo: '' },
-  { stt: 16, id: 'GLV16', holyName: 'ĐAMINH', lastName: 'ĐÀO BẢO', firstName: 'KHANH', gender: 'Nam', cert: '3 - BMVTN', block: 'Vào Đời', teachingClass: 'Vào Đời 1', photo: '' },
-  { stt: 17, id: 'GLV17', holyName: 'GIOAN KIM', lastName: 'TRẦN VŨ ĐĂNG', firstName: 'KHOA', gender: 'Nam', cert: '2 - BMVTN', block: 'Vào Đời', teachingClass: 'Vào Đời 1', photo: '' },
-  { stt: 18, id: 'GLV18', holyName: 'MARIA', lastName: 'LÂM HOÀI', firstName: 'LIÊN', gender: 'Nữ', cert: '3', block: 'Bao Đồng', teachingClass: 'Bao Đồng 3', photo: '' },
-  { stt: 19, id: 'GLV19', holyName: 'GIUSE', lastName: 'LÊ DƯƠNG CÔNG', firstName: 'MINH', gender: 'Nam', cert: '2 - BMVTN', block: 'Vào Đời', teachingClass: 'Vào Đời 2', photo: '' },
-  { stt: 20, id: 'GLV20', holyName: 'MARIA', lastName: 'DƯƠNG ĐỖ GIA', firstName: 'NGHI', gender: 'Nữ', cert: '3', block: 'Vào Đời', teachingClass: 'Vào Đời 1', photo: '' },
-  { stt: 21, id: 'GLV21', holyName: 'GIOANKIM', lastName: 'NGUYỄN ĐỨC', firstName: 'NHẬT', gender: 'Nam', cert: '1', block: 'Rước Lễ', teachingClass: 'Rước Lễ 2', photo: '' },
-  { stt: 22, id: 'GLV22', holyName: 'MARIA', lastName: 'NGUYỄN HÀ UYÊN', firstName: 'NHI', gender: 'Nữ', cert: '2', block: 'Khai Tâm', teachingClass: 'Khai Tâm 2', photo: '' },
-  { stt: 23, id: 'GLV23', holyName: 'MARIA', lastName: 'NGUYỄN THỊ DIỆU', firstName: 'NHƯ', gender: 'Nữ', cert: '1', block: 'Thêm Sức', teachingClass: 'Thêm Sức 1', photo: '' },
-  { stt: 24, id: 'GLV24', holyName: 'MARIA', lastName: 'TRẦN NHẬT QUỲNH', firstName: 'NHƯ', gender: 'Nữ', cert: '1', block: 'Khai Tâm', teachingClass: 'Khai Tâm 2', photo: '' },
-  { stt: 25, id: 'GLV25', holyName: 'ANNA', lastName: 'HOÀNG NHƯ', firstName: 'QUỲNH', gender: 'Nữ', cert: '1', block: 'Rước Lễ', teachingClass: 'Rước Lễ 1', photo: '' },
-  { stt: 26, id: 'GLV26', holyName: 'MARIA', lastName: 'PHẠM NGUYỄN HƯƠNG', firstName: 'QUỲNH', gender: 'Nữ', cert: '1', block: 'Bao Đồng', teachingClass: 'Bao Đồng 1', photo: '' },
-  { stt: 27, id: 'GLV27', holyName: 'TERESA', lastName: 'KIM NGUYỄN THANH', firstName: 'TÂM', gender: 'Nữ', cert: '2', block: 'Thêm Sức', teachingClass: 'Thêm Sức 2', photo: '' },
-  { stt: 28, id: 'GLV28', holyName: 'PHERO', lastName: 'HOÀNG NHẬT', firstName: 'TÂN', gender: 'Nam', cert: '1', block: 'Bao Đồng', teachingClass: 'Bao Đồng 3', photo: '' },
-  { stt: 29, id: 'GLV29', holyName: 'MARIA', lastName: 'VÕ NGỌC LAN', firstName: 'THẢO', gender: 'Nữ', cert: '3', block: 'Bao Đồng', teachingClass: 'Bao Đồng 1', photo: '' },
-  { stt: 30, id: 'GLV30', holyName: 'TERESA', lastName: 'ĐỊNH THỊ THANH', firstName: 'THẢO', gender: 'Nữ', cert: '3', block: 'Bao Đồng', teachingClass: 'Bao Đồng 2', photo: '' },
-  { stt: 31, id: 'GLV31', holyName: 'ANNA', lastName: 'VŨ THỊ', firstName: 'THẢO', gender: 'Nữ', cert: '3', block: 'Rước Lễ', teachingClass: 'Rước Lễ 2', photo: '' },
-  { stt: 32, id: 'GLV32', holyName: 'GIUSE', lastName: 'VÕ DUY', firstName: 'THỐNG', gender: 'Nam', cert: '2', block: 'Rước Lễ', teachingClass: 'Rước Lễ 3', photo: '' },
-  { stt: 33, id: 'GLV33', holyName: 'MARIA', lastName: 'VŨ NGỌC ANH', firstName: 'THƯ', gender: 'Nữ', cert: '2', block: 'Rước Lễ', teachingClass: 'Rước Lễ 3', photo: '' },
-  { stt: 34, id: 'GLV34', holyName: 'MARIA', lastName: 'TRẦN NHẬT ANH', firstName: 'THƯ', gender: 'Nữ', cert: '2', block: 'Thêm Sức', teachingClass: 'Thêm Sức 1', photo: '' },
-  { stt: 35, id: 'GLV35', holyName: 'PHERO', lastName: 'NGUYỄN TẤN', firstName: 'TIẾN', gender: 'Nam', cert: '1', block: 'Rước Lễ', teachingClass: 'Rước Lễ 2', photo: '' },
-  { stt: 36, id: 'GLV36', holyName: 'MARIA', lastName: 'BẠCH NGUYỄN BẢO', firstName: 'TRÂM', gender: 'Nữ', cert: '1', block: 'Khai Tâm', teachingClass: 'Khai Tâm 2', photo: '' },
-  { stt: 37, id: 'GLV37', holyName: 'TERESA', lastName: 'NGUYỄN NHẬT KHÁNH', firstName: 'TRÂN', gender: 'Nữ', cert: '3 - BMVTN', block: 'Vào Đời', teachingClass: 'Vào Đời 2', photo: '' },
-  { stt: 38, id: 'GLV38', holyName: 'MARIA', lastName: 'NGUYỄN THANH', firstName: 'TRÚC', gender: 'Nữ', cert: '1', block: 'Khai Tâm', teachingClass: 'Khai Tâm 2', photo: '' },
-  { stt: 39, id: 'GLV39', holyName: 'MARIA', lastName: 'ĐOÀN THANH', firstName: 'TRÚC', gender: 'Nữ', cert: '', block: 'Bao Đồng', teachingClass: 'Bao Đồng 2', photo: '' },
-  { stt: 40, id: 'GLV40', holyName: 'MARIA', lastName: 'TRẦN NGUYỄN PHƯƠNG', firstName: 'UYÊN', gender: 'Nữ', cert: '1', block: 'Thêm Sức', teachingClass: 'Thêm Sức 3', photo: '' },
-  { stt: 41, id: 'GLV41', holyName: 'MARIA', lastName: 'NGUYỄN KHÁNH', firstName: 'VY', gender: 'Nữ', cert: '', block: 'Vào Đời', teachingClass: 'Vào Đời 1', photo: '' }
-];
-
+// DỮ LIỆU CƠ SỞ ĐƯỢC TẢI TRỰC TIẾP TỪ DATABASE MYSQL (REST API)
 // ==========================================================================
-// DỮ LIỆU LỚP HỌC MẪU (DEFAULT CLASSES DATASET)
-// ==========================================================================
-const DEFAULT_CLASSES_DATASET = [
-  {
-    id: 'CLASS_DBKT',
-    name: 'Dự Bị Khai Tâm',
-    block: 'Khai Tâm',
-    room: 'Phòng 100 (Dãy A)',
-    schedule: 'Chủ Nhật: 07:30 - 09:00',
-    studentCount: 24,
-    teacherIds: ['GLV05', 'GLV24'],
-    note: 'Lớp ấu nhi làm quen môi trường Giáo Lý & Thiếu Nhi Thánh Thể'
-  },
-  {
-    id: 'CLASS_KT1',
-    name: 'Khai Tâm 1',
-    block: 'Khai Tâm',
-    room: 'Phòng 101 (Dãy A)',
-    schedule: 'Chủ Nhật: 07:30 - 09:00',
-    studentCount: 26,
-    teacherIds: ['GLV01', 'GLV11'],
-    note: 'Lớp chuẩn bị làm quen Giáo Lý & Sinh hoạt Thiếu nhi Thánh Thể'
-  },
-  {
-    id: 'CLASS_KT2',
-    name: 'Khai Tâm 2',
-    block: 'Khai Tâm',
-    room: 'Phòng 102 (Dãy A)',
-    schedule: 'Chủ Nhật: 07:30 - 09:00',
-    studentCount: 28,
-    teacherIds: ['GLV22', 'GLV38', 'GLV36'],
-    note: 'Học kinh căn bản, chuyện Phúc Âm và nhân bản Kitô giáo'
-  },
-  {
-    id: 'CLASS_RL1',
-    name: 'Rước Lễ 1',
-    block: 'Rước Lễ',
-    room: 'Phòng 201 (Dãy B)',
-    schedule: 'Chủ Nhật: 07:30 - 09:00',
-    studentCount: 30,
-    teacherIds: ['GLV25', 'GLV07', 'GLV06'],
-    note: 'Học lịch sử Cứu Độ và các Bí Tích Nhập Môn'
-  },
-  {
-    id: 'CLASS_RL2',
-    name: 'Rước Lễ 2',
-    block: 'Rước Lễ',
-    room: 'Phòng 202 (Dãy B)',
-    schedule: 'Chủ Nhật: 07:30 - 09:00',
-    studentCount: 32,
-    teacherIds: ['GLV31', 'GLV35', 'GLV21', 'GLV32'],
-    note: 'Bí tích Thánh Thể & Nghi thức Xưng Tội Rước Lễ Lần Đầu'
-  },
-  {
-    id: 'CLASS_TS1',
-    name: 'Thêm Sức 1',
-    block: 'Thêm Sức',
-    room: 'Phòng 301 (Dãy C)',
-    schedule: 'Chủ Nhật: 07:30 - 09:00',
-    studentCount: 29,
-    teacherIds: ['GLV04', 'GLV23', 'GLV34'],
-    note: 'Tìm hiểu ơn Chúa Thánh Thần và Đời sống chứng nhân Kitô hữu'
-  },
-  {
-    id: 'CLASS_TS2',
-    name: 'Thêm Sức 2',
-    block: 'Thêm Sức',
-    room: 'Phòng 302 (Dãy C)',
-    schedule: 'Chủ Nhật: 07:30 - 09:00',
-    studentCount: 31,
-    teacherIds: ['GLV12', 'GLV27', 'GLV09', 'GLV02', 'GLV15', 'GLV40'],
-    note: 'Chuẩn bị lãnh nhận Bí Tích Thêm Sức từ Đức Giám Mục'
-  },
-  {
-    id: 'CLASS_BD1',
-    name: 'Bao Đồng 1',
-    block: 'Bao Đồng',
-    room: 'Hội Trường A',
-    schedule: 'Chủ Nhật: 07:30 - 09:00',
-    studentCount: 26,
-    teacherIds: ['GLV13', 'GLV29', 'GLV26'],
-    note: 'Hiểu biết và dấn thân trong cộng đoàn Giáo Xứ'
-  },
-  {
-    id: 'CLASS_BD2',
-    name: 'Bao Đồng 2',
-    block: 'Bao Đồng',
-    room: 'Hội Trường B',
-    schedule: 'Chủ Nhật: 07:30 - 09:00',
-    studentCount: 25,
-    teacherIds: ['GLV03', 'GLV30', 'GLV39'],
-    note: 'Học hỏi Luân lý Công giáo và Phụng vụ Thánh Lễ'
-  },
-  {
-    id: 'CLASS_BD3',
-    name: 'Bao Đồng 3',
-    block: 'Bao Đồng',
-    room: 'Hội Trường C',
-    schedule: 'Chủ Nhật: 07:30 - 09:00',
-    studentCount: 27,
-    teacherIds: ['GLV14', 'GLV18', 'GLV28'],
-    note: 'Nghi thức Tuyên Hứa Bao Đồng & Tái tuyên xưng Đức Tin'
-  },
-  {
-    id: 'CLASS_BD4',
-    name: 'Bao Đồng 4',
-    block: 'Bao Đồng',
-    room: 'Hội Trường D',
-    schedule: 'Chủ Nhật: 07:30 - 09:00',
-    studentCount: 24,
-    teacherIds: ['GLV08', 'GLV10', 'GLV33'],
-    note: 'Trưởng thành Đức Tin & Dấn thân phục vụ Giáo Hội'
-  },
-  {
-    id: 'CLASS_VD1',
-    name: 'Vào Đời 1',
-    block: 'Vào Đời',
-    room: 'Phòng Đa Năng 1',
-    schedule: 'Chủ Nhật: 09:15 - 10:30',
-    studentCount: 22,
-    teacherIds: ['GLV16', 'GLV17', 'GLV41', 'GLV20'],
-    note: 'Đức tin & Định hướng nghề nghiệp Kitô hữu trẻ'
-  },
-  {
-    id: 'CLASS_VD2',
-    name: 'Vào Đời 2',
-    block: 'Vào Đời',
-    room: 'Phòng Đa Năng 2',
-    schedule: 'Chủ Nhật: 09:15 - 10:30',
-    studentCount: 20,
-    teacherIds: ['GLV19', 'GLV37'],
-    note: 'Học thuyết Xã hội Công giáo và hôn nhân gia đình'
-  }
-];
+const DEFAULT_DATASET = [];
+const DEFAULT_CLASSES_DATASET = [];
 
 // ==========================================================================
 // STORAGE & APP STATE
@@ -1231,76 +1055,15 @@ function closeGlvQuickView() {
 }
 
 // ==========================================================================
-// DỮ LIỆU & QUẢN LÝ THIẾU NHI THEO LỚP
+// DỮ LIỆU & QUẢN LÝ THIẾU NHI THEO LỚP (MYSQL DATABASE)
 // ==========================================================================
-const CATHOLIC_HOLY_NAMES_MALE = ['Giuse', 'Phêrô', 'Gioan', 'Phaolô', 'Đaminh', 'Phanxicô', 'Antôn', 'Anrê', 'Micae', 'Tôma', 'Gioan Baotixita', 'Giacôbê', 'Inhaxiô', 'Augustinô'];
-const CATHOLIC_HOLY_NAMES_FEMALE = ['Maria', 'Anna', 'Têrêsa', 'Macta', 'Cêcilia', 'Agata', 'Lucia', 'Rosa', 'Têrêsa HĐCG', 'Maria Mađalêna', 'Êlisabéth'];
-
-const VIET_LAST_NAMES = ['Nguyễn', 'Trần', 'Lê', 'Phạm', 'Hoàng', 'Huỳnh', 'Phan', 'Vũ', 'Võ', 'Đặng', 'Bùi', 'Đỗ', 'Hồ', 'Ngô', 'Dương', 'Lý'];
-const VIET_MIDDLE_MALE = ['Văn', 'Đức', 'Hữu', 'Minh', 'Hoàng', 'Nhật', 'Quang', 'Thành', 'Tuấn', 'Bảo', 'Gia'];
-const VIET_MIDDLE_FEMALE = ['Thị', 'Ngọc', 'Thanh', 'Phương', 'Mai', 'Thùy', 'Hà', 'Kim', 'Bảo', 'Khánh'];
-const VIET_FIRST_MALE = ['An', 'Bình', 'Cường', 'Dũng', 'Đạt', 'Hải', 'Huy', 'Khánh', 'Khoa', 'Lâm', 'Long', 'Minh', 'Nam', 'Nghĩa', 'Phong', 'Phúc', 'Quân', 'Sơn', 'Tâm', 'Thắng', 'Thịnh', 'Toàn', 'Trung', 'Tú', 'Việt', 'Vinh'];
-const VIET_FIRST_FEMALE = ['Anh', 'Bích', 'Châu', 'Chi', 'Dung', 'Duyên', 'Giang', 'Hà', 'Hân', 'Hiền', 'Hoa', 'Hương', 'Linh', 'Mai', 'My', 'Nga', 'Ngân', 'Nhi', 'Như', 'Nhung', 'Oanh', 'Phương', 'Quỳnh', 'Thảo', 'Thu', 'Trang', 'Trâm', 'Trúc', 'Tú', 'Uyên', 'Vân', 'Vy', 'Yến'];
-
-const SAMPLE_STUDENT_NOTES = ['Đang theo học', 'Đang theo học', 'Đang theo học', 'Lớp trưởng', 'Lớp phó', 'Ban Lễ Sinh', 'Ca đoàn Thiếu Nhi', 'Đang theo học', 'Đang theo học'];
-
 function getClassStudents(cls) {
-  if (cls.students && Array.isArray(cls.students) && cls.students.length > 0) {
+  if (!cls) return [];
+  if (Array.isArray(cls.students)) {
     return cls.students;
   }
-
-  const count = parseInt(cls.studentCount, 10) || 24;
-  const block = cls.block || 'Khai Tâm';
-  let baseYear = 2018;
-  if (block === 'Khai Tâm') baseYear = (cls.id === 'CLASS_DBKT') ? 2019 : 2018;
-  else if (block === 'Rước Lễ') baseYear = 2016;
-  else if (block === 'Thêm Sức') baseYear = 2014;
-  else if (block === 'Bao Đồng') baseYear = 2012;
-  else if (block === 'Vào Đời') baseYear = 2009;
-
-  const code = (cls.id || 'CLS').replace('CLASS_', '');
-  const list = [];
-  let seed = 0;
-  for (let i = 0; i < (cls.id || 'CLS').length; i++) {
-    seed = (seed * 31 + (cls.id || 'CLS').charCodeAt(i)) % 100000;
-  }
-
-  for (let i = 1; i <= count; i++) {
-    const isMale = ((seed + i * 7) % 2 === 0);
-    const holy = isMale 
-      ? CATHOLIC_HOLY_NAMES_MALE[(seed + i * 3) % CATHOLIC_HOLY_NAMES_MALE.length]
-      : CATHOLIC_HOLY_NAMES_FEMALE[(seed + i * 3) % CATHOLIC_HOLY_NAMES_FEMALE.length];
-
-    const last = VIET_LAST_NAMES[(seed + i * 5) % VIET_LAST_NAMES.length];
-    const mid = isMale 
-      ? VIET_MIDDLE_MALE[(seed + i * 11) % VIET_MIDDLE_MALE.length]
-      : VIET_MIDDLE_FEMALE[(seed + i * 11) % VIET_MIDDLE_FEMALE.length];
-    const first = isMale 
-      ? VIET_FIRST_MALE[(seed + i * 13) % VIET_FIRST_MALE.length]
-      : VIET_FIRST_FEMALE[(seed + i * 13) % VIET_FIRST_FEMALE.length];
-
-    const day = String(1 + ((seed + i * 17) % 28)).padStart(2, '0');
-    const month = String(1 + ((seed + i * 19) % 12)).padStart(2, '0');
-    const yearOffset = (seed + i) % 2;
-    const year = baseYear + yearOffset;
-
-    let note = SAMPLE_STUDENT_NOTES[(seed + i * 23) % SAMPLE_STUDENT_NOTES.length];
-    if (i === 1) note = 'Lớp trưởng';
-    else if (i === 2) note = 'Lớp phó học tập';
-
-    list.push({
-      stt: i,
-      id: `TN-${code}-${String(i).padStart(2, '0')}`,
-      holyName: holy,
-      fullName: `${last} ${mid} ${first}`,
-      gender: isMale ? 'Nam' : 'Nữ',
-      birthDate: `${day}/${month}/${year}`,
-      note: note
-    });
-  }
-
-  cls.students = list;
-  return list;
+  cls.students = [];
+  return cls.students;
 }
 
 function exportClassStudentsToExcel(cls) {
@@ -2972,14 +2735,13 @@ function exportDatabaseToExcel() {
   }
 }
 
-function resetDatabaseToOriginal() {
-  const confirmReset = confirm('Bạn có chắc chắn muốn khôi phục toàn bộ danh sách về dữ liệu gốc ban đầu không? Mọi chỉnh sửa tùy biến sẽ bị xóa.');
+async function resetDatabaseToOriginal() {
+  const confirmReset = confirm('Bạn có chắc chắn muốn làm mới và tải lại toàn bộ dữ liệu từ Cơ Sở Dữ Liệu MySQL không?');
   if (!confirmReset) return;
 
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(CLASS_STORAGE_KEY);
-  glvDatabase = [...DEFAULT_DATASET];
-  classDatabase = [...DEFAULT_CLASSES_DATASET];
+  await initApiSync();
   
   updateStatsDisplay();
   initClassModule();
@@ -2993,7 +2755,7 @@ function resetDatabaseToOriginal() {
   applyModalFilters();
   showWelcomeState();
   if (currentTab === 'classes') renderClassesView();
-  showToast('Đã khôi phục dữ liệu về ban đầu!');
+  showToast('Đã tải lại toàn bộ dữ liệu từ MySQL Database!');
 }
 
 function applyModalFilters() {
