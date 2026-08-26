@@ -603,6 +603,9 @@
               </div>
 
               <div class="modal-toolbar-actions">
+                <button class="btn-tool btn-gradebook-class" id="tabStudentsGradebookBtn" title="Mở Sổ Điểm Điện Tử & Quản Lý Chuyên Cần">
+                  <i class="fa-solid fa-graduation-cap"></i> Sổ Điểm Điện Tử
+                </button>
                 <button class="btn-tool btn-tool-add" id="tabStudentsAddBtn">
                   <i class="fa-solid fa-user-plus"></i> Thêm Thiếu Nhi
                 </button>
@@ -949,6 +952,9 @@
       </div>
 
       <div class="modal-footer class-detail-footer">
+        <button class="btn-tool btn-gradebook-class" id="btnOpenGradebookFromDetail" title="Mở Sổ Điểm & Chuyên Cần của lớp này">
+          <i class="fa-solid fa-graduation-cap"></i> Sổ Điểm & Chuyên Cần
+        </button>
         <button class="btn-tool btn-edit-class-from-detail" id="btnEditClassFromDetail">
           <i class="fa-solid fa-pen-to-square"></i> Chỉnh Sửa Lớp
         </button>
@@ -1049,6 +1055,9 @@
           <input type="text" id="rosterSearchInput" placeholder="Tìm nhanh Tên Thánh, Họ tên, Mã thiếu nhi hoặc Ghi chú...">
         </div>
         <div class="modal-toolbar-actions">
+          <button class="btn-tool btn-gradebook-class" id="rosterOpenGradebookBtn" title="Xem & Nhập Sổ Điểm của lớp này">
+            <i class="fa-solid fa-graduation-cap"></i> Sổ Điểm Lớp
+          </button>
           <button class="btn-tool btn-tool-add" id="rosterAddStudentBtn">
             <i class="fa-solid fa-user-plus"></i> Thêm Thiếu Nhi
           </button>
@@ -1284,6 +1293,135 @@
             <i class="fa-solid fa-cloud-arrow-up"></i> Xác Nhận Nạp Vào Lớp
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: SỔ ĐIỂM ĐIỆN TỬ & CHUYÊN CẦN (CLASS GRADEBOOK MODAL)
+       ========================================================================== -->
+  <div class="modal-backdrop modal-backdrop-top modal-super-top" id="classGradebookModal" style="display: none;" onclick="if(event.target===this) this.style.display='none';">
+    <div class="modal-content modal-large modal-gradebook-wide">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-graduation-cap"></i>
+          <span>Sổ Điểm & Chuyên Cần – <span id="gradebookClassTitle" style="color: #fbbf24;">Lớp Dự Bị Khai Tâm</span></span>
+        </div>
+        <button class="modal-close-btn" id="closeClassGradebookModalBtn" title="Đóng cửa sổ" onclick="document.getElementById('classGradebookModal').style.display='none';"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Toolbar Sổ Điểm: Chọn lớp, Chọn học kỳ, Tìm kiếm & Xuất Nhập -->
+      <div class="gradebook-header-toolbar">
+        <div class="gradebook-controls-left">
+          <!-- Chọn Lớp Học -->
+          <div class="gradebook-class-selector">
+            <label for="gradebookClassSelect"><i class="fa-solid fa-school"></i> Lớp:</label>
+            <select id="gradebookClassSelect"></select>
+          </div>
+
+          <!-- Bộ Chọn Học Kỳ (Pill Tabs) -->
+          <div class="gradebook-semester-tabs" id="gradebookSemesterTabs">
+            <button class="semester-tab-btn active" data-semester="hk1">
+              <i class="fa-solid fa-calendar-check"></i> Học Kỳ 1
+            </button>
+            <button class="semester-tab-btn" data-semester="hk2">
+              <i class="fa-solid fa-calendar-check"></i> Học Kỳ 2
+            </button>
+            <button class="semester-tab-btn" data-semester="final">
+              <i class="fa-solid fa-trophy"></i> Tổng Kết Cả Năm
+            </button>
+          </div>
+        </div>
+
+        <div class="gradebook-controls-right">
+          <div class="gradebook-search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="gradebookSearchInput" placeholder="Tìm tên, mã thiếu nhi...">
+          </div>
+
+          <div class="gradebook-action-btns">
+            <button class="btn-tool btn-save-gradebook" id="btnSaveGradebook" title="Lưu điểm số vào hệ thống">
+              <i class="fa-solid fa-floppy-disk"></i> Lưu Điểm
+            </button>
+            <button class="btn-tool btn-tool-import" id="btnImportGradebookExcel" title="Nhập bảng điểm từ file Excel">
+              <i class="fa-solid fa-file-import"></i> Nhập Excel
+            </button>
+            <button class="btn-tool btn-tool-export" id="btnExportGradebookExcel" title="Xuất bảng điểm lớp ra file Excel (.xlsx)">
+              <i class="fa-solid fa-file-excel"></i> Xuất Excel
+            </button>
+            <button class="btn-tool btn-print-gradebook" id="btnPrintGradebook" title="In bảng điểm tổng hợp của lớp">
+              <i class="fa-solid fa-print"></i> In Bảng Điểm
+            </button>
+            <input type="file" id="gradebookImportFileInput" accept=".xlsx, .xls, .csv" style="display: none;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Thẻ Thống Kê Điểm Số & Xếp Loại Lớp Nhanh -->
+      <div class="gradebook-stats-bar">
+        <div class="gb-stat-item">
+          <span class="gb-stat-label">Sĩ Số Lớp:</span>
+          <strong class="gb-stat-val" id="gbStatStudentCount">0 Em</strong>
+        </div>
+        <div class="gb-stat-item">
+          <span class="gb-stat-label">ĐTB Giáo Lý:</span>
+          <strong class="gb-stat-val text-gold" id="gbStatClassAvg">--</strong>
+        </div>
+        <div class="gb-stat-item">
+          <span class="gb-stat-label">ĐTB Chuyên Cần:</span>
+          <strong class="gb-stat-val text-green" id="gbStatAttendanceAvg">--</strong>
+        </div>
+        <div class="gb-stat-item">
+          <span class="gb-stat-label">Phân Loại:</span>
+          <span class="gb-stat-pills" id="gbStatRankPills">
+            <span class="gb-pill pill-gold"><strong id="gbCountGioi">0</strong> Giỏi</span>
+            <span class="gb-pill pill-blue"><strong id="gbCountKha">0</strong> Khá</span>
+            <span class="gb-pill pill-gray"><strong id="gbCountTb">0</strong> TB</span>
+            <span class="gb-pill pill-red"><strong id="gbCountYeu">0</strong> Yếu</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Lưới Bảng Điểm (Editable Spreadsheet Grid) -->
+      <div class="table-responsive gradebook-table-wrapper" id="gradebookTableWrapper">
+        <table class="glv-table gradebook-table" id="gradebookTable">
+          <thead id="gradebookTableHead"></thead>
+          <tbody id="gradebookTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="modal-footer" style="padding: 0.85rem 1.25rem; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.84rem; color: #64748b;">
+          <i class="fa-solid fa-circle-info" style="color: #3b82f6;"></i>
+          <strong>Mẹo:</strong> Nhập điểm từ 0 đến 10. Điểm trung bình và xếp loại được tính tự động theo thời gian thực.
+        </span>
+        <button type="button" class="btn-cancel" id="closeClassGradebookFooterBtn" onclick="document.getElementById('classGradebookModal').style.display='none';">Đóng Sổ Điểm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: PHIẾU BÁO ĐIỂM & KẾT QUẢ HỌC TẬP CÁ NHÂN (STUDENT REPORT CARD)
+       ========================================================================== -->
+  <div class="modal-backdrop modal-super-top" id="studentReportCardModal" style="display: none;" onclick="if(event.target===this) this.style.display='none';">
+    <div class="modal-content modal-report-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-award"></i>
+          <span>Phiếu Báo Kết Quả Giáo Lý & Chuyên Cần</span>
+        </div>
+        <button class="modal-close-btn" id="closeStudentReportCardModalBtn" title="Đóng cửa sổ" onclick="document.getElementById('studentReportCardModal').style.display='none';"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="report-card-printable" id="reportCardPrintArea">
+        <!-- Nội dung phiếu điểm cá nhân render động từ JS -->
+      </div>
+
+      <div class="modal-footer" style="padding: 0.85rem 1.25rem; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button type="button" class="btn-cancel" onclick="document.getElementById('studentReportCardModal').style.display='none';">Đóng</button>
+        <button type="button" class="btn-tool btn-tool-add" id="btnPrintSingleReportCard">
+          <i class="fa-solid fa-print"></i> In Phiếu Điểm Này
+        </button>
       </div>
     </div>
   </div>

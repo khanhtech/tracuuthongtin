@@ -138,6 +138,64 @@ switch ($method) {
             break;
         }
 
+        // 1.1 XỬ LÝ LƯU ĐIỂM SỐ & CHUYÊN CẦN CỦA LỚP
+        if (isset($data['action']) && $data['action'] === 'save_class_grades' && isset($data['grades']) && is_array($data['grades'])) {
+            $classId = trim($data['class_id'] ?? ($data['classId'] ?? ''));
+            $grades = $data['grades'];
+
+            try {
+                $pdo->beginTransaction();
+                $updateStmt = $pdo->prepare("
+                    UPDATE enrollments_and_grades 
+                    SET score_attendance_1 = ?,
+                        score_oral_1 = ?,
+                        score_15m_1 = ?,
+                        score_1period_1 = ?,
+                        score_exam_1 = ?,
+                        score_avg_1 = ?,
+                        score_attendance_2 = ?,
+                        score_oral_2 = ?,
+                        score_15m_2 = ?,
+                        score_1period_2 = ?,
+                        score_exam_2 = ?,
+                        score_avg_2 = ?,
+                        score_final = ?,
+                        evaluation = ?
+                    WHERE student_id = ? AND class_id = ?
+                ");
+
+                foreach ($grades as $g) {
+                    $sId = trim($g['studentId'] ?? ($g['id'] ?? ''));
+                    if (empty($sId)) continue;
+
+                    $updateStmt->execute([
+                        $g['score_attendance_1'] ?? null,
+                        $g['score_oral_1'] ?? null,
+                        $g['score_15m_1'] ?? null,
+                        $g['score_1period_1'] ?? null,
+                        $g['score_exam_1'] ?? null,
+                        $g['score_avg_1'] ?? null,
+                        $g['score_attendance_2'] ?? null,
+                        $g['score_oral_2'] ?? null,
+                        $g['score_15m_2'] ?? null,
+                        $g['score_1period_2'] ?? null,
+                        $g['score_exam_2'] ?? null,
+                        $g['score_avg_2'] ?? null,
+                        $g['score_final'] ?? null,
+                        $g['evaluation'] ?? 'Đang học',
+                        $sId,
+                        $classId
+                    ]);
+                }
+                $pdo->commit();
+                jsonResponse(true, "Đã cập nhật bảng điểm vào MySQL thành công!");
+            } catch (Exception $e) {
+                if ($pdo->inTransaction()) $pdo->rollBack();
+                jsonResponse(false, "Lỗi khi lưu điểm: " . $e->getMessage(), null, 500);
+            }
+            break;
+        }
+
         // 2. XỬ LÝ THÊM ĐƠN LẺ 1 THIẾU NHI
         $classId = trim($data['class_id'] ?? ($data['classId'] ?? ''));
         $holyName = trim($data['holyName'] ?? ($data['holy_name'] ?? ''));
