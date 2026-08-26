@@ -282,43 +282,76 @@ switch ($method) {
 
     case 'PUT':
         $data = getJsonInput();
-        $studentId = trim($_GET['id'] ?? ($data['id'] ?? ($data['student_id'] ?? '')));
+        $oldStudentId = trim($_GET['id'] ?? ($data['original_id'] ?? ($data['origId'] ?? ($data['id'] ?? ($data['student_id'] ?? '')))));
+        $newStudentId = trim($data['id'] ?? ($data['student_id'] ?? $oldStudentId));
         $classId = trim($data['class_id'] ?? ($data['classId'] ?? ''));
 
-        if (empty($studentId)) {
+        if (empty($oldStudentId)) {
             jsonResponse(false, "Thiếu mã thiếu nhi cần sửa!", null, 400);
         }
 
-        $holyName = trim($data['holyName'] ?? ($data['holy_name'] ?? ''));
-        $fullName = trim($data['fullName'] ?? ($data['full_name'] ?? ''));
-        $gender = trim($data['gender'] ?? 'Nam');
-        $birthDate = trim($data['birthDate'] ?? ($data['birth_date'] ?? ''));
-        $note = trim($data['note'] ?? ($data['role_in_class'] ?? 'Đang theo học'));
-        $parentName = trim($data['parentName'] ?? ($data['parent_name'] ?? ''));
-        $parentPhone = trim($data['parentPhone'] ?? ($data['parent_phone'] ?? ''));
-        $address = trim($data['address'] ?? '');
+        try {
+            $pdo->beginTransaction();
 
-        $parts = explode(' ', $fullName);
-        $firstName = array_pop($parts);
-        $lastName = implode(' ', $parts);
+            // Nếu Admin đổi Mã Thiếu Nhi mới
+            if (!empty($newStudentId) && $newStudentId !== $oldStudentId) {
+                $pdo->exec("SET FOREIGN_KEY_CHECKS=0");
+                $upIdStmt = $pdo->prepare("UPDATE students SET student_id = ? WHERE student_id = ?");
+                $upIdStmt->execute([$newStudentId, $oldStudentId]);
 
-        $upStmt = $pdo->prepare("
-            UPDATE students 
-            SET holy_name = ?, last_name = ?, first_name = ?, full_name = ?, gender = ?, birth_date = ?, parent_name = ?, parent_phone = ?, address = ?
-            WHERE student_id = ?
-        ");
-        $upStmt->execute([$holyName, $lastName, $firstName, $fullName, $gender, $birthDate, $parentName, $parentPhone, $address, $studentId]);
+                $upEgIdStmt = $pdo->prepare("UPDATE enrollments_and_grades SET student_id = ? WHERE student_id = ?");
+                $upEgIdStmt->execute([$newStudentId, $oldStudentId]);
+                $pdo->exec("SET FOREIGN_KEY_CHECKS=1");
+                $studentId = $newStudentId;
+            } else {
+                $studentId = $oldStudentId;
+            }
 
-        if (!empty($classId)) {
-            $upEg = $pdo->prepare("
-                UPDATE enrollments_and_grades 
-                SET role_in_class = ?
-                WHERE student_id = ? AND class_id = ?
+            $holyName = trim($data['holyName'] ?? ($data['holy_name'] ?? ''));
+            $fullName = trim($data['fullName'] ?? ($data['full_name'] ?? ''));
+            $gender = trim($data['gender'] ?? 'Nam');
+            $birthDate = trim($data['birthDate'] ?? ($data['birth_date'] ?? ''));
+            $note = trim($data['note'] ?? ($data['role_in_class'] ?? 'Đang theo học'));
+            $parentName = trim($data['parentName'] ?? ($data['parent_name'] ?? ''));
+            $parentPhone = trim($data['parentPhone'] ?? ($data['parent_phone'] ?? ''));
+            $address = trim($data['address'] ?? '');
+
+            $parts = explode(' ', $fullName);
+            $firstName = array_pop($parts);
+            $lastName = implode(' ', $parts);
+
+            $upStmt = $pdo->prepare("
+                UPDATE students 
+                SET holy_name = ?, last_name = ?, first_name = ?, full_name = ?, gender = ?, birth_date = ?, parent_name = ?, parent_phone = ?, address = ?
+                WHERE student_id = ?
             ");
-            $upEg->execute([$note, $studentId, $classId]);
-        }
+            $upStmt->execute([$holyName, $lastName, $firstName, $fullName, $gender, $birthDate, $parentName, $parentPhone, $address, $studentId]);
 
-        jsonResponse(true, "Cập nhật thông tin thiếu nhi thành công!");
+            if (!empty($classId)) {
+                $upEg = $pdo->prepare("
+                    UPDATE enrollments_and_grades 
+                    SET role_in_class = ?
+                    WHERE student_id = ? AND class_id = ?
+                ");
+                $upEg->execute([$note, $studentId, $classId]);
+            }
+
+            $pdo->commit();
+            jsonResponse(true, "Cập nhật thông tin thiếu nhi thành công!", [
+                "id" => $studentId,
+                "holyName" => $holyName,
+                "fullName" => $fullName,
+                "gender" => $gender,
+                "birthDate" => $birthDate,
+                "note" => $note,
+                "parentName" => $parentName,
+                "parentPhone" => $parentPhone,
+                "address" => $address
+            ]);
+        } catch (Exception $e) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            jsonResponse(false, "Lỗi khi cập nhật thiếu nhi: " . $e->getMessage(), null, 500);
+        }
         break;
 
     case 'DELETE':

@@ -275,7 +275,8 @@ const API = {
   async saveStudent(student, isNew = false) {
     try {
       const method = isNew ? 'POST' : 'PUT';
-      const url = isNew ? `${API_CONFIG.BASE_URL}/students.php` : `${API_CONFIG.BASE_URL}/students.php?id=${encodeURIComponent(student.id)}`;
+      const targetId = student.originalId || student.origId || student.id;
+      const url = isNew ? `${API_CONFIG.BASE_URL}/students.php` : `${API_CONFIG.BASE_URL}/students.php?id=${encodeURIComponent(targetId)}`;
       const classId = student.classId || student.class_id;
       const res = await fetch(url, {
         method: method,
@@ -284,6 +285,7 @@ const API = {
           class_id: classId,
           classId: classId,
           id: student.id,
+          original_id: targetId,
           stt: student.stt,
           holyName: student.holyName,
           fullName: student.fullName || student.name,

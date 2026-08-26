@@ -2074,7 +2074,7 @@ function openEditStudentModal(studentId = null, classId = null) {
     }
     if (dom.id) {
       dom.id.value = s.id;
-      dom.id.readOnly = true;
+      dom.id.readOnly = false; // Cho phép Admin chỉnh sửa mã thiếu nhi
     }
     if (dom.holyName) dom.holyName.value = s.holyName || '';
     if (dom.fullName) dom.fullName.value = s.fullName || '';
@@ -2149,6 +2149,7 @@ function handleStudentFormSubmit(e) {
       students[idx] = {
         ...students[idx],
         id: id,
+        originalId: originalId,
         holyName: holyName,
         fullName: fullName,
         gender: gender,
@@ -2158,7 +2159,10 @@ function handleStudentFormSubmit(e) {
         parentPhone: parentPhone,
         address: address
       };
-      savedStudentObj = students[idx];
+      savedStudentObj = {
+        ...students[idx],
+        originalId: originalId
+      };
       showToast(`Đã cập nhật thông tin em ${fullName}!`);
     }
   } else {
