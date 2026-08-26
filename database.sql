@@ -6,6 +6,8 @@
 CREATE DATABASE IF NOT EXISTS `giaoly_tanmy_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `giaoly_tanmy_db`;
 
+SET FOREIGN_KEY_CHECKS = 0;
+
 -- ------------------------------------------------------------------------------
 -- 1. BẢNG TÀI KHOẢN QUẢN TRỊ VIÊN (ADMINS)
 -- ------------------------------------------------------------------------------
@@ -146,3 +148,5 @@ INSERT INTO `students` (`id`, `class_id`, `stt`, `holy_name`, `full_name`, `gend
 ('TN-DBKT-03', 'CLASS_DBKT', 3, 'Phêrô', 'Lê Hoàng Long', 'Nam', '10/01/2019', 'Đang theo học'),
 ('TN-DBKT-04', 'CLASS_DBKT', 4, 'Anna', 'Phạm Thảo Vy', 'Nữ', '05/11/2019', 'Đang theo học'),
 ('TN-DBKT-05', 'CLASS_DBKT', 5, 'Đaminh', 'Hoàng Gia Bảo', 'Nam', '18/06/2019', 'Ban Lễ Sinh');
+
+SET FOREIGN_KEY_CHECKS = 1;
