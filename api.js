@@ -308,5 +308,112 @@ const API = {
       console.warn('Lỗi kết nối auth API:', e);
       return null;
     }
+  },
+
+  /**
+   * 11. THÔNG BÁO & TIN TỨC (NEWS)
+   */
+  async getNews() {
+    if (!this.isOnline) return null;
+    try {
+      const res = await fetch(`${API_CONFIG.BASE_URL}/news.php`);
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) return json.data;
+    } catch (e) {
+      console.warn('Lỗi lấy News từ API:', e);
+    }
+    return null;
+  },
+
+  async saveNews(news, isNew = false) {
+    if (!this.isOnline) return false;
+    try {
+      const method = isNew ? 'POST' : 'PUT';
+      const url = isNew ? `${API_CONFIG.BASE_URL}/news.php` : `${API_CONFIG.BASE_URL}/news.php?id=${encodeURIComponent(news.id)}`;
+      const res = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(news)
+      });
+      const json = await res.json();
+      return json.success;
+    } catch (e) {
+      console.warn('Lỗi lưu News qua API:', e);
+      return false;
+    }
+  },
+
+  async deleteNews(newsId) {
+    if (!this.isOnline) return false;
+    try {
+      const res = await fetch(`${API_CONFIG.BASE_URL}/news.php?id=${encodeURIComponent(newsId)}`, {
+        method: 'DELETE'
+      });
+      const json = await res.json();
+      return json.success;
+    } catch (e) {
+      console.warn('Lỗi xóa News qua API:', e);
+      return false;
+    }
+  },
+
+  /**
+   * 12. KHO TÀI LIỆU & GIÁO TRÌNH (DOCUMENTS)
+   */
+  async getDocs() {
+    if (!this.isOnline) return null;
+    try {
+      const res = await fetch(`${API_CONFIG.BASE_URL}/docs.php`);
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) return json.data;
+    } catch (e) {
+      console.warn('Lỗi lấy Docs từ API:', e);
+    }
+    return null;
+  },
+
+  async saveDoc(doc, isNew = false) {
+    if (!this.isOnline) return false;
+    try {
+      const method = isNew ? 'POST' : 'PUT';
+      const url = isNew ? `${API_CONFIG.BASE_URL}/docs.php` : `${API_CONFIG.BASE_URL}/docs.php?id=${encodeURIComponent(doc.id)}`;
+      const res = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(doc)
+      });
+      const json = await res.json();
+      return json.success;
+    } catch (e) {
+      console.warn('Lỗi lưu Doc qua API:', e);
+      return false;
+    }
+  },
+
+  async deleteDoc(docId) {
+    if (!this.isOnline) return false;
+    try {
+      const res = await fetch(`${API_CONFIG.BASE_URL}/docs.php?id=${encodeURIComponent(docId)}`, {
+        method: 'DELETE'
+      });
+      const json = await res.json();
+      return json.success;
+    } catch (e) {
+      console.warn('Lỗi xóa Doc qua API:', e);
+      return false;
+    }
+  },
+
+  async recordDocDownload(docId) {
+    if (!this.isOnline) return;
+    try {
+      await fetch(`${API_CONFIG.BASE_URL}/docs.php?id=${encodeURIComponent(docId)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ incrementDownload: true })
+      });
+    } catch (e) {
+      console.warn('Lỗi ghi nhận download:', e);
+    }
   }
 };

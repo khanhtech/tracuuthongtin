@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
             GiaoLyClassSeeder::class,
             ClassAssignmentSeeder::class,
             EnrollmentAndGradeSeeder::class,
+            NewsSeeder::class,
+            DocumentSeeder::class,
         ]);
     }
 }

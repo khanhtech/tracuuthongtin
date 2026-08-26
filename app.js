@@ -793,6 +793,22 @@ async function initApiSync() {
       if (currentTab === 'classes') renderClassesView();
       if (currentTab === 'students') renderAllStudentsView();
     }
+
+    // Cập nhật News từ MySQL
+    const dbNews = await API.getNews();
+    if (dbNews && dbNews.length > 0) {
+      newsDatabase = dbNews;
+      saveNewsDatabase();
+      if (currentTab === 'news') renderNewsView();
+    }
+
+    // Cập nhật Docs từ MySQL
+    const dbDocs = await API.getDocs();
+    if (dbDocs && dbDocs.length > 0) {
+      docsDatabase = dbDocs;
+      saveDocsDatabase();
+      if (currentTab === 'docs') renderDocsView();
+    }
   } else {
     ensureDefaultStudentsForAllClasses();
   }
@@ -5522,6 +5538,7 @@ function handleNewsFormSubmit(e) {
     newsDatabase.forEach(n => n.isPinned = false);
   }
 
+  let targetItem = null;
   if (isEdit) {
     const news = newsDatabase.find(n => n.id === idInput.value);
     if (news) {
@@ -5532,10 +5549,11 @@ function handleNewsFormSubmit(e) {
       news.summary = summaryInput.value.trim();
       news.content = contentInput.value.trim();
       news.isPinned = isPinned;
+      targetItem = news;
     }
   } else {
     const newId = `NEWS${String(newsDatabase.length + 1).padStart(2, '0')}`;
-    newsDatabase.unshift({
+    targetItem = {
       id: newId,
       title: title,
       category: categorySelect.value,
@@ -5544,11 +5562,15 @@ function handleNewsFormSubmit(e) {
       summary: summaryInput.value.trim(),
       content: contentInput.value.trim(),
       isPinned: isPinned
-    });
+    };
+    newsDatabase.unshift(targetItem);
   }
 
   saveNewsDatabase();
   renderNewsView();
+  if (typeof API !== 'undefined' && API.isOnline && targetItem) {
+    API.saveNews(targetItem, !isEdit);
+  }
   document.getElementById('newsEditModal').style.display = 'none';
   showToast(isEdit ? 'Đã cập nhật thông báo thành công!' : 'Đã đăng thông báo mới!');
 }
@@ -5569,6 +5591,9 @@ async function deleteNews(newsId) {
   newsDatabase = newsDatabase.filter(n => n.id !== newsId);
   saveNewsDatabase();
   renderNewsView();
+  if (typeof API !== 'undefined' && API.isOnline) {
+    API.deleteNews(newsId);
+  }
   showToast('Đã xóa thông báo!');
 }
 
@@ -5800,6 +5825,7 @@ function handleDocFormSubmit(e) {
 
   const isEdit = !!idInput.value;
 
+  let targetDocItem = null;
   if (isEdit) {
     const doc = docsDatabase.find(d => d.id === idInput.value);
     if (doc) {
@@ -5809,10 +5835,11 @@ function handleDocFormSubmit(e) {
       doc.target = targetInput.value.trim() || 'Toàn Đoàn';
       doc.size = sizeInput.value.trim() || '3.5 MB';
       doc.desc = descInput.value.trim();
+      targetDocItem = doc;
     }
   } else {
     const newId = `DOC${String(docsDatabase.length + 1).padStart(2, '0')}`;
-    docsDatabase.unshift({
+    targetDocItem = {
       id: newId,
       title: title,
       category: categorySelect.value,
@@ -5823,11 +5850,15 @@ function handleDocFormSubmit(e) {
       downloads: 1,
       desc: descInput.value.trim(),
       content: descInput.value.trim()
-    });
+    };
+    docsDatabase.unshift(targetDocItem);
   }
 
   saveDocsDatabase();
   renderDocsView();
+  if (typeof API !== 'undefined' && API.isOnline && targetDocItem) {
+    API.saveDoc(targetDocItem, !isEdit);
+  }
   document.getElementById('docEditModal').style.display = 'none';
   showToast(isEdit ? 'Đã cập nhật tài liệu thành công!' : 'Đã đăng tài liệu mới!');
 }
@@ -5838,6 +5869,9 @@ function downloadDoc(docId) {
   doc.downloads = (doc.downloads || 0) + 1;
   saveDocsDatabase();
   renderDocsView();
+  if (typeof API !== 'undefined' && API.isOnline) {
+    API.recordDocDownload(docId);
+  }
   showToast(`Đang tải về "${doc.title}"...`);
 }
 
@@ -5857,6 +5891,9 @@ async function deleteDoc(docId) {
   docsDatabase = docsDatabase.filter(d => d.id !== docId);
   saveDocsDatabase();
   renderDocsView();
+  if (typeof API !== 'undefined' && API.isOnline) {
+    API.deleteDoc(docId);
+  }
   showToast('Đã xóa tài liệu!');
 }
 
