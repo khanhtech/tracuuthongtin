@@ -4018,8 +4018,8 @@ body {
 .custom-confirm-modal {
   position: fixed;
   inset: 0;
-  z-index: 10000;
-  display: flex;
+  z-index: 999999 !important;
+  display: none;
   align-items: center;
   justify-content: center;
   padding: 1.25rem;
@@ -4029,8 +4029,9 @@ body {
 }
 
 .custom-confirm-modal.active {
-  opacity: 1;
-  visibility: visible;
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .confirm-modal-backdrop {

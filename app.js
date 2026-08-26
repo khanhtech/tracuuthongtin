@@ -476,10 +476,16 @@ function showConfirmDialog({
       okBtn.innerHTML = `${type === 'danger' ? '<i class="fa-solid fa-trash-can"></i>' : '<i class="fa-solid fa-check"></i>'} ${confirmText}`;
     }
 
-    modal.classList.add('active');
+    modal.style.display = 'flex';
+    requestAnimationFrame(() => {
+      modal.classList.add('active');
+    });
 
     function cleanup(result) {
       modal.classList.remove('active');
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 220);
       okBtn.removeEventListener('click', onOk);
       cancelBtn.removeEventListener('click', onCancel);
       if (backdrop) backdrop.removeEventListener('click', onCancel);
