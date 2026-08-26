@@ -49,9 +49,20 @@
 
       <!-- Navigation Menu Items -->
       <nav class="sidebar-nav">
-        <div class="nav-section-title">DANH MỤC QUẢN TRỊ</div>
+        <div class="nav-section-title">DANH MỤC HỆ THỐNG</div>
 
-        <button class="nav-item active" id="navItemGlv" data-tab="glv">
+        <button class="nav-item active" id="navItemNews" data-tab="news">
+          <div class="nav-icon-box" style="background: linear-gradient(135deg, #fef3c7, #fde68a); color: #d97706;">
+            <i class="fa-solid fa-bullhorn"></i>
+          </div>
+          <div class="nav-label-box">
+            <span class="nav-title">Thông Báo</span>
+            <span class="nav-desc">Trang chủ & tin tức</span>
+          </div>
+          <span class="nav-badge" id="sidebarNewsCount" style="background: #f59e0b; color: #fff;">6</span>
+        </button>
+
+        <button class="nav-item" id="navItemGlv" data-tab="glv">
           <div class="nav-icon-box">
             <i class="fa-solid fa-user-graduate"></i>
           </div>
@@ -84,8 +95,29 @@
           <span class="nav-badge badge-students" id="sidebarStudentCount">0</span>
         </button>
 
+        <button class="nav-item" id="navItemDocs" data-tab="docs">
+          <div class="nav-icon-box" style="background: linear-gradient(135deg, #ede9fe, #ddd6fe); color: #7c3aed;">
+            <i class="fa-solid fa-book-bookmark"></i>
+          </div>
+          <div class="nav-label-box">
+            <span class="nav-title">Tài Liệu</span>
+            <span class="nav-desc">Giáo trình & biểu mẫu</span>
+          </div>
+          <span class="nav-badge" id="sidebarDocsCount" style="background: #8b5cf6; color: #fff;">10</span>
+        </button>
+
+        <!-- Tiện ích nhanh cho Tab Thông Báo -->
+        <div id="quickActionsNews" class="sidebar-quick-group">
+          <div class="nav-section-title" style="margin-top: 1.5rem;">TIỆN ÍCH THÔNG BÁO</div>
+
+          <button class="nav-item-sub" id="sidebarAddNewsBtn">
+            <i class="fa-solid fa-plus-circle"></i>
+            <span>Đăng Thông Báo Mới</span>
+          </button>
+        </div>
+
         <!-- Tiện ích nhanh cho Tab Giáo Lý Viên -->
-        <div id="quickActionsGlv" class="sidebar-quick-group">
+        <div id="quickActionsGlv" class="sidebar-quick-group" style="display: none;">
           <div class="nav-section-title" style="margin-top: 1.5rem;">TIỆN ÍCH GLV</div>
 
           <button class="nav-item-sub" id="sidebarViewAllGlvBtn">
@@ -143,6 +175,16 @@
             <span>Xuất Excel Toàn Bộ</span>
           </button>
         </div>
+
+        <!-- Tiện ích nhanh cho Tab Tài Liệu -->
+        <div id="quickActionsDocs" class="sidebar-quick-group" style="display: none;">
+          <div class="nav-section-title" style="margin-top: 1.5rem;">TIỆN ÍCH TÀI LIỆU</div>
+
+          <button class="nav-item-sub" id="sidebarAddDocBtn">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span>Đăng Tài Liệu Mới</span>
+          </button>
+        </div>
       </nav>
 
       <!-- Sidebar Footer (Auth / Role Info) -->
@@ -187,9 +229,81 @@
 
       <div class="container">
         <!-- ==========================================================================
+             TAB 0: THÔNG BÁO & TIN TỨC (TRANG CHỦ - HOME)
+             ========================================================================== -->
+        <div id="tabNewsView" class="tab-pane active">
+          <!-- Header Thông Báo -->
+          <header class="app-header">
+            <div class="top-nav-bar desktop-only-bar">
+              <div class="header-badge badge-news-nav">
+                <i class="fa-solid fa-bullhorn"></i>
+                <span>THÔNG BÁO & TIN TỨC</span>
+              </div>
+            </div>
+
+            <h1 class="header-title">BẢNG TIN THÔNG BÁO<br>ĐOÀN THIẾU NHI THÁNH THỂ</h1>
+            <p class="header-subtitle">Cập nhật thông tri, lịch phụng vụ, chương trình sinh hoạt và sự kiện Giáo xứ Tân Mỹ</p>
+          </header>
+
+          <!-- Bảng Tin Ghim Nổi Bật (Featured Pinned Announcement) -->
+          <section class="news-featured-banner" id="newsFeaturedBanner">
+            <div class="featured-badge-tag"><i class="fa-solid fa-fire"></i> THÔNG BÁO QUAN TRỌNG</div>
+            <div class="featured-content-wrap">
+              <div class="featured-date"><i class="fa-regular fa-calendar-check"></i> Niên khóa 2026 - 2027</div>
+              <h2 class="featured-title" id="featuredNewsTitle">Lễ Khai Giảng & Ra Mắt Xứ Đoàn TNTT Giáo Xứ Tân Mỹ Năm Học 2026 - 2027</h2>
+              <p class="featured-desc" id="featuredNewsDesc">Ban Giáo Lý kính gửi quý phụ huynh và các em thiếu nhi toàn đoàn thời gian tập trung khai giảng, chương trình Thánh lễ tạ ơn và dặn dò đồng phục chuẩn TNTT.</p>
+              <div class="featured-actions">
+                <button class="btn-featured-view" id="btnViewFeaturedNews"><i class="fa-solid fa-arrow-right"></i> Xem Chi Tiết Thông Báo</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Bộ Lọc & Tìm Kiếm Thông Báo -->
+          <section class="news-control-section">
+            <div class="news-search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="newsSearchInput" placeholder="Tìm kiếm tiêu đề, thông tri, nội dung thông báo...">
+              <button class="clear-btn" id="newsClearSearchBtn" style="display: none;" title="Xóa tìm kiếm">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <div class="news-actions-bar">
+              <div class="news-filter-pills" id="newsFilterPills">
+                <button class="pill-btn active" data-category="all">Tất cả (<span id="countNewsAll">6</span>)</button>
+                <button class="pill-btn" data-category="Khẩn">Thông Tri Khẩn (<span id="countNewsUrgent">1</span>)</button>
+                <button class="pill-btn" data-category="Lịch Lễ">Lịch Sinh Hoạt (<span id="countNewsSchedule">2</span>)</button>
+                <button class="pill-btn" data-category="Sự Kiện">Lễ Trọng & Sự Kiện (<span id="countNewsEvent">1</span>)</button>
+                <button class="pill-btn" data-category="GLV">Huynh Trưởng (<span id="countNewsGLV">1</span>)</button>
+                <button class="pill-btn" data-category="Phụ Huynh">Phụ Huynh (<span id="countNewsParents">1</span>)</button>
+              </div>
+
+              <button class="btn-primary-add" id="btnAddNews" style="display: none; white-space: nowrap;">
+                <i class="fa-solid fa-plus-circle"></i> Đăng Thông Báo
+              </button>
+            </div>
+          </section>
+
+          <!-- Lưới Thẻ Thông Báo -->
+          <section class="news-cards-grid" id="newsCardsGrid"></section>
+
+          <!-- Trạng Thái Trống -->
+          <div id="newsNotFoundState" class="state-container not-found-box" style="display: none;">
+            <div class="not-found-icon">
+              <i class="fa-solid fa-newspaper"></i>
+            </div>
+            <h3>Không tìm thấy thông báo phù hợp</h3>
+            <p>Không có bài thông báo nào khớp với từ khóa tìm kiếm.</p>
+            <button class="btn-secondary-reset" id="resetNewsFilterBtn">
+              <i class="fa-solid fa-rotate-left"></i> Xem lại tất cả thông báo
+            </button>
+          </div>
+        </div>
+
+        <!-- ==========================================================================
              TAB 1: THÔNG TIN GIÁO LÝ VIÊN
              ========================================================================== -->
-        <div id="tabGlvView" class="tab-pane active">
+        <div id="tabGlvView" class="tab-pane" style="display: none;">
           <!-- Header -->
           <header class="app-header">
             <div class="top-nav-bar desktop-only-bar">
@@ -652,6 +766,64 @@
               <h3 style="font-size: 1.1rem; color: #64748b; font-weight: 700;">Không tìm thấy em thiếu nhi nào</h3>
               <p style="font-size: 0.88rem; margin-top: 0.25rem;">Hãy thử đổi từ khóa tìm kiếm hoặc chọn bộ lọc khác.</p>
             </div>
+          </div>
+        </div>
+
+        <!-- ==========================================================================
+             TAB 4: KHO TÀI LIỆU & GIÁO TRÌNH (DOCUMENTS VIEW)
+             ========================================================================== -->
+        <div id="tabDocsView" class="tab-pane" style="display: none;">
+          <!-- Header Tài Liệu -->
+          <header class="app-header">
+            <div class="top-nav-bar desktop-only-bar">
+              <div class="header-badge badge-docs-nav">
+                <i class="fa-solid fa-book-bookmark"></i>
+                <span>TÀI LIỆU & GIÁO TRÌNH</span>
+              </div>
+            </div>
+
+            <h1 class="header-title">KHO TÀI LIỆU & TÀI NGUYÊN<br>GIÁO LÝ - THIẾU NHI THÁNH THỂ</h1>
+            <p class="header-subtitle">Sách giáo trình các khối, sổ tay Huynh Trưởng, kinh nguyện, bài hát sinh hoạt và biểu mẫu</p>
+          </header>
+
+          <!-- Bộ Lọc & Tìm Kiếm Tài Liệu -->
+          <section class="docs-control-section">
+            <div class="docs-search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="docsSearchInput" placeholder="Tìm tên tài liệu, sách giáo trình, biểu mẫu...">
+              <button class="clear-btn" id="docsClearSearchBtn" style="display: none;" title="Xóa tìm kiếm">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <div class="docs-actions-bar">
+              <div class="docs-filter-pills" id="docsFilterPills">
+                <button class="pill-btn active" data-category="all">Tất cả (<span id="countDocsAll">10</span>)</button>
+                <button class="pill-btn" data-category="Giáo Trình">Giáo Trình Khối (<span id="countDocsGiaoTrinh">5</span>)</button>
+                <button class="pill-btn" data-category="Sổ Tay">Sổ Tay Huynh Trưởng (<span id="countDocsSoTay">2</span>)</button>
+                <button class="pill-btn" data-category="Kinh & Hát">Kinh & Bài Hát (<span id="countDocsKinhHat">2</span>)</button>
+                <button class="pill-btn" data-category="Biểu Mẫu">Biểu Mẫu & Sổ Điểm (<span id="countDocsBieuMau">1</span>)</button>
+              </div>
+
+              <button class="btn-primary-add" id="btnAddDoc" style="display: none; white-space: nowrap;">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Đăng Tài Liệu Mới
+              </button>
+            </div>
+          </section>
+
+          <!-- Lưới Thẻ Tài Liệu -->
+          <section class="docs-cards-grid" id="docsCardsGrid"></section>
+
+          <!-- Trạng Thái Trống -->
+          <div id="docsNotFoundState" class="state-container not-found-box" style="display: none;">
+            <div class="not-found-icon">
+              <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <h3>Không tìm thấy tài liệu phù hợp</h3>
+            <p>Không có tài liệu nào khớp với từ khóa tìm kiếm.</p>
+            <button class="btn-secondary-reset" id="resetDocsFilterBtn">
+              <i class="fa-solid fa-rotate-left"></i> Xem lại tất cả tài liệu
+            </button>
           </div>
         </div>
 
@@ -1520,6 +1692,168 @@
         </button>
         <button type="button" class="btn-cancel" id="closeQuickGlvFooterBtn">Đóng</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: CHI TIẾT THÔNG BÁO (NEWS DETAIL MODAL)
+       ========================================================================== -->
+  <div class="modal-backdrop" id="newsDetailModal" style="display: none;">
+    <div class="modal-content modal-news-detail" style="max-width: 680px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-newspaper" style="color: #f59e0b;"></i>
+          <span>Chi Tiết Thông Báo</span>
+        </div>
+        <button class="modal-close-btn" id="closeNewsDetailBtn" onclick="document.getElementById('newsDetailModal').style.display='none';"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="news-detail-body" id="newsDetailBody" style="padding: 1.5rem; max-height: 70vh; overflow-y: auto;">
+        <!-- Render động nội dung chi tiết bài thông báo -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-tool btn-tool-export" id="btnPrintNewsDetail"><i class="fa-solid fa-print"></i> In Thông Báo</button>
+        <button type="button" class="btn-cancel" onclick="document.getElementById('newsDetailModal').style.display='none';">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: ĐĂNG / SỬA THÔNG BÁO (NEWS EDIT MODAL - ADMIN)
+       ========================================================================== -->
+  <div class="modal-backdrop" id="newsEditModal" style="display: none;">
+    <div class="modal-content modal-form" style="max-width: 620px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-bullhorn" style="color: #f59e0b;"></i>
+          <span id="newsModalTitle">Đăng Thông Báo Mới</span>
+        </div>
+        <button class="modal-close-btn" id="closeNewsEditBtn" onclick="document.getElementById('newsEditModal').style.display='none';"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="newsForm" class="modal-body-form" style="padding: 1.5rem;">
+        <input type="hidden" id="newsEditId">
+        <div class="form-group">
+          <label>Tiêu đề thông báo <span class="required">*</span></label>
+          <input type="text" id="newsFormTitle" required placeholder="Nhập tiêu đề thông tri hoặc thông báo...">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Phân loại danh mục</label>
+            <select id="newsFormCategory">
+              <option value="Khẩn">Thông Tri Khẩn</option>
+              <option value="Lịch Lễ">Lịch Sinh Hoạt & Phụng Vụ</option>
+              <option value="Sự Kiện">Lễ Trọng & Sự Kiện</option>
+              <option value="GLV">Dành Cho Huynh Trưởng</option>
+              <option value="Phụ Huynh">Dành Cho Phụ Huynh</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Ngày ban hành / Đăng tin</label>
+            <input type="text" id="newsFormDate" placeholder="dd/mm/yyyy (ví dụ: 26/08/2026)">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Người ký / Ban hành</label>
+          <input type="text" id="newsFormAuthor" placeholder="Ví dụ: Ban Quản Trị Xứ Đoàn / Cha Tuyên Úy">
+        </div>
+        <div class="form-group">
+          <label>Tóm tắt ngắn gọn</label>
+          <input type="text" id="newsFormSummary" placeholder="Tóm tắt 1-2 câu hiển thị ngoài trang chủ...">
+        </div>
+        <div class="form-group">
+          <label>Nội dung chi tiết <span class="required">*</span></label>
+          <textarea id="newsFormContent" rows="6" required placeholder="Nhập đầy đủ nội dung thông báo, thời gian, địa điểm, dặn dò..."></textarea>
+        </div>
+        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+          <input type="checkbox" id="newsFormPinned" style="width: 18px; height: 18px; cursor: pointer;">
+          <label for="newsFormPinned" style="margin: 0; cursor: pointer; font-weight: 700; color: #b45309;">Ghim lên đầu trang chủ làm Thông báo Quan Trọng</label>
+        </div>
+        <div class="modal-footer" style="padding: 1rem 0 0 0; margin-top: 1rem; border-top: 1px solid #e2e8f0;">
+          <button type="button" class="btn-cancel" onclick="document.getElementById('newsEditModal').style.display='none';">Hủy</button>
+          <button type="submit" class="btn-submit"><i class="fa-solid fa-floppy-disk"></i> Lưu Thông Báo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: XEM TRƯỚC TÀI LIỆU (DOC PREVIEW MODAL)
+       ========================================================================== -->
+  <div class="modal-backdrop" id="docPreviewModal" style="display: none;">
+    <div class="modal-content modal-doc-preview" style="max-width: 640px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-book-open" style="color: #8b5cf6;"></i>
+          <span id="docPreviewModalTitle">Chi Tiết Tài Liệu</span>
+        </div>
+        <button class="modal-close-btn" id="closeDocPreviewBtn" onclick="document.getElementById('docPreviewModal').style.display='none';"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="doc-preview-body" id="docPreviewBody" style="padding: 1.5rem; max-height: 70vh; overflow-y: auto;">
+        <!-- Render nội dung xem nhanh tài liệu -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-tool btn-tool-export" id="btnDownloadDocFromPreview"><i class="fa-solid fa-download"></i> Tải Tài Liệu</button>
+        <button type="button" class="btn-cancel" onclick="document.getElementById('docPreviewModal').style.display='none';">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: ĐĂNG / SỬA TÀI LIỆU (DOC EDIT MODAL - ADMIN)
+       ========================================================================== -->
+  <div class="modal-backdrop" id="docEditModal" style="display: none;">
+    <div class="modal-content modal-form" style="max-width: 600px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-cloud-arrow-up" style="color: #8b5cf6;"></i>
+          <span id="docModalTitle">Đăng Tài Liệu Mới</span>
+        </div>
+        <button class="modal-close-btn" id="closeDocEditBtn" onclick="document.getElementById('docEditModal').style.display='none';"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="docForm" class="modal-body-form" style="padding: 1.5rem;">
+        <input type="hidden" id="docEditId">
+        <div class="form-group">
+          <label>Tên tài liệu / Giáo trình <span class="required">*</span></label>
+          <input type="text" id="docFormTitle" required placeholder="Nhập tên tài liệu...">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Danh mục tài liệu</label>
+            <select id="docFormCategory">
+              <option value="Giáo Trình">Giáo Trình Khối</option>
+              <option value="Sổ Tay">Sổ Tay Huynh Trưởng</option>
+              <option value="Kinh & Hát">Kinh & Bài Hát Sinh Hoạt</option>
+              <option value="Biểu Mẫu">Biểu Mẫu & Sổ Điểm</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Định dạng file</label>
+            <select id="docFormFormat">
+              <option value="PDF">PDF (.pdf)</option>
+              <option value="DOCX">Word (.docx)</option>
+              <option value="XLSX">Excel (.xlsx)</option>
+              <option value="MP3">Âm Thanh (.mp3)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Khối lớp / Đối tượng áp dụng</label>
+            <input type="text" id="docFormTarget" placeholder="Ví dụ: Khối Khai Tâm / Toàn Đoàn / GLV">
+          </div>
+          <div class="form-group">
+            <label>Dung lượng ước tính</label>
+            <input type="text" id="docFormSize" placeholder="Ví dụ: 4.5 MB">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Mô tả tài liệu</label>
+          <textarea id="docFormDesc" rows="4" placeholder="Mô tả nội dung tóm tắt của tài liệu..."></textarea>
+        </div>
+        <div class="modal-footer" style="padding: 1rem 0 0 0; margin-top: 1rem; border-top: 1px solid #e2e8f0;">
+          <button type="button" class="btn-cancel" onclick="document.getElementById('docEditModal').style.display='none';">Hủy</button>
+          <button type="submit" class="btn-submit"><i class="fa-solid fa-floppy-disk"></i> Lưu Tài Liệu</button>
+        </div>
+      </form>
     </div>
   </div>
 

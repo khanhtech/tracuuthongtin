@@ -267,19 +267,254 @@ function ensureDefaultStudentsForAllClasses() {
       changed = true;
     }
   });
-  if (changed) {
-    saveClassesDatabase();
+// ==========================================================================
+// DỮ LIỆU THÔNG BÁO & TÀI LIỆU
+// ==========================================================================
+const NEWS_STORAGE_KEY = 'glv_news_custom_tanmy_v1';
+const DOCS_STORAGE_KEY = 'glv_docs_custom_tanmy_v1';
+
+const DEFAULT_NEWS_DATASET = [
+  {
+    id: 'NEWS01',
+    title: 'Lễ Khai Giảng & Ra Mắt Xứ Đoàn TNTT Giáo Xứ Tân Mỹ Năm Học 2026 - 2027',
+    category: 'Khẩn',
+    date: '26/08/2026',
+    author: 'Ban Quản Trị Xứ Đoàn TNTT',
+    summary: 'Ban Giáo Lý kính gửi quý phụ huynh và các em thiếu nhi toàn đoàn thời gian tập trung khai giảng, chương trình Thánh lễ tạ ơn và dặn dò đồng phục chuẩn TNTT.',
+    content: `Kính gửi: Quý Phụ Huynh, Anh Chị Huynh Trưởng và các em Thiếu Nhi toàn đoàn.\n\nNhằm chuẩn bị chu đáo cho niên khóa Giáo lý mới 2026 - 2027, Ban Quản Trị Đoàn Thiếu Nhi Thánh Thể Giáo xứ Tân Mỹ xin thông báo chương trình Lễ Khai Giảng như sau:\n\n1. Thời gian tập trung: 06h30 Chúa Nhật, ngày 06/09/2026 tại khuôn viên Giáo xứ.\n2. Thánh Lễ Tạ Ơn & Khai Giảng: 07h00 - 08h30 do Cha Tuyên Úy chủ tế.\n3. Quy định trang phục: Đồng phục Thiếu Nhi Thánh Thể chỉnh tề (áo trắng có huy hiệu, khăn quàng đúng ngành, quần sẫm màu).\n4. Sinh hoạt nhận lớp: Ngay sau Thánh lễ, các em sẽ di chuyển về các phòng học Giáo lý tương ứng theo sơ đồ hướng dẫn của Huynh Trưởng phụ trách.\n\nKính mong quý phụ huynh nhắc nhở và đưa đón các em đúng giờ để buổi lễ diễn ra trang nghiêm và sốt sắng.`,
+    isPinned: true
+  },
+  {
+    id: 'NEWS02',
+    title: 'Lịch Phân Công Huynh Trưởng - Giáo Lý Viên Đứng Lớp Năm Học 2026 - 2027',
+    category: 'GLV',
+    date: '24/08/2026',
+    author: 'Cha Tuyên Úy & Ban Điều Hành',
+    summary: 'Công bố quyết định phân công phụ trách giảng dạy cho 41 Anh Chị Huynh Trưởng & GLV tại 14 lớp thuộc 5 khối Giáo Lý.',
+    content: `Quyết định phân công nhiệm vụ giảng dạy Giáo lý niên khóa 2026 - 2027:\n\n- Tổng số GLV đứng lớp: 41 Huynh Trưởng & GLV.\n- Khối Khai Tâm (Dự Bị, KT1, KT2): 8 GLV phụ trách.\n- Khối Rước Lễ (RL1, RL2, RL3): 9 GLV phụ trách.\n- Khối Thêm Sức (TS1, TS2, TS3): 9 GLV phụ trách.\n- Khối Bao Đồng (BD1, BD2, BD3): 9 GLV phụ trách.\n- Khối Vào Đời (VD1, VD2): 6 GLV phụ trách.\n\nKính mời quý Anh Chị GLV kiểm tra thông tin phân công chi tiết tại mục "Lớp Giáo Lý" và "Giáo Lý Viên" trên cổng thông tin này.`,
+    isPinned: false
+  },
+  {
+    id: 'NEWS03',
+    title: 'Quy Định Về Giờ Lễ Thứ 5 và Lễ Chúa Nhật Của Thiếu Nhi',
+    category: 'Lịch Lễ',
+    date: '20/08/2026',
+    author: 'Ban Phụng Vụ Xứ Đoàn',
+    summary: 'Thông báo chi tiết thời gian sinh hoạt, tham dự Thánh lễ Thứ 5 và Chúa Nhật dành cho tất cả các ngành Chiên Con, Ấu Nhi, Thiếu Nhi, Nghĩa Sĩ.',
+    content: `Lịch Phụng Vụ & Sinh Hoạt Cố Định Hằng Tuần:\n\n1. Thánh Lễ Chiều Thứ 5:\n   - Tập trung & điểm danh: 17h45 tại nhà thờ.\n   - Thánh Lễ: 18h00 - 18h45.\n\n2. Thánh Lễ & Học Giáo Lý Chúa Nhật:\n   - Tập trung chào cờ TNTT: 06h45.\n   - Thánh Lễ Thiếu Nhi: 07h00 - 08h00.\n   - Giờ học Giáo Lý: 08h15 - 09h30.\n\nĐiểm chuyên cần tham dự Lễ Thứ 5, Lễ Chúa Nhật và Giờ học Giáo lý sẽ được tính trực tiếp vào Sổ Điểm Điện Tử của từng em.`,
+    isPinned: false
+  },
+  {
+    id: 'NEWS04',
+    title: 'Chương Trình Sa Mạc Huấn Luyện Huynh Trưởng "Vươn Lên Với Chúa Kitô"',
+    category: 'Sự Kiện',
+    date: '15/08/2026',
+    author: 'Ban Huấn Luyện TNTT',
+    summary: 'Kế hoạch tổ chức sa mạc bồi dưỡng linh đạo, kỹ năng quản trò và phương pháp sư phạm Giáo lý cho toàn thể Huynh Trưởng.',
+    content: `Khóa Sa Mạc Huấn Luyện Huynh Trưởng - GLV Năm 2026:\n\n- Chủ đề: "Vươn Lên Với Chúa Kitô"\n- Thời gian: 2 ngày 1 đêm (thứ Bảy và Chúa Nhật cuối tháng 8/2026).\n- Nội dung: Linh đạo TNTT, phương pháp dạy Giáo lý trực quan, sơ cấp cứu, kỹ năng gút dây, mật thư và tinh thần đồng đội.\n- Yêu cầu: 100% GLV trong danh sách đứng lớp tham dự đầy đủ.`,
+    isPinned: false
+  },
+  {
+    id: 'NEWS05',
+    title: 'Họp Mặt Phụ Huynh Đầu Năm Học & Trao Đổi Đồng Hành Cùng Con Em',
+    category: 'Phụ Huynh',
+    date: '10/08/2026',
+    author: 'Ban Giáo Lý Xứ Đoàn',
+    summary: 'Trân trọng kính mời quý phụ huynh tham dự buổi gặp gỡ đầu năm để thống nhất nội quy và phương thức nhận thông tin điểm số qua Sổ Điểm Điện Tử.',
+    content: `Kính gửi Quý Phụ Huynh,\n\nNhằm tạo sự gắn kết chặt chẽ giữa Gia Đình và Xứ Đoàn trong việc giáo dục đức tin cho các em, Ban Giáo Lý trân trọng kính mời quý phụ huynh tham dự buổi họp mặt:\n\n- Thời gian: 09h30 Chúa Nhật, ngày 13/09/2026 (sau giờ học Giáo lý).\n- Địa điểm: Hội trường Giáo xứ Tân Mỹ.\n- Nội dung: Giới thiệu chương trình học các khối, quy chế chuyên cần, hướng dẫn tra cứu Sổ Điểm Điện Tử và Phiếu Báo Điểm cá nhân.\n\nSự hiện diện của quý phụ huynh là niềm khích lệ to lớn cho các em thiếu nhi và ban giáo lý.`,
+    isPinned: false
+  },
+  {
+    id: 'NEWS06',
+    title: 'Kế Hoạch Khảo Sát & Đánh Giá Chất Lượng Học Kỳ 1 (HK1)',
+    category: 'Lịch Lễ',
+    date: '05/08/2026',
+    author: 'Ban Khảo Thí & Học Vụ',
+    summary: 'Hướng dẫn cơ cấu điểm kiểm tra miệng, 15 phút, 1 tiết và thi học kỳ theo chuẩn chương trình Giáo lý Tân Mỹ.',
+    content: `Kế hoạch đánh giá kết quả học tập Giáo lý HK1:\n\n1. Điểm Chuyên cần: Tính theo tỷ lệ tham gia Lễ Thứ 5, Lễ Chúa Nhật và Giờ học Giáo lý (Hệ số 5).\n2. Điểm Kiểm tra môn Giáo lý:\n   - Điểm Miệng: Hệ số 1 (trong các giờ học).\n   - Kiểm tra 15 phút: Hệ số 1 (tuần 6 của học kỳ).\n   - Kiểm tra 1 Tiết: Hệ số 2 (tuần 10 của học kỳ).\n   - Thi Học Kỳ: Hệ số 3 (cuối học kỳ).\n\nKết quả sẽ được công bố trên Sổ Điểm Điện Tử và gửi Phiếu Báo Điểm về cho gia đình.`,
+    isPinned: false
   }
+];
+
+const DEFAULT_DOCS_DATASET = [
+  {
+    id: 'DOC01',
+    title: 'Sách Giáo Lý Khối Khai Tâm (Bản Chuẩn GP. Phú Cường)',
+    category: 'Giáo Trình',
+    format: 'PDF',
+    target: 'Khối Khai Tâm (Lớp Dự Bị, KT1, KT2)',
+    size: '4.2 MB',
+    author: 'Ủy Ban Giáo Lý GP Phú Cường',
+    downloads: 320,
+    desc: 'Giáo trình tranh ảnh đầy đủ màu sắc dành cho các em 6-8 tuổi bắt đầu làm quen với Chúa Giêsu, lời cầu nguyện và các nhân vật Kinh Thánh.',
+    content: 'Tài liệu gồm 24 bài học căn bản về Thiên Chúa Tình Yêu, Chúa Giêsu Bạn Của Trẻ Thơ, Đức Mẹ Maria và những kinh nguyện đầu đời.'
+  },
+  {
+    id: 'DOC02',
+    title: 'Sách Giáo Lý Đến Bàn Tiệc Thánh - Khối Rước Lễ',
+    category: 'Giáo Trình',
+    format: 'PDF',
+    target: 'Khối Rước Lễ (RL1, RL2, RL3)',
+    size: '5.8 MB',
+    author: 'Ủy Ban Giáo Lý Đức Tin',
+    downloads: 415,
+    desc: 'Tài liệu chuẩn bị tâm hồn cho các em xưng tội và rước lễ lần đầu, gồm các bí tích Hòa Giải và Thánh Thể.',
+    content: 'Tài liệu gồm 30 bài học chuyên sâu về Bí Tích Hòa Giải, Bí Tích Thánh Thể, 10 Điều Răn và 6 Điều Răn Hội Thánh.'
+  },
+  {
+    id: 'DOC03',
+    title: 'Sách Giáo Lý Lớn Lên Trong Chúa Thánh Thần - Khối Thêm Sức',
+    category: 'Giáo Trình',
+    format: 'PDF',
+    target: 'Khối Thêm Sức (TS1, TS2, TS3)',
+    size: '6.1 MB',
+    author: 'Ủy Ban Giáo Lý Đức Tin',
+    downloads: 380,
+    desc: 'Giáo trình bồi dưỡng đức tin và 7 ơn Chúa Thánh Thần giúp các em sẵn sàng lãnh nhận Bí tích Thêm Sức.',
+    content: 'Gồm 32 bài học về Chúa Thánh Thần, Hội Thánh, Phụng Vụ, 7 Ơn Chúa Thánh Thần và Đời Sống Đức Tin Trưởng Thành.'
+  },
+  {
+    id: 'DOC04',
+    title: 'Sách Giáo Lý Sống Đạo Giữa Đời - Khối Bao Đồng',
+    category: 'Giáo Trình',
+    format: 'PDF',
+    target: 'Khối Bao Đồng (BD1, BD2, BD3)',
+    size: '7.0 MB',
+    author: 'Ủy Ban Giáo Lý GP Phú Cường',
+    downloads: 290,
+    desc: 'Giáo trình tuyên xưng đức tin, sống đạo và đối thoại giữa người Kitô hữu trong xã hội hiện đại.',
+    content: 'Gồm 36 bài học về Luân Lý Công Giáo, Nhân Bản Kitô Giáo, Lương Tâm, Tội Lỗi và Ơn Cứu Độ.'
+  },
+  {
+    id: 'DOC05',
+    title: 'Sách Giáo Lý Hành Trang Vào Đời - Khối Vào Đời',
+    category: 'Giáo Trình',
+    format: 'PDF',
+    target: 'Khối Vào Đời (VD1, VD2)',
+    size: '6.5 MB',
+    author: 'Ủy Ban Giáo Lý Đức Tin',
+    downloads: 260,
+    desc: 'Hành trang định hướng ơn gọi, hôn nhân gia đình, đạo đức nghề nghiệp và sứ vụ tông đồ giáo dân.',
+    content: 'Gồm 28 bài học định hướng tương lai, tình yêu - hôn nhân Kitô giáo, trách nhiệm xã hội và ơn gọi đời sống.'
+  },
+  {
+    id: 'DOC06',
+    title: 'Nội Quy & Sổ Tay Huynh Trưởng Thiếu Nhi Thánh Thể VN',
+    category: 'Sổ Tay',
+    format: 'PDF',
+    target: 'Dành Cho GLV & Huynh Trưởng',
+    size: '3.5 MB',
+    author: 'Tổng Liên Đoàn TNTT Việt Nam',
+    downloads: 510,
+    desc: 'Cẩm nang toàn diện về phương pháp tự nhiên, siêu nhiên, hiệu lệnh còi cờ, nghi thức chào cờ và linh đạo TNTT.',
+    content: 'Quy định đầy đủ về đồng phục, cấp bậc, nghi thức tuyên hứa, quản lý đoàn sinh và điều hành sa mạc huấn luyện.'
+  },
+  {
+    id: 'DOC07',
+    title: 'Sổ Tay Kỹ Năng & Trò Chơi Sinh Hoạt Thiếu Nhi',
+    category: 'Sổ Tay',
+    format: 'DOCX',
+    target: 'Dành Cho GLV Đứng Lớp',
+    size: '2.1 MB',
+    author: 'Ban Kỹ Năng Xứ Đoàn Tân Mỹ',
+    downloads: 440,
+    desc: 'Tổng hợp hơn 150 trò chơi vòng tròn, băng reo, trò chơi Kinh Thánh, gút dây và mật thư ứng dụng.',
+    content: 'Bộ sưu tập trò chơi sinh hoạt giáo lý theo từng chủ đề bài học, giúp giờ học luôn hào hứng và sôi nổi.'
+  },
+  {
+    id: 'DOC08',
+    title: 'Tuyển Tập Bài Hát Sinh Hoạt & Nghi Thức TNTT (Có Hợp Âm)',
+    category: 'Kinh & Hát',
+    format: 'MP3',
+    target: 'Toàn Đoàn Thiếu Nhi & GLV',
+    size: '12.8 MB',
+    author: 'Ban Âm Nhạc TNTT',
+    downloads: 680,
+    desc: 'Tuyển tập 50 bài hát sinh hoạt, bài ca chính thức của các ngành Ấu, Thiếu, Nghĩa và Huynh Trưởng.',
+    content: 'Bao gồm file nghe MP3 chất lượng cao và lời bài hát kèm hợp âm guitar/organ đệm hát trong giờ chào cờ và sinh hoạt.'
+  },
+  {
+    id: 'DOC09',
+    title: 'Kinh Nguyện Hằng Ngày Dành Cho Thiếu Nhi Thánh Thể',
+    category: 'Kinh & Hát',
+    format: 'PDF',
+    target: 'Toàn Thể Thiếu Nhi',
+    size: '1.5 MB',
+    author: 'Ban Phụng Vụ Tân Mỹ',
+    downloads: 590,
+    desc: 'Bản in bỏ túi các kinh nguyện sáng tối, kinh dâng ngày, kinh viếng Chúa, kinh dâng hoa và kinh bổn mạng.',
+    content: 'Lời kinh chữ to, rõ ràng, dễ nhớ, có hình minh họa sinh động dành cho các em thiếu nhi học thuộc.'
+  },
+  {
+    id: 'DOC10',
+    title: 'Biểu Mẫu Sổ Điểm Điện Tử & Bảng Điểm Lớp Giáo Lý 2026 - 2027',
+    category: 'Biểu Mẫu',
+    format: 'XLSX',
+    target: 'Giáo Lý Viên & Ban Học Vụ',
+    size: '1.2 MB',
+    author: 'Ban Công Nghệ - Tân Mỹ',
+    downloads: 350,
+    desc: 'Mẫu bảng tính Excel chuẩn gồm đầy đủ 3 Sheet: Học Kỳ 1, Học Kỳ 2, Tổng Kết Cả Năm có tích hợp sẵn công thức tính điểm trung bình và xếp loại.',
+    content: 'Biểu mẫu sẵn sàng nạp trực tiếp vào hệ thống web qua chức năng "Nhập Excel" của Sổ Điểm Điện Tử.'
+  }
+];
+
+function loadSavedNewsDatabase() {
+  try {
+    const saved = localStorage.getItem(NEWS_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {
+    console.warn('Lỗi đọc dữ liệu Thông Báo từ localStorage:', e);
+  }
+  return [...DEFAULT_NEWS_DATASET];
+}
+
+function saveNewsDatabase() {
+  try {
+    localStorage.setItem(NEWS_STORAGE_KEY, JSON.stringify(newsDatabase));
+  } catch (e) {
+    console.warn('Lỗi lưu dữ liệu Thông Báo vào localStorage:', e);
+  }
+  if (typeof renderNewsFilterCounts === 'function') renderNewsFilterCounts();
+}
+
+function loadSavedDocsDatabase() {
+  try {
+    const saved = localStorage.getItem(DOCS_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {
+    console.warn('Lỗi đọc dữ liệu Tài Liệu từ localStorage:', e);
+  }
+  return [...DEFAULT_DOCS_DATASET];
+}
+
+function saveDocsDatabase() {
+  try {
+    localStorage.setItem(DOCS_STORAGE_KEY, JSON.stringify(docsDatabase));
+  } catch (e) {
+    console.warn('Lỗi lưu dữ liệu Tài Liệu vào localStorage:', e);
+  }
+  if (typeof renderDocsFilterCounts === 'function') renderDocsFilterCounts();
 }
 
 let glvDatabase = loadSavedDatabase();
 let classDatabase = loadSavedClassesDatabase();
+let newsDatabase = loadSavedNewsDatabase();
+let docsDatabase = loadSavedDocsDatabase();
 let currentDisplayedGLV = null;
 let currentDisplayedClass = null;
 let qrcodeInstance = null;
 let currentSort = { column: 'stt', order: 'asc' };
 let currentBlockFilter = 'all';
-let currentTab = localStorage.getItem(ACTIVE_TAB_KEY) || 'glv';
+let currentNewsCategoryFilter = 'all';
+let currentDocsCategoryFilter = 'all';
+let currentTab = localStorage.getItem(ACTIVE_TAB_KEY) || 'news';
 let currentUserRole = sessionStorage.getItem(AUTH_ROLE_KEY) || 'guest';
 const ADMIN_PASSWORDS = ['admin', 'admin123', 'tanmy2026', 'tanmy'];
 
@@ -298,15 +533,23 @@ const appSidebar = document.getElementById('appSidebar');
 const sidebarOverlay = document.getElementById('sidebarOverlay');
 const mobileMenuBtn = document.getElementById('mobileMenuBtn');
 const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+const navItemNews = document.getElementById('navItemNews');
 const navItemGlv = document.getElementById('navItemGlv');
 const navItemClasses = document.getElementById('navItemClasses');
+const navItemDocs = document.getElementById('navItemDocs');
+const tabNewsView = document.getElementById('tabNewsView');
 const tabGlvView = document.getElementById('tabGlvView');
 const tabClassView = document.getElementById('tabClassView');
+const tabDocsView = document.getElementById('tabDocsView');
+const sidebarNewsCount = document.getElementById('sidebarNewsCount');
 const sidebarGlvCount = document.getElementById('sidebarGlvCount');
 const sidebarClassCount = document.getElementById('sidebarClassCount');
+const sidebarDocsCount = document.getElementById('sidebarDocsCount');
 const sidebarRoleIcon = document.getElementById('sidebarRoleIcon');
 const sidebarRoleName = document.getElementById('sidebarRoleName');
 const sidebarAuthSwitchBtn = document.getElementById('sidebarAuthSwitchBtn');
+const sidebarAddNewsBtn = document.getElementById('sidebarAddNewsBtn');
+const sidebarAddDocBtn = document.getElementById('sidebarAddDocBtn');
 const sidebarViewAllGlvBtn = document.getElementById('sidebarViewAllGlvBtn');
 const sidebarAddGlvBtn = document.getElementById('sidebarAddGlvBtn');
 const sidebarExportGlvBtn = document.getElementById('sidebarExportGlvBtn');
@@ -554,44 +797,63 @@ async function initApiSync() {
 }
 
 // ==========================================================================
+// ==========================================================================
 // QUẢN LÝ TAB & SIDEBAR NAVIGATION
 // ==========================================================================
 function switchTab(tabName) {
-  currentTab = tabName;
-  localStorage.setItem(ACTIVE_TAB_KEY, tabName);
+  currentTab = tabName || 'news';
+  localStorage.setItem(ACTIVE_TAB_KEY, currentTab);
 
+  const quickActionsNews = document.getElementById('quickActionsNews');
   const quickActionsGlv = document.getElementById('quickActionsGlv');
   const quickActionsClasses = document.getElementById('quickActionsClasses');
   const quickActionsStudents = document.getElementById('quickActionsStudents');
+  const quickActionsDocs = document.getElementById('quickActionsDocs');
 
   // Reset active classes
+  if (navItemNews) navItemNews.classList.remove('active');
   if (navItemGlv) navItemGlv.classList.remove('active');
   if (navItemClasses) navItemClasses.classList.remove('active');
   if (navItemStudents) navItemStudents.classList.remove('active');
+  if (navItemDocs) navItemDocs.classList.remove('active');
 
+  if (tabNewsView) tabNewsView.style.display = 'none';
   if (tabGlvView) tabGlvView.style.display = 'none';
   if (tabClassView) tabClassView.style.display = 'none';
   if (tabStudentsView) tabStudentsView.style.display = 'none';
+  if (tabDocsView) tabDocsView.style.display = 'none';
 
+  if (quickActionsNews) quickActionsNews.style.display = 'none';
   if (quickActionsGlv) quickActionsGlv.style.display = 'none';
   if (quickActionsClasses) quickActionsClasses.style.display = 'none';
   if (quickActionsStudents) quickActionsStudents.style.display = 'none';
+  if (quickActionsDocs) quickActionsDocs.style.display = 'none';
 
-  if (tabName === 'glv') {
+  if (currentTab === 'news') {
+    if (navItemNews) navItemNews.classList.add('active');
+    if (tabNewsView) tabNewsView.style.display = 'block';
+    if (quickActionsNews) quickActionsNews.style.display = 'block';
+    renderNewsView();
+  } else if (currentTab === 'glv') {
     if (navItemGlv) navItemGlv.classList.add('active');
     if (tabGlvView) tabGlvView.style.display = 'block';
     if (quickActionsGlv) quickActionsGlv.style.display = 'block';
     if (!currentDisplayedGLV) showWelcomeState();
-  } else if (tabName === 'classes') {
+  } else if (currentTab === 'classes') {
     if (navItemClasses) navItemClasses.classList.add('active');
     if (tabClassView) tabClassView.style.display = 'block';
     if (quickActionsClasses) quickActionsClasses.style.display = 'block';
     renderClassesView();
-  } else if (tabName === 'students') {
+  } else if (currentTab === 'students') {
     if (navItemStudents) navItemStudents.classList.add('active');
     if (tabStudentsView) tabStudentsView.style.display = 'block';
     if (quickActionsStudents) quickActionsStudents.style.display = 'block';
     renderAllStudentsView();
+  } else if (currentTab === 'docs') {
+    if (navItemDocs) navItemDocs.classList.add('active');
+    if (tabDocsView) tabDocsView.style.display = 'block';
+    if (quickActionsDocs) quickActionsDocs.style.display = 'block';
+    renderDocsView();
   }
 
   updateStudentStatsDisplay();
@@ -656,8 +918,15 @@ function updateRoleUI() {
   }
 
   // Phân quyền các nút thao tác
+  const btnAddNews = document.getElementById('btnAddNews');
+  const btnAddDoc = document.getElementById('btnAddDoc');
   const sidebarAddClassBtn = document.getElementById('sidebarAddClassBtn');
   const modalToolbarAddClassBtn = document.getElementById('modalToolbarAddClassBtn');
+
+  if (btnAddNews) btnAddNews.style.display = isAdmin ? 'inline-flex' : 'none';
+  if (sidebarAddNewsBtn) sidebarAddNewsBtn.style.display = isAdmin ? 'flex' : 'none';
+  if (btnAddDoc) btnAddDoc.style.display = isAdmin ? 'inline-flex' : 'none';
+  if (sidebarAddDocBtn) sidebarAddDocBtn.style.display = isAdmin ? 'flex' : 'none';
 
   if (addNewGlvBtn) addNewGlvBtn.style.display = isAdmin ? 'inline-flex' : 'none';
   if (modalAddGlvBtn) modalAddGlvBtn.style.display = isAdmin ? 'inline-flex' : 'none';
@@ -677,12 +946,18 @@ function updateRoleUI() {
     renderAllClassesTable();
   }
 
-  // Cập nhật lại Grid Lớp học / Danh sách Thiếu nhi để ẩn/hiện nút sửa nhanh theo quyền
+  // Cập nhật lại Grid Lớp học / Danh sách Thiếu nhi / News / Docs để ẩn/hiện nút sửa nhanh theo quyền
+  if (currentTab === 'news') {
+    renderNewsView();
+  }
   if (currentTab === 'classes') {
     renderClassesView();
   }
   if (currentTab === 'students') {
     renderAllStudentsView();
+  }
+  if (currentTab === 'docs') {
+    renderDocsView();
   }
 }
 
@@ -2796,6 +3071,9 @@ function exportAllStudentsDatabaseToExcel() {
 // ==========================================================================
 function setupEventListeners() {
   // 1. Sidebar & Menu Tab Navigation
+  if (navItemNews) {
+    navItemNews.addEventListener('click', () => switchTab('news'));
+  }
   if (navItemGlv) {
     navItemGlv.addEventListener('click', () => switchTab('glv'));
   }
@@ -2804,6 +3082,9 @@ function setupEventListeners() {
   }
   if (navItemStudents) {
     navItemStudents.addEventListener('click', () => switchTab('students'));
+  }
+  if (navItemDocs) {
+    navItemDocs.addEventListener('click', () => switchTab('docs'));
   }
   if (mobileMenuBtn) {
     mobileMenuBtn.addEventListener('click', openMobileSidebar);
@@ -2816,6 +3097,13 @@ function setupEventListeners() {
   }
 
   // Tiện ích nhanh trên sidebar
+  if (sidebarAddNewsBtn) {
+    sidebarAddNewsBtn.addEventListener('click', () => {
+      closeMobileSidebar();
+      switchTab('news');
+      openNewsEditModal();
+    });
+  }
   if (sidebarViewAllGlvBtn) {
     sidebarViewAllGlvBtn.addEventListener('click', () => {
       closeMobileSidebar();
@@ -2879,6 +3167,13 @@ function setupEventListeners() {
     sidebarExportAllStudentsBtn.addEventListener('click', () => {
       closeMobileSidebar();
       exportAllStudentsDatabaseToExcel();
+    });
+  }
+  if (sidebarAddDocBtn) {
+    sidebarAddDocBtn.addEventListener('click', () => {
+      closeMobileSidebar();
+      switchTab('docs');
+      openDocEditModal();
     });
   }
 
@@ -3602,6 +3897,108 @@ function setupEventListeners() {
     btnPrintSingleReportCard.addEventListener('click', () => {
       window.print();
     });
+  }
+
+  // 10. Sự kiện Phân hệ Thông Báo & Tin Tức
+  const newsSearchInput = document.getElementById('newsSearchInput');
+  const newsClearSearchBtn = document.getElementById('newsClearSearchBtn');
+  const newsFilterPills = document.getElementById('newsFilterPills');
+  const btnAddNews = document.getElementById('btnAddNews');
+  const resetNewsFilterBtn = document.getElementById('resetNewsFilterBtn');
+  const newsForm = document.getElementById('newsForm');
+  const btnPrintNewsDetail = document.getElementById('btnPrintNewsDetail');
+
+  if (newsSearchInput) {
+    newsSearchInput.addEventListener('input', renderNewsView);
+  }
+  if (newsClearSearchBtn) {
+    newsClearSearchBtn.addEventListener('click', () => {
+      if (newsSearchInput) {
+        newsSearchInput.value = '';
+        newsSearchInput.focus();
+      }
+      renderNewsView();
+    });
+  }
+  if (newsFilterPills) {
+    newsFilterPills.querySelectorAll('.pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        newsFilterPills.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentNewsCategoryFilter = btn.getAttribute('data-category');
+        renderNewsView();
+      });
+    });
+  }
+  if (resetNewsFilterBtn) {
+    resetNewsFilterBtn.addEventListener('click', () => {
+      if (newsSearchInput) newsSearchInput.value = '';
+      currentNewsCategoryFilter = 'all';
+      if (newsFilterPills) {
+        newsFilterPills.querySelectorAll('.pill-btn').forEach(b => {
+          b.classList.toggle('active', b.getAttribute('data-category') === 'all');
+        });
+      }
+      renderNewsView();
+    });
+  }
+  if (btnAddNews) {
+    btnAddNews.addEventListener('click', () => openNewsEditModal());
+  }
+  if (newsForm) {
+    newsForm.addEventListener('submit', handleNewsFormSubmit);
+  }
+  if (btnPrintNewsDetail) {
+    btnPrintNewsDetail.addEventListener('click', () => window.print());
+  }
+
+  // 11. Sự kiện Phân hệ Kho Tài Liệu
+  const docsSearchInput = document.getElementById('docsSearchInput');
+  const docsClearSearchBtn = document.getElementById('docsClearSearchBtn');
+  const docsFilterPills = document.getElementById('docsFilterPills');
+  const btnAddDoc = document.getElementById('btnAddDoc');
+  const resetDocsFilterBtn = document.getElementById('resetDocsFilterBtn');
+  const docForm = document.getElementById('docForm');
+
+  if (docsSearchInput) {
+    docsSearchInput.addEventListener('input', renderDocsView);
+  }
+  if (docsClearSearchBtn) {
+    docsClearSearchBtn.addEventListener('click', () => {
+      if (docsSearchInput) {
+        docsSearchInput.value = '';
+        docsSearchInput.focus();
+      }
+      renderDocsView();
+    });
+  }
+  if (docsFilterPills) {
+    docsFilterPills.querySelectorAll('.pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        docsFilterPills.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentDocsCategoryFilter = btn.getAttribute('data-category');
+        renderDocsView();
+      });
+    });
+  }
+  if (resetDocsFilterBtn) {
+    resetDocsFilterBtn.addEventListener('click', () => {
+      if (docsSearchInput) docsSearchInput.value = '';
+      currentDocsCategoryFilter = 'all';
+      if (docsFilterPills) {
+        docsFilterPills.querySelectorAll('.pill-btn').forEach(b => {
+          b.classList.toggle('active', b.getAttribute('data-category') === 'all');
+        });
+      }
+      renderDocsView();
+    });
+  }
+  if (btnAddDoc) {
+    btnAddDoc.addEventListener('click', () => openDocEditModal());
+  }
+  if (docForm) {
+    docForm.addEventListener('submit', handleDocFormSubmit);
   }
 }
 
@@ -4872,4 +5269,590 @@ function openStudentReportCard(studentId) {
     studentReportCardModal.style.display = 'flex';
   }
 }
+
+// ==========================================================================
+// PHÂN HỆ THÔNG BÁO & TIN TỨC (NEWS / ANNOUNCEMENTS)
+// ==========================================================================
+function renderNewsFilterCounts() {
+  const countAll = newsDatabase.length;
+  const countUrgent = newsDatabase.filter(n => n.category === 'Khẩn').length;
+  const countSchedule = newsDatabase.filter(n => n.category === 'Lịch Lễ').length;
+  const countEvent = newsDatabase.filter(n => n.category === 'Sự Kiện').length;
+  const countGLV = newsDatabase.filter(n => n.category === 'GLV').length;
+  const countParents = newsDatabase.filter(n => n.category === 'Phụ Huynh').length;
+
+  const elAll = document.getElementById('countNewsAll');
+  const elUrgent = document.getElementById('countNewsUrgent');
+  const elSchedule = document.getElementById('countNewsSchedule');
+  const elEvent = document.getElementById('countNewsEvent');
+  const elGLV = document.getElementById('countNewsGLV');
+  const elParents = document.getElementById('countNewsParents');
+  const elSidebarNews = document.getElementById('sidebarNewsCount');
+
+  if (elAll) elAll.textContent = countAll;
+  if (elUrgent) elUrgent.textContent = countUrgent;
+  if (elSchedule) elSchedule.textContent = countSchedule;
+  if (elEvent) elEvent.textContent = countEvent;
+  if (elGLV) elGLV.textContent = countGLV;
+  if (elParents) elParents.textContent = countParents;
+  if (elSidebarNews) elSidebarNews.textContent = countAll;
+}
+
+function getNewsCategoryTagClass(cat) {
+  switch (cat) {
+    case 'Khẩn': return 'tag-khan';
+    case 'Lịch Lễ': return 'tag-lich-le';
+    case 'Sự Kiện': return 'tag-su-kien';
+    case 'GLV': return 'tag-glv';
+    case 'Phụ Huynh': return 'tag-phu-huynh';
+    default: return 'tag-lich-le';
+  }
+}
+
+function renderNewsView() {
+  const newsGrid = document.getElementById('newsCardsGrid');
+  const notFound = document.getElementById('newsNotFoundState');
+  const searchInput = document.getElementById('newsSearchInput');
+  const clearBtn = document.getElementById('newsClearSearchBtn');
+  const featuredNewsTitle = document.getElementById('featuredNewsTitle');
+  const featuredNewsDesc = document.getElementById('featuredNewsDesc');
+  const btnViewFeatured = document.getElementById('btnViewFeaturedNews');
+
+  renderNewsFilterCounts();
+
+  const query = (searchInput ? searchInput.value.trim() : '');
+  const qNorm = removeVietnameseTones(query.toLowerCase());
+
+  if (clearBtn) {
+    clearBtn.style.display = query ? 'block' : 'none';
+  }
+
+  // Update featured pinned news
+  const pinnedNews = newsDatabase.find(n => n.isPinned) || newsDatabase[0];
+  if (pinnedNews) {
+    if (featuredNewsTitle) featuredNewsTitle.textContent = pinnedNews.title;
+    if (featuredNewsDesc) featuredNewsDesc.textContent = pinnedNews.summary;
+    if (btnViewFeatured) {
+      btnViewFeatured.onclick = () => openNewsDetailModal(pinnedNews.id);
+    }
+  }
+
+  let list = [...newsDatabase];
+
+  // Filter category
+  if (currentNewsCategoryFilter !== 'all') {
+    list = list.filter(n => n.category === currentNewsCategoryFilter);
+  }
+
+  // Filter search
+  if (query) {
+    list = list.filter(n => {
+      const titleNorm = removeVietnameseTones(n.title || '');
+      const summaryNorm = removeVietnameseTones(n.summary || '');
+      const authorNorm = removeVietnameseTones(n.author || '');
+      const contentNorm = removeVietnameseTones(n.content || '');
+      return titleNorm.includes(qNorm) || summaryNorm.includes(qNorm) || authorNorm.includes(qNorm) || contentNorm.includes(qNorm);
+    });
+  }
+
+  if (!newsGrid) return;
+  newsGrid.innerHTML = '';
+
+  if (list.length === 0) {
+    if (notFound) notFound.style.display = 'block';
+    return;
+  }
+  if (notFound) notFound.style.display = 'none';
+
+  const isAdmin = (currentUserRole === 'admin');
+
+  list.forEach(n => {
+    const card = document.createElement('div');
+    card.className = `news-card ${n.isPinned ? 'is-pinned' : ''}`;
+    const tagCls = getNewsCategoryTagClass(n.category);
+
+    card.innerHTML = `
+      <div>
+        <div class="news-card-header">
+          <span class="news-cat-tag ${tagCls}">${n.category}</span>
+          <span class="news-card-date"><i class="fa-regular fa-clock"></i> ${n.date}</span>
+        </div>
+        <h3 class="news-card-title">${n.isPinned ? '<i class="fa-solid fa-thumbtack" style="color: #f59e0b; margin-right: 0.35rem;"></i>' : ''}${n.title}</h3>
+        <p class="news-card-summary">${n.summary || ''}</p>
+        <div class="news-card-author"><i class="fa-solid fa-feather-pointed"></i> ${n.author || 'Ban Giáo Lý Tân Mỹ'}</div>
+      </div>
+      <div class="news-card-footer">
+        <button type="button" class="btn-news-read" data-news-id="${n.id}">
+          <i class="fa-solid fa-book-open-reader"></i> Xem Chi Tiết
+        </button>
+        ${isAdmin ? `
+          <div style="display: flex; gap: 0.35rem;">
+            <button type="button" class="btn-tool-icon edit btn-edit-news" data-edit-id="${n.id}" title="Sửa thông báo"><i class="fa-solid fa-pen"></i></button>
+            <button type="button" class="btn-tool-icon delete btn-del-news" data-del-id="${n.id}" title="Xóa thông báo"><i class="fa-solid fa-trash-can"></i></button>
+          </div>
+        ` : ''}
+      </div>
+    `;
+
+    card.querySelector('.btn-news-read').addEventListener('click', () => openNewsDetailModal(n.id));
+    card.querySelector('.news-card-title').addEventListener('click', () => openNewsDetailModal(n.id));
+
+    const editBtn = card.querySelector('.btn-edit-news');
+    if (editBtn) {
+      editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openNewsEditModal(n.id);
+      });
+    }
+
+    const delBtn = card.querySelector('.btn-del-news');
+    if (delBtn) {
+      delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteNews(n.id);
+      });
+    }
+
+    newsGrid.appendChild(card);
+  });
+}
+
+function openNewsDetailModal(newsId) {
+  const news = newsDatabase.find(n => n.id === newsId);
+  if (!news) return;
+
+  const modal = document.getElementById('newsDetailModal');
+  const body = document.getElementById('newsDetailBody');
+  if (!modal || !body) return;
+
+  const tagCls = getNewsCategoryTagClass(news.category);
+  const formattedContent = (news.content || '')
+    .split('\n')
+    .map(line => line.trim() ? `<p style="margin-bottom: 0.75rem; line-height: 1.6; color: #334155;">${line}</p>` : '<div style="height: 0.5rem;"></div>')
+    .join('');
+
+  body.innerHTML = `
+    <div style="margin-bottom: 1.25rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem;">
+        <span class="news-cat-tag ${tagCls}" style="font-size: 0.8rem;">${news.category}</span>
+        <span style="font-size: 0.85rem; color: #64748b; font-weight: 500;"><i class="fa-regular fa-calendar-days"></i> ${news.date}</span>
+      </div>
+      <h2 style="font-size: 1.35rem; font-weight: 800; color: #1e293b; line-height: 1.35;">${news.title}</h2>
+      <div style="margin-top: 0.5rem; font-size: 0.88rem; color: #475569; font-style: italic;">
+        <i class="fa-solid fa-feather-pointed"></i> Người ban hành: <strong>${news.author || 'Ban Quản Trị Xứ Đoàn'}</strong>
+      </div>
+    </div>
+    <div class="news-full-content" style="font-size: 0.95rem;">
+      ${formattedContent}
+    </div>
+    <div style="margin-top: 1.5rem; padding: 1rem; background: #fffdfa; border: 1px dashed #fcd34d; border-radius: 12px; font-size: 0.85rem; color: #78350f;">
+      <i class="fa-solid fa-cross"></i> <strong>Đoàn Thiếu Nhi Thánh Thể Giáo Xứ Tân Mỹ</strong> - Năm học 2026 - 2027
+    </div>
+  `;
+
+  modal.style.display = 'flex';
+}
+
+function openNewsEditModal(newsId = null) {
+  const modal = document.getElementById('newsEditModal');
+  const titleEl = document.getElementById('newsModalTitle');
+  const form = document.getElementById('newsForm');
+  if (!modal || !form) return;
+
+  const idInput = document.getElementById('newsEditId');
+  const titleInput = document.getElementById('newsFormTitle');
+  const categorySelect = document.getElementById('newsFormCategory');
+  const dateInput = document.getElementById('newsFormDate');
+  const authorInput = document.getElementById('newsFormAuthor');
+  const summaryInput = document.getElementById('newsFormSummary');
+  const contentInput = document.getElementById('newsFormContent');
+  const pinnedCheckbox = document.getElementById('newsFormPinned');
+
+  if (newsId) {
+    const news = newsDatabase.find(n => n.id === newsId);
+    if (!news) return;
+    if (titleEl) titleEl.textContent = 'Chỉnh Sửa Thông Báo';
+    idInput.value = news.id;
+    titleInput.value = news.title || '';
+    categorySelect.value = news.category || 'Khẩn';
+    dateInput.value = news.date || '';
+    authorInput.value = news.author || '';
+    summaryInput.value = news.summary || '';
+    contentInput.value = news.content || '';
+    pinnedCheckbox.checked = !!news.isPinned;
+  } else {
+    if (titleEl) titleEl.textContent = 'Đăng Thông Báo Mới';
+    idInput.value = '';
+    form.reset();
+    const today = new Date();
+    const d = String(today.getDate()).padStart(2, '0');
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const y = today.getFullYear();
+    dateInput.value = `${d}/${m}/${y}`;
+    authorInput.value = 'Ban Quản Trị Xứ Đoàn TNTT';
+  }
+
+  modal.style.display = 'flex';
+}
+
+function handleNewsFormSubmit(e) {
+  e.preventDefault();
+  const idInput = document.getElementById('newsEditId');
+  const titleInput = document.getElementById('newsFormTitle');
+  const categorySelect = document.getElementById('newsFormCategory');
+  const dateInput = document.getElementById('newsFormDate');
+  const authorInput = document.getElementById('newsFormAuthor');
+  const summaryInput = document.getElementById('newsFormSummary');
+  const contentInput = document.getElementById('newsFormContent');
+  const pinnedCheckbox = document.getElementById('newsFormPinned');
+
+  const title = (titleInput.value || '').trim();
+  if (!title) return;
+
+  const isEdit = !!idInput.value;
+  const isPinned = pinnedCheckbox.checked;
+
+  if (isPinned) {
+    // Unpin other news
+    newsDatabase.forEach(n => n.isPinned = false);
+  }
+
+  if (isEdit) {
+    const news = newsDatabase.find(n => n.id === idInput.value);
+    if (news) {
+      news.title = title;
+      news.category = categorySelect.value;
+      news.date = dateInput.value.trim() || '26/08/2026';
+      news.author = authorInput.value.trim() || 'Ban Quản Trị';
+      news.summary = summaryInput.value.trim();
+      news.content = contentInput.value.trim();
+      news.isPinned = isPinned;
+    }
+  } else {
+    const newId = `NEWS${String(newsDatabase.length + 1).padStart(2, '0')}`;
+    newsDatabase.unshift({
+      id: newId,
+      title: title,
+      category: categorySelect.value,
+      date: dateInput.value.trim() || '26/08/2026',
+      author: authorInput.value.trim() || 'Ban Quản Trị',
+      summary: summaryInput.value.trim(),
+      content: contentInput.value.trim(),
+      isPinned: isPinned
+    });
+  }
+
+  saveNewsDatabase();
+  renderNewsView();
+  document.getElementById('newsEditModal').style.display = 'none';
+  showToast(isEdit ? 'Đã cập nhật thông báo thành công!' : 'Đã đăng thông báo mới!');
+}
+
+async function deleteNews(newsId) {
+  const news = newsDatabase.find(n => n.id === newsId);
+  if (!news) return;
+
+  const ok = await showConfirmDialog({
+    title: 'Xóa Thông Báo',
+    message: 'Bạn có chắc chắn muốn xóa bài thông báo này không?',
+    itemName: news.title,
+    confirmText: 'Xác Nhận Xóa'
+  });
+
+  if (!ok) return;
+
+  newsDatabase = newsDatabase.filter(n => n.id !== newsId);
+  saveNewsDatabase();
+  renderNewsView();
+  showToast('Đã xóa thông báo!');
+}
+
+// ==========================================================================
+// PHÂN HỆ KHO TÀI LIỆU & GIÁO TRÌNH (DOCUMENTS / RESOURCES)
+// ==========================================================================
+function renderDocsFilterCounts() {
+  const countAll = docsDatabase.length;
+  const countGT = docsDatabase.filter(d => d.category === 'Giáo Trình').length;
+  const countST = docsDatabase.filter(d => d.category === 'Sổ Tay').length;
+  const countKH = docsDatabase.filter(d => d.category === 'Kinh & Hát').length;
+  const countBM = docsDatabase.filter(d => d.category === 'Biểu Mẫu').length;
+
+  const elAll = document.getElementById('countDocsAll');
+  const elGT = document.getElementById('countDocsGiaoTrinh');
+  const elST = document.getElementById('countDocsSoTay');
+  const elKH = document.getElementById('countDocsKinhHat');
+  const elBM = document.getElementById('countDocsBieuMau');
+  const elSidebarDocs = document.getElementById('sidebarDocsCount');
+
+  if (elAll) elAll.textContent = countAll;
+  if (elGT) elGT.textContent = countGT;
+  if (elST) elST.textContent = countST;
+  if (elKH) elKH.textContent = countKH;
+  if (elBM) elBM.textContent = countBM;
+  if (elSidebarDocs) elSidebarDocs.textContent = countAll;
+}
+
+function getDocFormatIcon(format) {
+  switch (format) {
+    case 'PDF': return { cls: 'format-pdf', icon: 'fa-solid fa-file-pdf' };
+    case 'DOCX': return { cls: 'format-docx', icon: 'fa-solid fa-file-word' };
+    case 'XLSX': return { cls: 'format-xlsx', icon: 'fa-solid fa-file-excel' };
+    case 'MP3': return { cls: 'format-mp3', icon: 'fa-solid fa-file-audio' };
+    default: return { cls: 'format-pdf', icon: 'fa-solid fa-file-lines' };
+  }
+}
+
+function renderDocsView() {
+  const docsGrid = document.getElementById('docsCardsGrid');
+  const notFound = document.getElementById('docsNotFoundState');
+  const searchInput = document.getElementById('docsSearchInput');
+  const clearBtn = document.getElementById('docsClearSearchBtn');
+
+  renderDocsFilterCounts();
+
+  const query = (searchInput ? searchInput.value.trim() : '');
+  const qNorm = removeVietnameseTones(query.toLowerCase());
+
+  if (clearBtn) {
+    clearBtn.style.display = query ? 'block' : 'none';
+  }
+
+  let list = [...docsDatabase];
+
+  // Filter category
+  if (currentDocsCategoryFilter !== 'all') {
+    list = list.filter(d => d.category === currentDocsCategoryFilter);
+  }
+
+  // Filter search
+  if (query) {
+    list = list.filter(d => {
+      const titleNorm = removeVietnameseTones(d.title || '');
+      const descNorm = removeVietnameseTones(d.desc || '');
+      const targetNorm = removeVietnameseTones(d.target || '');
+      const authorNorm = removeVietnameseTones(d.author || '');
+      return titleNorm.includes(qNorm) || descNorm.includes(qNorm) || targetNorm.includes(qNorm) || authorNorm.includes(qNorm);
+    });
+  }
+
+  if (!docsGrid) return;
+  docsGrid.innerHTML = '';
+
+  if (list.length === 0) {
+    if (notFound) notFound.style.display = 'block';
+    return;
+  }
+  if (notFound) notFound.style.display = 'none';
+
+  const isAdmin = (currentUserRole === 'admin');
+
+  list.forEach(doc => {
+    const card = document.createElement('div');
+    card.className = 'doc-card';
+    const fmt = getDocFormatIcon(doc.format);
+
+    card.innerHTML = `
+      <div class="doc-icon-box ${fmt.cls}">
+        <i class="${fmt.icon}"></i>
+      </div>
+      <div class="doc-info">
+        <h3 class="doc-title">${doc.title}</h3>
+        <div class="doc-meta-row">
+          <span class="doc-target-badge"><i class="fa-solid fa-users"></i> ${doc.target || 'Toàn Đoàn'}</span>
+          <span>&bull; ${doc.size || '3.5 MB'}</span>
+          <span>&bull; <i class="fa-solid fa-download"></i> ${doc.downloads || 100}+</span>
+        </div>
+        <p class="doc-desc-text">${doc.desc || ''}</p>
+        <div class="doc-actions-row">
+          <button type="button" class="btn-doc-view" data-doc-id="${doc.id}">
+            <i class="fa-solid fa-eye"></i> Xem Nhanh
+          </button>
+          <button type="button" class="btn-doc-download" data-download-id="${doc.id}">
+            <i class="fa-solid fa-download"></i> Tải Về
+          </button>
+          ${isAdmin ? `
+            <button type="button" class="btn-tool-icon edit btn-edit-doc" data-edit-id="${doc.id}" title="Sửa tài liệu"><i class="fa-solid fa-pen"></i></button>
+            <button type="button" class="btn-tool-icon delete btn-del-doc" data-del-id="${doc.id}" title="Xóa tài liệu"><i class="fa-solid fa-trash-can"></i></button>
+          ` : ''}
+        </div>
+      </div>
+    `;
+
+    card.querySelector('.btn-doc-view').addEventListener('click', () => openDocPreviewModal(doc.id));
+    card.querySelector('.btn-doc-download').addEventListener('click', () => downloadDoc(doc.id));
+
+    const editBtn = card.querySelector('.btn-edit-doc');
+    if (editBtn) {
+      editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openDocEditModal(doc.id);
+      });
+    }
+
+    const delBtn = card.querySelector('.btn-del-doc');
+    if (delBtn) {
+      delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteDoc(doc.id);
+      });
+    }
+
+    docsGrid.appendChild(card);
+  });
+}
+
+function openDocPreviewModal(docId) {
+  const doc = docsDatabase.find(d => d.id === docId);
+  if (!doc) return;
+
+  const modal = document.getElementById('docPreviewModal');
+  const body = document.getElementById('docPreviewBody');
+  const titleEl = document.getElementById('docPreviewModalTitle');
+  const downloadBtn = document.getElementById('btnDownloadDocFromPreview');
+  if (!modal || !body) return;
+
+  if (titleEl) titleEl.textContent = doc.title;
+  const fmt = getDocFormatIcon(doc.format);
+
+  body.innerHTML = `
+    <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid #e2e8f0;">
+      <div class="doc-icon-box ${fmt.cls}" style="width: 56px; height: 56px; font-size: 1.75rem;">
+        <i class="${fmt.icon}"></i>
+      </div>
+      <div>
+        <h3 style="font-size: 1.2rem; font-weight: 700; color: #1e293b; margin-bottom: 0.35rem;">${doc.title}</h3>
+        <div style="display: flex; gap: 0.5rem; font-size: 0.82rem; color: #64748b;">
+          <span class="doc-target-badge">${doc.category}</span>
+          <span>&bull; Đối tượng: <strong>${doc.target}</strong></span>
+          <span>&bull; Dung lượng: <strong>${doc.size}</strong></span>
+        </div>
+      </div>
+    </div>
+    <div style="font-size: 0.92rem; color: #334155; line-height: 1.6; margin-bottom: 1rem;">
+      <p style="margin-bottom: 0.75rem;"><strong>Mô tả tóm tắt:</strong> ${doc.desc || ''}</p>
+      <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 1rem; margin-top: 1rem;">
+        <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;"><i class="fa-solid fa-circle-info" style="color: #7c3aed;"></i> Tóm Tắt Nội Dung Giáo Lý / Biểu Mẫu:</h4>
+        <p style="font-size: 0.88rem; color: #475569; line-height: 1.5;">${doc.content || 'Tài liệu chuẩn mực phục vụ công tác giảng dạy giáo lý và sinh hoạt Thiếu Nhi Thánh Thể tại Giáo xứ Tân Mỹ.'}</p>
+      </div>
+    </div>
+  `;
+
+  if (downloadBtn) {
+    downloadBtn.onclick = () => downloadDoc(doc.id);
+  }
+
+  modal.style.display = 'flex';
+}
+
+function openDocEditModal(docId = null) {
+  const modal = document.getElementById('docEditModal');
+  const titleEl = document.getElementById('docModalTitle');
+  const form = document.getElementById('docForm');
+  if (!modal || !form) return;
+
+  const idInput = document.getElementById('docEditId');
+  const titleInput = document.getElementById('docFormTitle');
+  const categorySelect = document.getElementById('docFormCategory');
+  const formatSelect = document.getElementById('docFormFormat');
+  const targetInput = document.getElementById('docFormTarget');
+  const sizeInput = document.getElementById('docFormSize');
+  const descInput = document.getElementById('docFormDesc');
+
+  if (docId) {
+    const doc = docsDatabase.find(d => d.id === docId);
+    if (!doc) return;
+    if (titleEl) titleEl.textContent = 'Chỉnh Sửa Tài Liệu';
+    idInput.value = doc.id;
+    titleInput.value = doc.title || '';
+    categorySelect.value = doc.category || 'Giáo Trình';
+    formatSelect.value = doc.format || 'PDF';
+    targetInput.value = doc.target || '';
+    sizeInput.value = doc.size || '';
+    descInput.value = doc.desc || '';
+  } else {
+    if (titleEl) titleEl.textContent = 'Đăng Tài Liệu Mới';
+    idInput.value = '';
+    form.reset();
+    sizeInput.value = '3.5 MB';
+    targetInput.value = 'Toàn Đoàn Thiếu Nhi';
+  }
+
+  modal.style.display = 'flex';
+}
+
+function handleDocFormSubmit(e) {
+  e.preventDefault();
+  const idInput = document.getElementById('docEditId');
+  const titleInput = document.getElementById('docFormTitle');
+  const categorySelect = document.getElementById('docFormCategory');
+  const formatSelect = document.getElementById('docFormFormat');
+  const targetInput = document.getElementById('docFormTarget');
+  const sizeInput = document.getElementById('docFormSize');
+  const descInput = document.getElementById('docFormDesc');
+
+  const title = (titleInput.value || '').trim();
+  if (!title) return;
+
+  const isEdit = !!idInput.value;
+
+  if (isEdit) {
+    const doc = docsDatabase.find(d => d.id === idInput.value);
+    if (doc) {
+      doc.title = title;
+      doc.category = categorySelect.value;
+      doc.format = formatSelect.value;
+      doc.target = targetInput.value.trim() || 'Toàn Đoàn';
+      doc.size = sizeInput.value.trim() || '3.5 MB';
+      doc.desc = descInput.value.trim();
+    }
+  } else {
+    const newId = `DOC${String(docsDatabase.length + 1).padStart(2, '0')}`;
+    docsDatabase.unshift({
+      id: newId,
+      title: title,
+      category: categorySelect.value,
+      format: formatSelect.value,
+      target: targetInput.value.trim() || 'Toàn Đoàn',
+      size: sizeInput.value.trim() || '3.5 MB',
+      author: 'Ban Giáo Lý Tân Mỹ',
+      downloads: 1,
+      desc: descInput.value.trim(),
+      content: descInput.value.trim()
+    });
+  }
+
+  saveDocsDatabase();
+  renderDocsView();
+  document.getElementById('docEditModal').style.display = 'none';
+  showToast(isEdit ? 'Đã cập nhật tài liệu thành công!' : 'Đã đăng tài liệu mới!');
+}
+
+function downloadDoc(docId) {
+  const doc = docsDatabase.find(d => d.id === docId);
+  if (!doc) return;
+  doc.downloads = (doc.downloads || 0) + 1;
+  saveDocsDatabase();
+  renderDocsView();
+  showToast(`Đang tải về "${doc.title}"...`);
+}
+
+async function deleteDoc(docId) {
+  const doc = docsDatabase.find(d => d.id === docId);
+  if (!doc) return;
+
+  const ok = await showConfirmDialog({
+    title: 'Xóa Tài Liệu',
+    message: 'Bạn có chắc chắn muốn xóa tài liệu này không?',
+    itemName: doc.title,
+    confirmText: 'Xác Nhận Xóa'
+  });
+
+  if (!ok) return;
+
+  docsDatabase = docsDatabase.filter(d => d.id !== docId);
+  saveDocsDatabase();
+  renderDocsView();
+  showToast('Đã xóa tài liệu!');
+}
+
 
