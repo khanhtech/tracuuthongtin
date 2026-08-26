@@ -72,20 +72,115 @@ function saveDatabase() {
   updateStatsDisplay();
 }
 
+const SAMPLE_MALE_HOLY_NAMES = ['Giuse', 'Phêrô', 'Phaolô', 'Gioan', 'Đaminh', 'Antôn', 'Micae', 'Phanxicô', 'Inhaxiô', 'Augustinô'];
+const SAMPLE_FEMALE_HOLY_NAMES = ['Maria', 'Anna', 'Têrêsa', 'Catarina', 'Cecilia', 'Matta', 'Agata', 'Rosa', 'Lucia', 'Agnes'];
+
+const SAMPLE_LAST_NAMES = ['Nguyễn', 'Trần', 'Lê', 'Phạm', 'Hoàng', 'Huỳnh', 'Phan', 'Vũ', 'Võ', 'Đặng', 'Bùi', 'Đỗ', 'Hồ', 'Ngô', 'Dương'];
+const SAMPLE_MIDDLE_MALE = ['Văn', 'Minh', 'Hữu', 'Đức', 'Gia', 'Quốc', 'Tuấn', 'Thành', 'Hoàng'];
+const SAMPLE_MIDDLE_FEMALE = ['Thị', 'Ngọc', 'Thảo', 'Phương', 'Mai', 'Thùy', 'Diệu', 'Tuyết'];
+const SAMPLE_FIRST_MALE = ['An', 'Bảo', 'Cường', 'Duy', 'Đạt', 'Hiếu', 'Huy', 'Khoa', 'Long', 'Minh', 'Nam', 'Phúc', 'Quân', 'Sang', 'Tâm', 'Thịnh', 'Trung', 'Vinh'];
+const SAMPLE_FIRST_FEMALE = ['Anh', 'Châu', 'Dương', 'Giang', 'Hà', 'Hân', 'Hạnh', 'Hoa', 'Hương', 'Linh', 'Mai', 'Nga', 'Ngân', 'Nhi', 'Như', 'Quyên', 'Quỳnh', 'Trâm', 'Trang', 'Trúc', 'Uyên', 'Vy', 'Yến'];
+
+function getEstimatedBirthYearByBlock(block) {
+  const norm = removeVietnameseTones(block || '').toLowerCase();
+  if (norm.includes('khai tam')) return 2019;
+  if (norm.includes('ruoc le')) return 2016;
+  if (norm.includes('them suc')) return 2013;
+  if (norm.includes('bao dong')) return 2010;
+  if (norm.includes('vao doi')) return 2008;
+  return 2015;
+}
+
+function generateDefaultStudentsForClass(cls, count = 25) {
+  if (!cls) return [];
+  const classCode = (cls.id || 'CLS').replace('CLASS_', '').replace('_2627', '');
+  const birthYear = getEstimatedBirthYearByBlock(cls.block || '');
+
+  const list = [];
+  const targetCount = count && count > 0 ? count : 25;
+  for (let i = 1; i <= targetCount; i++) {
+    const isMale = (i % 2 !== 0);
+    const holyName = isMale ? SAMPLE_MALE_HOLY_NAMES[(i * 3) % SAMPLE_MALE_HOLY_NAMES.length] : SAMPLE_FEMALE_HOLY_NAMES[(i * 3) % SAMPLE_FEMALE_HOLY_NAMES.length];
+    const lastName = SAMPLE_LAST_NAMES[(i * 7) % SAMPLE_LAST_NAMES.length];
+    const midName = isMale ? SAMPLE_MIDDLE_MALE[(i * 5) % SAMPLE_MIDDLE_MALE.length] : SAMPLE_MIDDLE_FEMALE[(i * 5) % SAMPLE_MIDDLE_FEMALE.length];
+    const firstName = isMale ? SAMPLE_FIRST_MALE[(i * 11) % SAMPLE_FIRST_MALE.length] : SAMPLE_FIRST_FEMALE[(i * 11) % SAMPLE_FIRST_FEMALE.length];
+    const fullName = `${lastName} ${midName} ${firstName}`;
+    const day = String((i * 3) % 28 + 1).padStart(2, '0');
+    const month = String((i * 7) % 12 + 1).padStart(2, '0');
+    const birthDate = `${day}/${month}/${birthYear}`;
+    const parentName = `${lastName} ${SAMPLE_MIDDLE_MALE[(i * 2) % SAMPLE_MIDDLE_MALE.length]} ${SAMPLE_FIRST_MALE[(i * 4) % SAMPLE_FIRST_MALE.length]}`;
+    const parentPhone = `090${String(1000000 + i * 37219).slice(0, 7)}`;
+
+    // Điểm mẫu cân đối
+    const baseOral = Math.min(10, Math.max(6.5, 8 + (i % 4) * 0.5));
+    const base15m = Math.min(10, Math.max(7, 8.5 + ((i + 1) % 3) * 0.5));
+    const base1p = Math.min(10, Math.max(6.5, 8 + ((i + 2) % 4) * 0.5));
+    const baseExam = Math.min(10, Math.max(7, 8.5 + (i % 3) * 0.5));
+
+    list.push({
+      stt: i,
+      id: `TN-${classCode}-${String(i).padStart(2, '0')}`,
+      holyName: holyName,
+      fullName: fullName,
+      gender: isMale ? 'Nam' : 'Nữ',
+      birthDate: birthDate,
+      note: i === 1 ? 'Lớp trưởng' : (i === 2 ? 'Lớp phó' : 'Đang theo học'),
+      parentName: parentName,
+      parentPhone: parentPhone,
+      address: `Giáo họ ${['Thánh Tâm', 'Mân Côi', 'Kitô Vua', 'Vô Nhiễm'][(i * 3) % 4]}`,
+      grades: {
+        hk1: { t5: 10, cn: 10, gl: 9.5, oral: baseOral, m15: base15m, p1: base1p, exam: baseExam },
+        hk2: { t5: 10, cn: 9.5, gl: 9.5, oral: Math.min(10, baseOral + 0.5), m15: base15m, p1: Math.min(10, base1p + 0.5), exam: Math.min(10, baseExam + 0.5) }
+      }
+    });
+  }
+  return list;
+}
+
+function ensureDefaultStudentsForAllClasses() {
+  if (!Array.isArray(classDatabase)) return;
+  let changed = false;
+  classDatabase.forEach(cls => {
+    if (!Array.isArray(cls.students) || cls.students.length === 0) {
+      const count = cls.studentCount && cls.studentCount > 0 ? cls.studentCount : 25;
+      cls.students = generateDefaultStudentsForClass(cls, count);
+      cls.studentCount = cls.students.length;
+      changed = true;
+    }
+  });
+  if (changed) {
+    saveClassesDatabase();
+  }
+}
+
 function loadSavedClassesDatabase() {
+  let list = [];
   try {
     const saved = localStorage.getItem(CLASS_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
         const filtered = parsed.filter(item => item.block !== 'Dự Trưởng');
-        return sortClassesList(filtered);
+        list = sortClassesList(filtered);
       }
     }
   } catch (e) {
     console.warn('Lỗi đọc dữ liệu Lớp học từ localStorage:', e);
   }
-  return sortClassesList([...DEFAULT_CLASSES_DATASET]);
+  if (!list || list.length === 0) {
+    list = sortClassesList([...DEFAULT_CLASSES_DATASET]);
+  }
+
+  // Đảm bảo mỗi lớp có danh sách thiếu nhi
+  list.forEach(cls => {
+    if (!Array.isArray(cls.students) || cls.students.length === 0) {
+      const count = cls.studentCount && cls.studentCount > 0 ? cls.studentCount : 25;
+      cls.students = generateDefaultStudentsForClass(cls, count);
+      cls.studentCount = cls.students.length;
+    }
+  });
+
+  return list;
 }
 
 function saveClassesDatabase() {
@@ -321,7 +416,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initApiSync() {
-  if (typeof API === 'undefined') return;
+  if (typeof API === 'undefined') {
+    ensureDefaultStudentsForAllClasses();
+    updateStudentStatsDisplay();
+    return;
+  }
   const isOnline = await API.checkBackendStatus();
   if (isOnline) {
     console.log('🟢 Kết nối MySQL Database Backend thành công (Online)!');
@@ -339,12 +438,29 @@ async function initApiSync() {
     const dbClasses = await API.getClasses();
     if (dbClasses && dbClasses.length > 0) {
       classDatabase = dbClasses;
+
+      // Đồng bộ danh sách thiếu nhi cho từng lớp từ MySQL
+      for (const cls of classDatabase) {
+        const students = await API.getStudents(cls.id);
+        if (students && students.length > 0) {
+          cls.students = students;
+          cls.studentCount = students.length;
+        } else if (!cls.students || cls.students.length === 0) {
+          cls.students = generateDefaultStudentsForClass(cls, cls.studentCount || 25);
+          cls.studentCount = cls.students.length;
+        }
+      }
+
       saveClassesDatabase();
       if (currentTab === 'classes') renderClassesView();
       if (currentTab === 'students') renderAllStudentsView();
     }
-    updateStudentStatsDisplay();
+  } else {
+    ensureDefaultStudentsForAllClasses();
   }
+  updateStudentStatsDisplay();
+  populateStudentClassFilter();
+  if (currentTab === 'students') renderAllStudentsView();
 }
 
 // ==========================================================================
