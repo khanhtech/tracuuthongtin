@@ -2089,6 +2089,313 @@ function exportClassesDatabaseToExcel() {
 }
 
 // ==========================================================================
+// XUẤT VÀ NHẬP DANH SÁCH THIẾU NHI BẰNG FILE EXCEL (STUDENT EXCEL IMPORT/EXPORT)
+// ==========================================================================
+function exportClassStudentsToExcel(cls) {
+  if (typeof XLSX === 'undefined') {
+    showToast('Thư viện Excel đang tải, vui lòng thử lại sau vài giây!');
+    return;
+  }
+  const students = getClassStudents(cls);
+  const data = students.map((s, idx) => ({
+    'STT': s.stt || (idx + 1),
+    'Mã Thiếu Nhi': s.id || '',
+    'Tên Thánh (Bổn Mạng)': s.holyName || '',
+    'Họ và Tên (*)': s.fullName || '',
+    'Giới Tính': s.gender || 'Nam',
+    'Ngày Sinh (DD/MM/YYYY)': s.birthDate || '',
+    'Ghi Chú / Vai Trò': s.note || 'Đang theo học',
+    'Tên Phụ Huynh (Cha/Mẹ)': s.parentName || '',
+    'Số Điện Thoại Phụ Huynh': s.parentPhone || '',
+    'Địa Chỉ / Giáo Họ': s.address || ''
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'DanhSachThieuNhi');
+  const safeName = (cls.name || 'LopGiaoLy').replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1E00-\u1EFF]/g, '_');
+  XLSX.writeFile(wb, `Danh_Sach_Thieu_Nhi_${safeName}_2026_2027.xlsx`);
+  showToast(`Đã xuất file Excel danh sách lớp ${cls.name}!`);
+}
+
+function downloadStudentExcelTemplate(cls) {
+  if (typeof XLSX === 'undefined') {
+    showToast('Thư viện Excel đang tải, vui lòng thử lại sau!');
+    return;
+  }
+  const sampleData = [
+    {
+      'STT': 1,
+      'Mã Thiếu Nhi': `TN-${(cls ? cls.id : 'DBKT').replace('CLASS_', '')}-01`,
+      'Tên Thánh (Bổn Mạng)': 'Giuse',
+      'Họ và Tên (*)': 'Nguyễn Minh An',
+      'Giới Tính': 'Nam',
+      'Ngày Sinh (DD/MM/YYYY)': '15/04/2019',
+      'Ghi Chú / Vai Trò': 'Lớp trưởng',
+      'Tên Phụ Huynh (Cha/Mẹ)': 'Nguyễn Văn Hải',
+      'Số Điện Thoại Phụ Huynh': '0901234567',
+      'Địa Chỉ / Giáo Họ': 'Giáo họ Thánh Giuse'
+    },
+    {
+      'STT': 2,
+      'Mã Thiếu Nhi': `TN-${(cls ? cls.id : 'DBKT').replace('CLASS_', '')}-02`,
+      'Tên Thánh (Bổn Mạng)': 'Maria',
+      'Họ và Tên (*)': 'Trần Ngọc Hân',
+      'Giới Tính': 'Nữ',
+      'Ngày Sinh (DD/MM/YYYY)': '22/08/2019',
+      'Ghi Chú / Vai Trò': 'Lớp phó học tập',
+      'Tên Phụ Huynh (Cha/Mẹ)': 'Trần Minh Tuấn',
+      'Số Điện Thoại Phụ Huynh': '0912345678',
+      'Địa Chỉ / Giáo Họ': 'Giáo họ Đức Mẹ'
+    },
+    {
+      'STT': 3,
+      'Mã Thiếu Nhi': `TN-${(cls ? cls.id : 'DBKT').replace('CLASS_', '')}-03`,
+      'Tên Thánh (Bổn Mạng)': 'Phêrô',
+      'Họ và Tên (*)': 'Lê Hoàng Long',
+      'Giới Tính': 'Nam',
+      'Ngày Sinh (DD/MM/YYYY)': '10/01/2019',
+      'Ghi Chú / Vai Trò': 'Đang theo học',
+      'Tên Phụ Huynh (Cha/Mẹ)': 'Lê Văn Nam',
+      'Số Điện Thoại Phụ Huynh': '0987654321',
+      'Địa Chỉ / Giáo Họ': 'Giáo họ Thánh Tâm'
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(sampleData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'MauNhapThieuNhi');
+  const className = cls ? cls.name : 'Chuan';
+  XLSX.writeFile(wb, `Mau_Nhap_Excel_Thieu_Nhi_${className}.xlsx`);
+  showToast('Đã tải xuống file mẫu Excel thành công!');
+}
+
+let pendingImportStudents = [];
+let importClassId = null;
+
+function openStudentExcelImportModal(classId) {
+  if (!classId) classId = currentRosterClassId;
+  const cls = classDatabase.find(c => c.id === classId || c.id.toLowerCase() === classId.toLowerCase());
+  if (!cls) return;
+
+  importClassId = cls.id;
+  pendingImportStudents = [];
+
+  const modal = document.getElementById('importExcelPreviewModal');
+  const title = document.getElementById('importExcelClassTitle');
+  const previewBox = document.getElementById('importPreviewContainer');
+  const statusText = document.getElementById('importFileStatusText');
+  const confirmBtn = document.getElementById('btnConfirmImportExcel');
+  const fileInput = document.getElementById('rosterImportFileInput');
+
+  if (title) title.textContent = `Lớp ${cls.name}`;
+  if (previewBox) previewBox.style.display = 'none';
+  if (statusText) statusText.textContent = 'Chưa chọn file Excel nào';
+  if (confirmBtn) {
+    confirmBtn.disabled = true;
+    confirmBtn.style.cursor = 'not-allowed';
+    confirmBtn.style.opacity = '0.6';
+  }
+  if (fileInput) fileInput.value = '';
+
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeStudentExcelImportModal() {
+  const modal = document.getElementById('importExcelPreviewModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function parseStudentExcelFile(file) {
+  if (!file) return;
+  const statusText = document.getElementById('importFileStatusText');
+  const previewBox = document.getElementById('importPreviewContainer');
+  const countDisplay = document.getElementById('importPreviewValidCount');
+  const tbody = document.getElementById('importPreviewTableBody');
+  const confirmBtn = document.getElementById('btnConfirmImportExcel');
+
+  if (statusText) statusText.textContent = `Đang đọc file: ${file.name}...`;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+      const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+
+      if (!rows || rows.length < 2) {
+        showToast('File Excel rỗng hoặc không đúng định dạng!');
+        if (statusText) statusText.textContent = 'File Excel không có dữ liệu!';
+        return;
+      }
+
+      // Xác định hàng tiêu đề
+      const headerRow = rows[0].map(h => removeVietnameseTones(String(h).toLowerCase().trim()));
+      
+      const findColIdx = (keywords) => {
+        return headerRow.findIndex(h => keywords.some(k => h.includes(k)));
+      };
+
+      const sttIdx = findColIdx(['stt', 'so thu tu', 'tt']);
+      const idIdx = findColIdx(['ma thieu nhi', 'ma tn', 'ma hoc sinh', 'ma', 'id']);
+      const holyIdx = findColIdx(['ten thanh', 'bon mang', 'holy']);
+      const nameIdx = findColIdx(['ho va ten', 'ho ten', 'ho ten (*)', 'ten', 'full name']);
+      const genderIdx = findColIdx(['gioi tinh', 'gioi', 'phai', 'gender']);
+      const birthIdx = findColIdx(['ngay sinh', 'nam sinh', 'birth']);
+      const noteIdx = findColIdx(['ghi chu', 'vai tro', 'chuc vu', 'role', 'note']);
+      const parentIdx = findColIdx(['phu huynh', 'cha me', 'ten phu huynh', 'parent']);
+      const phoneIdx = findColIdx(['so dien thoai', 'sdt', 'dien thoai', 'phone']);
+      const addressIdx = findColIdx(['dia chi', 'giao ho', 'address']);
+
+      const parsed = [];
+      const cls = classDatabase.find(c => c.id === importClassId);
+      const code = (cls ? cls.id : 'DBKT').replace('CLASS_', '');
+
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || row.length === 0) continue;
+
+        let fullName = (nameIdx !== -1 && row[nameIdx] !== undefined) ? String(row[nameIdx]).trim() : '';
+        if (!fullName && row[3]) fullName = String(row[3]).trim();
+        if (!fullName && row[2] && isNaN(row[2])) fullName = String(row[2]).trim();
+
+        if (!fullName) continue;
+
+        let id = (idIdx !== -1 && row[idIdx]) ? String(row[idIdx]).trim() : '';
+        if (!id) {
+          id = `TN-${code}-${String(parsed.length + 1).padStart(2, '0')}`;
+        }
+
+        let holyName = (holyIdx !== -1 && row[holyIdx]) ? String(row[holyIdx]).trim() : '';
+        let gender = (genderIdx !== -1 && row[genderIdx]) ? String(row[genderIdx]).trim() : 'Nam';
+        if (gender.toLowerCase().includes('nu') || gender.toLowerCase().includes('nữ') || gender === 'F') {
+          gender = 'Nữ';
+        } else {
+          gender = 'Nam';
+        }
+
+        let birthDate = (birthIdx !== -1 && row[birthIdx]) ? String(row[birthIdx]).trim() : '';
+        if (typeof row[birthIdx] === 'number') {
+          const dateObj = new Date((row[birthIdx] - 25569) * 86400 * 1000);
+          if (!isNaN(dateObj.getTime())) {
+            birthDate = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+          }
+        }
+
+        let note = (noteIdx !== -1 && row[noteIdx]) ? String(row[noteIdx]).trim() : 'Đang theo học';
+        let parentName = (parentIdx !== -1 && row[parentIdx]) ? String(row[parentIdx]).trim() : '';
+        let parentPhone = (phoneIdx !== -1 && row[phoneIdx]) ? String(row[phoneIdx]).trim() : '';
+        let address = (addressIdx !== -1 && row[addressIdx]) ? String(row[addressIdx]).trim() : '';
+
+        parsed.push({
+          stt: parsed.length + 1,
+          id: id,
+          holyName: holyName,
+          fullName: fullName,
+          gender: gender,
+          birthDate: birthDate,
+          note: note || 'Đang theo học',
+          parentName: parentName,
+          parentPhone: parentPhone,
+          address: address
+        });
+      }
+
+      if (parsed.length === 0) {
+        showToast('Không tìm thấy dòng dữ liệu thiếu nhi hợp lệ trong file!');
+        if (statusText) statusText.textContent = 'Không có dữ liệu hợp lệ!';
+        return;
+      }
+
+      pendingImportStudents = parsed;
+
+      // Render bảng Preview
+      if (tbody) {
+        tbody.innerHTML = parsed.map((s, idx) => `
+          <tr>
+            <td style="text-align: center; font-weight: 700; color: #64748b;">${idx + 1}</td>
+            <td><span class="student-id-badge">${s.id}</span></td>
+            <td><span class="student-holy-name">${s.holyName || '-'}</span></td>
+            <td><strong style="color: #0f172a;">${s.fullName}</strong></td>
+            <td style="text-align: center; font-weight: 700; color: ${s.gender === 'Nam' ? '#1d4ed8' : '#be185d'};">
+              ${s.gender === 'Nam' ? '♂ Nam' : '♀ Nữ'}
+            </td>
+            <td style="text-align: center; color: #475569;">${s.birthDate || '-'}</td>
+            <td><span class="student-note-tag">${s.note}</span></td>
+            <td>${s.parentName || '-'}</td>
+            <td>${s.parentPhone || '-'}</td>
+          </tr>
+        `).join('');
+      }
+
+      if (countDisplay) countDisplay.textContent = parsed.length;
+      if (previewBox) previewBox.style.display = 'block';
+      if (statusText) statusText.textContent = `File: ${file.name} (${parsed.length} em)`;
+
+      if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.style.cursor = 'pointer';
+        confirmBtn.style.opacity = '1';
+      }
+
+      showToast(`Đã đọc được ${parsed.length} em thiếu nhi từ file Excel!`);
+    } catch (err) {
+      console.error('Lỗi phân tích Excel:', err);
+      showToast('Lỗi khi đọc file Excel: ' + err.message);
+      if (statusText) statusText.textContent = 'Lỗi đọc file Excel!';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function confirmStudentExcelImport() {
+  if (!pendingImportStudents || pendingImportStudents.length === 0) {
+    showToast('Chưa có dữ liệu thiếu nhi để nhập!');
+    return;
+  }
+
+  const cls = classDatabase.find(c => c.id === importClassId);
+  if (!cls) return;
+
+  const modeRadio = document.querySelector('input[name="importModeRadio"]:checked');
+  const isReplace = (modeRadio && modeRadio.value === 'replace');
+
+  let finalStudents = [];
+  if (isReplace) {
+    finalStudents = pendingImportStudents.map((s, idx) => ({ ...s, stt: idx + 1 }));
+  } else {
+    const existing = getClassStudents(cls);
+    finalStudents = [...existing, ...pendingImportStudents].map((s, idx) => ({ ...s, stt: idx + 1 }));
+  }
+
+  cls.students = finalStudents;
+  cls.studentCount = finalStudents.length;
+
+  saveClassesDatabase();
+  renderClassesView();
+  renderBlockFilterPillCounts();
+
+  // Đồng bộ lưu hàng loạt vào MySQL Database
+  if (typeof API !== 'undefined' && API.isOnline) {
+    const res = await API.importStudents(cls.id, pendingImportStudents, isReplace);
+    if (res && res.success) {
+      console.log('Đã nạp toàn bộ thiếu nhi vào MySQL CSDL thành công!');
+    }
+  }
+
+  showToast(`Đã nhập thành công ${pendingImportStudents.length} em thiếu nhi vào lớp ${cls.name}!`);
+  closeStudentExcelImportModal();
+
+  // Làm mới Roster Modal nếu đang mở
+  const rosterModal = document.getElementById('classStudentsModal');
+  if (rosterModal && rosterModal.style.display !== 'none') {
+    openClassStudentsRosterModal(cls.id);
+  }
+}
+
+// ==========================================================================
 // THIẾT LẬP TẤT CẢ SỰ KIỆN (EVENT LISTENERS)
 // ==========================================================================
 function setupEventListeners() {
@@ -2629,6 +2936,78 @@ function setupEventListeners() {
   if (classStudentsModal) {
     classStudentsModal.addEventListener('click', (e) => {
       if (e.target === classStudentsModal) closeClassStudentsRosterModal();
+    });
+  }
+
+  // 8.1 Sự kiện Nhập Excel Thiếu Nhi (Student Excel Import)
+  const rosterImportExcelBtn = document.getElementById('rosterImportExcelBtn');
+  const rosterImportFileInput = document.getElementById('rosterImportFileInput');
+  const studentExcelDropzone = document.getElementById('studentExcelDropzone');
+  const btnDownloadStudentTemplate = document.getElementById('btnDownloadStudentTemplate');
+  const closeImportExcelModalBtn = document.getElementById('closeImportExcelModalBtn');
+  const cancelImportExcelBtn = document.getElementById('cancelImportExcelBtn');
+  const btnConfirmImportExcel = document.getElementById('btnConfirmImportExcel');
+  const importExcelPreviewModal = document.getElementById('importExcelPreviewModal');
+
+  if (rosterImportExcelBtn) {
+    rosterImportExcelBtn.addEventListener('click', () => {
+      openStudentExcelImportModal(currentRosterClassId);
+    });
+  }
+
+  if (btnDownloadStudentTemplate) {
+    btnDownloadStudentTemplate.addEventListener('click', () => {
+      const cls = classDatabase.find(c => c.id === currentRosterClassId || c.id === importClassId);
+      downloadStudentExcelTemplate(cls);
+    });
+  }
+
+  if (rosterImportFileInput) {
+    rosterImportFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        parseStudentExcelFile(e.target.files[0]);
+      }
+    });
+  }
+
+  if (studentExcelDropzone && rosterImportFileInput) {
+    studentExcelDropzone.addEventListener('click', () => {
+      rosterImportFileInput.click();
+    });
+
+    studentExcelDropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      studentExcelDropzone.style.background = '#d1fae5';
+      studentExcelDropzone.style.borderColor = '#047857';
+    });
+
+    studentExcelDropzone.addEventListener('dragleave', () => {
+      studentExcelDropzone.style.background = '#ecfdf5';
+      studentExcelDropzone.style.borderColor = '#059669';
+    });
+
+    studentExcelDropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      studentExcelDropzone.style.background = '#ecfdf5';
+      studentExcelDropzone.style.borderColor = '#059669';
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        parseStudentExcelFile(e.dataTransfer.files[0]);
+      }
+    });
+  }
+
+  if (closeImportExcelModalBtn) {
+    closeImportExcelModalBtn.addEventListener('click', closeStudentExcelImportModal);
+  }
+  if (cancelImportExcelBtn) {
+    cancelImportExcelBtn.addEventListener('click', closeStudentExcelImportModal);
+  }
+  if (btnConfirmImportExcel) {
+    btnConfirmImportExcel.addEventListener('click', confirmStudentExcelImport);
+  }
+  if (importExcelPreviewModal) {
+    importExcelPreviewModal.addEventListener('click', (e) => {
+      if (e.target === importExcelPreviewModal) closeStudentExcelImportModal();
     });
   }
 }

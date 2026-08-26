@@ -268,6 +268,30 @@ const API = {
   },
 
   /**
+   * 9.1 NHẬP HÀNG LOẠT THIẾU NHI TỪ EXCEL VÀO LỚP
+   */
+  async importStudents(classId, students, replaceMode = false) {
+    if (!this.isOnline) return false;
+    try {
+      const res = await fetch(`${API_CONFIG.BASE_URL}/students.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'batch_import',
+          class_id: classId,
+          replace_mode: replaceMode,
+          students: students
+        })
+      });
+      const json = await res.json();
+      return json;
+    } catch (e) {
+      console.warn('Lỗi Import Students qua API:', e);
+      return { success: false, message: e.message };
+    }
+  },
+
+  /**
    * 10. ĐĂNG NHẬP ADMIN VÀ XÁC THỰC
    */
   async loginAdmin(password) {

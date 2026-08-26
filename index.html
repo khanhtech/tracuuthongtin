@@ -865,10 +865,14 @@
           <button class="btn-tool btn-tool-add" id="rosterAddStudentBtn">
             <i class="fa-solid fa-user-plus"></i> Thêm Thiếu Nhi
           </button>
+          <button class="btn-tool btn-tool-import" id="rosterImportExcelBtn" title="Nhập danh sách thiếu nhi từ file Excel (.xlsx, .xls)">
+            <i class="fa-solid fa-file-import"></i> Nhập Excel (.xlsx)
+          </button>
           <button class="btn-tool btn-tool-export" id="rosterExportExcelBtn"
             title="Xuất file Excel danh sách thiếu nhi của lớp này">
             <i class="fa-solid fa-file-excel"></i> Xuất Excel Lớp (.xlsx)
           </button>
+          <input type="file" id="rosterImportFileInput" accept=".xlsx, .xls, .csv" style="display: none;">
         </div>
       </div>
 
@@ -1004,6 +1008,96 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: XEM TRƯỚC VÀ XÁC NHẬN NHẬP EXCEL (IMPORT EXCEL MODAL)
+       ========================================================================== -->
+  <div class="modal-backdrop modal-backdrop-top" id="importExcelPreviewModal" style="display: none;">
+    <div class="modal-content modal-large modal-import-excel">
+      <div class="modal-header" style="background: linear-gradient(135deg, #065f46 0%, #047857 100%); color: #ffffff;">
+        <div class="modal-title" style="color: #ffffff;">
+          <i class="fa-solid fa-file-excel" style="color: #6ee7b7;"></i>
+          <span>Nhập Danh Sách Thiếu Nhi Từ Excel &bull; <span id="importExcelClassTitle" style="color: #fef08a;">Lớp Dự Bị Khai Tâm</span></span>
+        </div>
+        <button class="modal-close-btn" id="closeImportExcelModalBtn" style="color: #ffffff;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body-import" style="padding: 1.5rem; overflow-y: auto;">
+        <!-- Vùng Tải & Kéo Thả File -->
+        <div class="import-dropzone-row" style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem;">
+          <div class="import-dropzone" id="studentExcelDropzone" style="flex: 1; min-width: 280px; border: 2px dashed #059669; border-radius: 16px; background: #ecfdf5; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s ease;">
+            <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2.2rem; color: #059669; margin-bottom: 0.5rem; display: block;"></i>
+            <strong style="color: #065f46; font-size: 1rem; display: block;">Kéo & Thả file Excel vào đây hoặc bấm để chọn file</strong>
+            <span style="color: #047857; font-size: 0.82rem; margin-top: 0.35rem; display: block;">Hỗ trợ định dạng: .xlsx, .xls, .csv</span>
+          </div>
+
+          <div class="import-template-box" style="flex: 0 0 260px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 0.75rem;">
+            <i class="fa-solid fa-file-circle-question" style="font-size: 1.8rem; color: #d97706;"></i>
+            <span style="font-size: 0.85rem; color: #475569; font-weight: 600;">Bạn chưa có file Excel theo đúng định dạng mẫu?</span>
+            <button type="button" class="btn-tool" id="btnDownloadStudentTemplate" style="background: #d97706; color: #ffffff; width: 100%; justify-content: center; padding: 0.6rem;">
+              <i class="fa-solid fa-download"></i> Tải File Mẫu Excel (.xlsx)
+            </button>
+          </div>
+        </div>
+
+        <!-- Tùy chọn chế độ nhập -->
+        <div class="import-options-bar" style="background: #f1f5f9; border-radius: 12px; padding: 0.85rem 1.25rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+          <div style="font-weight: 700; color: #1e293b; font-size: 0.9rem;">
+            <i class="fa-solid fa-sliders" style="color: #059669; margin-right: 0.4rem;"></i> Chế độ nạp dữ liệu:
+          </div>
+          <div style="display: flex; gap: 1.5rem;">
+            <label style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.88rem; font-weight: 600; cursor: pointer; color: #334155;">
+              <input type="radio" name="importModeRadio" value="append" checked>
+              Thêm bổ sung vào danh sách hiện tại
+            </label>
+            <label style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.88rem; font-weight: 600; cursor: pointer; color: #b91c1c;">
+              <input type="radio" name="importModeRadio" value="replace">
+              Thay thế toàn bộ danh sách lớp này
+            </label>
+          </div>
+        </div>
+
+        <!-- Bảng Xem Trước Dữ Liệu -->
+        <div id="importPreviewContainer" style="display: none;">
+          <div class="preview-stats-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+            <span class="preview-badge" style="background: #dcfce7; color: #166534; font-weight: 700; padding: 0.4rem 0.85rem; border-radius: 8px; font-size: 0.88rem; border: 1px solid #bbf7d0;">
+              <i class="fa-solid fa-circle-check"></i> Đã đọc được <strong id="importPreviewValidCount">0</strong> Em Thiếu Nhi hợp lệ
+            </span>
+            <span style="font-size: 0.82rem; color: #64748b; font-style: italic;">Kiểm tra danh sách trước khi bấm xác nhận nạp vào lớp</span>
+          </div>
+
+          <div class="table-responsive" style="max-height: 320px; overflow-y: auto; border: 1.5px solid #cbd5e1; border-radius: 12px;">
+            <table class="glv-table" style="font-size: 0.86rem; width: 100%;">
+              <thead>
+                <tr style="background: #f8fafc;">
+                  <th style="width: 45px; text-align: center;">STT</th>
+                  <th style="width: 110px;">Mã TN</th>
+                  <th style="width: 110px;">Tên Thánh</th>
+                  <th>Họ và Tên</th>
+                  <th style="width: 80px; text-align: center;">Giới Tính</th>
+                  <th style="width: 100px; text-align: center;">Ngày Sinh</th>
+                  <th>Ghi Chú / Vai Trò</th>
+                  <th>Tên Phụ Huynh</th>
+                  <th style="width: 110px;">SĐT Phụ Huynh</th>
+                </tr>
+              </thead>
+              <tbody id="importPreviewTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding: 1rem 1.5rem; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <span id="importFileStatusText" style="font-size: 0.86rem; color: #64748b;">Chưa chọn file Excel nào</span>
+        <div style="display: flex; gap: 0.75rem;">
+          <button type="button" class="btn-cancel" id="cancelImportExcelBtn">Hủy Bỏ</button>
+          <button type="button" class="btn-save" id="btnConfirmImportExcel" disabled style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #ffffff; padding: 0.65rem 1.5rem; border-radius: 10px; font-weight: 700; border: none; cursor: not-allowed; opacity: 0.6; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 10px rgba(5, 150, 105, 0.25);">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Xác Nhận Nạp Vào Lớp
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 

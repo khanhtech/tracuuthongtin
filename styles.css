@@ -4212,8 +4212,9 @@ body {
   z-index: 200000 !important;
 }
 
-/* Cấp 3: Form Thêm / Sửa Thiếu Nhi */
+/* Cấp 3: Form Thêm / Sửa Thiếu Nhi & Modal Nhập Excel */
 #editStudentModal,
+#importExcelPreviewModal,
 .modal-backdrop.modal-super-top {
   z-index: 500000 !important;
   align-items: flex-start !important;
@@ -4225,6 +4226,16 @@ body {
 #customConfirmModal,
 .custom-confirm-modal {
   z-index: 9999999 !important;
+}
+
+.btn-tool-import {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  color: #ffffff !important;
+}
+
+.btn-tool-import:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 4px 10px rgba(5, 150, 105, 0.3);
 }
 
 .modal-edit-student {

@@ -51,6 +51,94 @@ switch ($method) {
 
     case 'POST':
         $data = getJsonInput();
+
+        // 1. XỬ LÝ NHẬP HÀNG LOẠT TỪ EXCEL (BATCH IMPORT)
+        if (isset($data['action']) && $data['action'] === 'batch_import' && isset($data['students']) && is_array($data['students'])) {
+            $classId = trim($data['class_id'] ?? ($data['classId'] ?? ''));
+            $replaceMode = !empty($data['replace_mode']) || !empty($data['replaceMode']);
+            $studentsList = $data['students'];
+
+            if (empty($classId)) {
+                jsonResponse(false, "Vui lòng chọn lớp học để nhập dữ liệu!", null, 400);
+            }
+
+            try {
+                $pdo->beginTransaction();
+
+                if ($replaceMode) {
+                    $delStmt = $pdo->prepare("DELETE FROM enrollments_and_grades WHERE class_id = ?");
+                    $delStmt->execute([$classId]);
+                }
+
+                $sStmt = $pdo->prepare("
+                    INSERT INTO students (student_id, holy_name, last_name, first_name, full_name, gender, birth_date, address, parent_name, parent_phone)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON DUPLICATE KEY UPDATE 
+                        holy_name = VALUES(holy_name), 
+                        full_name = VALUES(full_name), 
+                        gender = VALUES(gender), 
+                        birth_date = VALUES(birth_date),
+                        address = VALUES(address),
+                        parent_name = VALUES(parent_name),
+                        parent_phone = VALUES(parent_phone)
+                ");
+
+                $egStmt = $pdo->prepare("
+                    INSERT INTO enrollments_and_grades (student_id, class_id, academic_year, stt_in_class, role_in_class)
+                    VALUES (?, ?, '2026-2027', ?, ?)
+                    ON DUPLICATE KEY UPDATE 
+                        stt_in_class = VALUES(stt_in_class),
+                        role_in_class = VALUES(role_in_class)
+                ");
+
+                $count = 0;
+                $stt = 1;
+                if (!$replaceMode) {
+                    $maxStt = $pdo->prepare("SELECT COALESCE(MAX(stt_in_class), 0) FROM enrollments_and_grades WHERE class_id = ?");
+                    $maxStt->execute([$classId]);
+                    $stt = (int)$maxStt->fetchColumn() + 1;
+                }
+
+                $code = str_replace('CLASS_', '', $classId);
+
+                foreach ($studentsList as $s) {
+                    $fullName = trim($s['fullName'] ?? ($s['full_name'] ?? ''));
+                    if (empty($fullName)) continue;
+
+                    $holyName = trim($s['holyName'] ?? ($s['holy_name'] ?? ''));
+                    $gender = trim($s['gender'] ?? 'Nam');
+                    $birthDate = trim($s['birthDate'] ?? ($s['birth_date'] ?? ''));
+                    $note = trim($s['note'] ?? ($s['role_in_class'] ?? 'Đang theo học'));
+                    $parentName = trim($s['parentName'] ?? ($s['parent_name'] ?? ''));
+                    $parentPhone = trim($s['parentPhone'] ?? ($s['parent_phone'] ?? ''));
+                    $address = trim($s['address'] ?? '');
+
+                    $parts = explode(' ', $fullName);
+                    $firstName = array_pop($parts);
+                    $lastName = implode(' ', $parts);
+
+                    $studentId = trim($s['id'] ?? ($s['student_id'] ?? ''));
+                    if (empty($studentId)) {
+                        $studentId = "TN-{$code}-" . str_pad($stt, 2, '0', STR_PAD_LEFT);
+                    }
+
+                    $sStmt->execute([$studentId, $holyName, $lastName, $firstName, $fullName, $gender, $birthDate, $address, $parentName, $parentPhone]);
+                    $egStmt->execute([$studentId, $classId, $stt, $note]);
+
+                    $stt++;
+                    $count++;
+                }
+
+                $pdo->commit();
+                jsonResponse(true, "Đã nhập thành công {$count} em thiếu nhi vào lớp!", ["imported_count" => $count]);
+            } catch (Exception $e) {
+                if ($pdo->inTransaction()) $pdo->rollBack();
+                jsonResponse(false, "Lỗi khi nhập dữ liệu: " . $e->getMessage(), null, 500);
+            }
+            break;
+        }
+
+        // 2. XỬ LÝ THÊM ĐƠN LẺ 1 THIẾU NHI
         $classId = trim($data['class_id'] ?? ($data['classId'] ?? ''));
         $holyName = trim($data['holyName'] ?? ($data['holy_name'] ?? ''));
         $fullName = trim($data['fullName'] ?? ($data['full_name'] ?? ''));
