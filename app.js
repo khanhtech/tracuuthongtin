@@ -2189,6 +2189,8 @@ function handleStudentFormSubmit(e) {
   saveClassesDatabase();
   renderClassesView();
   renderBlockFilterPillCounts();
+  updateStudentStatsDisplay();
+  renderAllStudentsView();
 
   // Tự động lưu vào MySQL Database qua API
   if (typeof API !== 'undefined' && API.isOnline && savedStudentObj) {
@@ -2196,7 +2198,11 @@ function handleStudentFormSubmit(e) {
       ...savedStudentObj,
       classId: cls.id
     }, !originalId).then(success => {
-      if (success) console.log('Đã tự động đồng bộ thiếu nhi vào MySQL Database!');
+      if (success) {
+        console.log('Đã tự động đồng bộ thiếu nhi vào MySQL Database!');
+        renderAllStudentsView();
+        updateStudentStatsDisplay();
+      }
     });
   }
 
@@ -2236,12 +2242,18 @@ async function deleteStudentFromClass(studentId, classId) {
   saveClassesDatabase();
   renderClassesView();
   renderBlockFilterPillCounts();
+  updateStudentStatsDisplay();
+  renderAllStudentsView();
   showToast(`Đã xóa em ${target.fullName} khỏi danh sách lớp!`);
 
   // Tự động xóa khỏi MySQL Database
   if (typeof API !== 'undefined' && API.isOnline) {
     API.deleteStudent(studentId).then(success => {
-      if (success) console.log('Đã xóa thiếu nhi khỏi MySQL Database!');
+      if (success) {
+        console.log('Đã xóa thiếu nhi khỏi MySQL Database!');
+        renderAllStudentsView();
+        updateStudentStatsDisplay();
+      }
     });
   }
 
