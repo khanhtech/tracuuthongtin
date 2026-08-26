@@ -2491,6 +2491,7 @@ body {
 .app-layout.sidebar-collapsed .sidebar-meta,
 .app-layout.sidebar-collapsed .role-info-text,
 .app-layout.sidebar-collapsed .btn-sidebar-auth,
+.app-layout.sidebar-collapsed .sidebar-quick-group,
 .app-layout.sidebar-collapsed .sidebar-quick-section {
   display: none !important;
 }
@@ -5776,4 +5777,154 @@ body {
 
 .btn-doc-download:hover {
   background: #6d28d9;
+}
+
+/* ==========================================================================
+   BẢNG DANH SÁCH THIẾU NHI & NÚT THAO TÁC (STUDENTS TABLE & ACTION BUTTONS)
+   ========================================================================== */
+.all-students-card {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1.5px solid #e2e8f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+#tabStudentsView .table-responsive,
+.roster-table-responsive {
+  padding: 0;
+  max-height: 620px;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+#tabStudentsView .glv-table,
+.roster-table {
+  width: 100%;
+  min-width: 920px;
+  font-size: 0.85rem;
+}
+
+#tabStudentsView .glv-table th,
+.roster-table th {
+  padding: 0.75rem 0.65rem;
+  background: #f8fafc;
+  color: #065f46;
+  border-bottom: 2px solid #a7f3d0;
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#tabStudentsView .glv-table td,
+.roster-table td {
+  padding: 0.55rem 0.65rem;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.85rem;
+  vertical-align: middle;
+}
+
+#tabStudentsView .glv-table tr:hover td,
+.roster-table tr:hover td {
+  background: #f0fdf4;
+}
+
+.student-holy-name {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 700;
+  color: #b45309;
+  font-size: 0.86rem;
+}
+
+.student-id-badge {
+  font-size: 0.76rem;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 0.18rem 0.45rem;
+  border-radius: 5px;
+  border: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.student-class-chip {
+  background: #f1f5f9;
+  color: #1e293b;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  border: 1px solid #e2e8f0;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.student-note-tag {
+  background: #ecfdf5;
+  color: #047857;
+  font-weight: 600;
+  font-size: 0.78rem;
+  padding: 0.18rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #a7f3d0;
+  white-space: nowrap;
+}
+
+/* 2 Nút Thao Tác: Sửa & Xóa Đẹp Mắt Chuẩn Giao Diện (Ảnh 2) */
+.roster-action-btns {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.btn-roster-edit {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #2563eb;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.08);
+}
+
+.btn-roster-edit:hover {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #1d4ed8;
+  transform: translateY(-1.5px);
+  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.3);
+}
+
+.btn-roster-del {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(220, 38, 38, 0.08);
+}
+
+.btn-roster-del:hover {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #b91c1c;
+  transform: translateY(-1.5px);
+  box-shadow: 0 3px 8px rgba(220, 38, 38, 0.3);
 }
