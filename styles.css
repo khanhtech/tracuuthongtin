@@ -2520,25 +2520,12 @@ body {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: #f8fafc;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1rem;
-  color: var(--text-dim);
   transition: all 0.2s ease;
   flex-shrink: 0;
-}
-
-.nav-item:hover .nav-icon-box {
-  background: #fee2e2;
-  color: var(--primary-red);
-}
-
-.nav-item.active .nav-icon-box {
-  background: #dc2626;
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
 }
 
 .nav-label-box {
@@ -2560,28 +2547,205 @@ body {
 }
 
 .nav-badge {
-  padding: 0.18rem 0.55rem;
+  padding: 0.2rem 0.6rem;
   border-radius: var(--radius-full);
-  background: #f1f5f9;
-  color: #475569;
   font-size: 0.72rem;
   font-weight: 800;
   line-height: 1;
+  transition: all 0.2s ease;
 }
 
-.nav-item.active .nav-badge {
-  background: #fee2e2;
-  color: var(--primary-red-dark);
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: -0.85rem;
+  top: 15%;
+  bottom: 15%;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
 }
 
-.nav-badge.badge-classes {
+/* ==========================================================================
+   PER-CATEGORY HARMONIOUS COLOR THEMES FOR SIDEBAR
+   ========================================================================== */
+/* 1. Thông Báo (News - Warm Amber Gold) */
+.nav-item-news .nav-icon-box {
   background: #fef3c7;
-  color: var(--primary-gold-deep);
+  color: #d97706;
+}
+.nav-item-news:hover {
+  background: #fffdfa;
+  color: #92400e;
+}
+.nav-item-news:hover .nav-icon-box {
+  background: #fde68a;
+  color: #b45309;
+}
+.nav-item-news.active {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border-color: #fde68a;
+  color: #78350f;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.15);
+}
+.nav-item-news.active::before {
+  background: #f59e0b;
+}
+.nav-item-news.active .nav-icon-box {
+  background: #d97706;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.35);
+}
+.nav-item-news .nav-badge {
+  background: #fef3c7;
+  color: #b45309;
+}
+.nav-item-news.active .nav-badge {
+  background: #f59e0b;
+  color: #ffffff;
 }
 
-.nav-badge.badge-students {
-  background: #ecfdf5;
+/* 2. Giáo Lý Viên (GLV - Crimson Rose) */
+.nav-item-glv .nav-icon-box {
+  background: #ffe4e6;
+  color: #e11d48;
+}
+.nav-item-glv:hover {
+  background: #fff5f5;
+  color: #9f1239;
+}
+.nav-item-glv:hover .nav-icon-box {
+  background: #fecdd3;
+  color: #be123c;
+}
+.nav-item-glv.active {
+  background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+  border-color: #fecdd3;
+  color: #881337;
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.15);
+}
+.nav-item-glv.active::before {
+  background: #e11d48;
+}
+.nav-item-glv.active .nav-icon-box {
+  background: #e11d48;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.35);
+}
+.nav-item-glv .nav-badge {
+  background: #ffe4e6;
+  color: #be123c;
+}
+.nav-item-glv.active .nav-badge {
+  background: #e11d48;
+  color: #ffffff;
+}
+
+/* 3. Lớp Giáo Lý (Classes - Royal Blue) */
+.nav-item-classes .nav-icon-box {
+  background: #dbeafe;
+  color: #2563eb;
+}
+.nav-item-classes:hover {
+  background: #f8fafc;
+  color: #1e40af;
+}
+.nav-item-classes:hover .nav-icon-box {
+  background: #bfdbfe;
+  color: #1d4ed8;
+}
+.nav-item-classes.active {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: #bfdbfe;
+  color: #1e3a8a;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.15);
+}
+.nav-item-classes.active::before {
+  background: #2563eb;
+}
+.nav-item-classes.active .nav-icon-box {
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+}
+.nav-item-classes .nav-badge {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+.nav-item-classes.active .nav-badge {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* 4. Thiếu Nhi Thánh Thể (Students - Emerald Mint) */
+.nav-item-students .nav-icon-box {
+  background: #d1fae5;
   color: #059669;
+}
+.nav-item-students:hover {
+  background: #f0fdf4;
+  color: #065f46;
+}
+.nav-item-students:hover .nav-icon-box {
+  background: #a7f3d0;
+  color: #047857;
+}
+.nav-item-students.active {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border-color: #a7f3d0;
+  color: #064e3b;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.15);
+}
+.nav-item-students.active::before {
+  background: #059669;
+}
+.nav-item-students.active .nav-icon-box {
+  background: #059669;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.35);
+}
+.nav-item-students .nav-badge {
+  background: #d1fae5;
+  color: #047857;
+}
+.nav-item-students.active .nav-badge {
+  background: #059669;
+  color: #ffffff;
+}
+
+/* 5. Tài Liệu (Docs - Amethyst Purple) */
+.nav-item-docs .nav-icon-box {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+.nav-item-docs:hover {
+  background: #faf5ff;
+  color: #5b21b6;
+}
+.nav-item-docs:hover .nav-icon-box {
+  background: #ddd6fe;
+  color: #6d28d9;
+}
+.nav-item-docs.active {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border-color: #ddd6fe;
+  color: #4c1d95;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.15);
+}
+.nav-item-docs.active::before {
+  background: #7c3aed;
+}
+.nav-item-docs.active .nav-icon-box {
+  background: #7c3aed;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);
+}
+.nav-item-docs .nav-badge {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+.nav-item-docs.active .nav-badge {
+  background: #7c3aed;
+  color: #ffffff;
 }
 
 .nav-item-sub {
@@ -2602,10 +2766,49 @@ body {
   width: 100%;
 }
 
-.nav-item-sub:hover {
-  background: #f8fafc;
-  color: var(--primary-red-dark);
+#quickActionsNews .nav-item-sub:hover {
+  background: #fffbeb;
+  color: #b45309;
   padding-left: 1rem;
+}
+#quickActionsNews .nav-item-sub:hover i {
+  color: #d97706;
+}
+
+#quickActionsGlv .nav-item-sub:hover {
+  background: #fff1f2;
+  color: #be123c;
+  padding-left: 1rem;
+}
+#quickActionsGlv .nav-item-sub:hover i {
+  color: #e11d48;
+}
+
+#quickActionsClasses .nav-item-sub:hover {
+  background: #eff6ff;
+  color: #1d4ed8;
+  padding-left: 1rem;
+}
+#quickActionsClasses .nav-item-sub:hover i {
+  color: #2563eb;
+}
+
+#quickActionsStudents .nav-item-sub:hover {
+  background: #ecfdf5;
+  color: #065f46;
+  padding-left: 1rem;
+}
+#quickActionsStudents .nav-item-sub:hover i {
+  color: #059669;
+}
+
+#quickActionsDocs .nav-item-sub:hover {
+  background: #f5f3ff;
+  color: #6d28d9;
+  padding-left: 1rem;
+}
+#quickActionsDocs .nav-item-sub:hover i {
+  color: #7c3aed;
 }
 
 .nav-item-sub i {
@@ -2613,10 +2816,7 @@ body {
   color: var(--text-dim);
   width: 18px;
   text-align: center;
-}
-
-.nav-item-sub:hover i {
-  color: var(--primary-red);
+  transition: color 0.15s ease;
 }
 
 /* Sidebar Footer */
@@ -2785,14 +2985,31 @@ body {
   }
 }
 
+.badge-news-nav {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+}
+.badge-news-nav i {
+  color: #f59e0b;
+}
+
+.badge-glv-nav {
+  background: #fff1f2;
+  border-color: #fecdd3;
+  color: #be123c;
+}
+.badge-glv-nav i {
+  color: #e11d48;
+}
+
 .badge-class-nav {
   background: #eff6ff;
   border-color: #bfdbfe;
   color: #1d4ed8;
 }
-
 .badge-class-nav i {
-  color: #3b82f6;
+  color: #2563eb;
 }
 
 .badge-student-nav {
@@ -2800,19 +3017,8 @@ body {
   border-color: #a7f3d0;
   color: #065f46;
 }
-
 .badge-student-nav i {
   color: #059669;
-}
-
-.badge-news-nav {
-  background: #fffbeb;
-  border-color: #fde68a;
-  color: #b45309;
-}
-
-.badge-news-nav i {
-  color: #f59e0b;
 }
 
 .badge-docs-nav {
@@ -2820,7 +3026,6 @@ body {
   border-color: #ddd6fe;
   color: #6d28d9;
 }
-
 .badge-docs-nav i {
   color: #8b5cf6;
 }
@@ -2941,8 +3146,13 @@ body {
 .class-search-box input:focus {
   outline: none;
   background: #ffffff;
-  border-color: var(--primary-red);
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+#tabStudentsView .class-search-box input:focus {
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
 }
 
 .class-search-box .clear-btn {
@@ -2992,9 +3202,49 @@ body {
 }
 
 .pill-btn:hover {
-  background: #fee2e2;
-  border-color: #fca5a5;
-  color: var(--primary-red-dark);
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+/* Category Specific Pill Button States */
+/* 1. News Pills (Amber) */
+.news-filter-pills .pill-btn:hover {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+}
+.news-filter-pills .pill-btn.active {
+  background: #d97706;
+  border-color: #b45309;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.25);
+}
+
+/* 2. Classes Pills (Royal Blue) */
+.block-filter-pills .pill-btn:hover {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+.block-filter-pills .pill-btn.active {
+  background: #2563eb;
+  border-color: #1d4ed8;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+
+/* 3. Docs Pills (Amethyst Purple) */
+.docs-filter-pills .pill-btn:hover {
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+  color: #6d28d9;
+}
+.docs-filter-pills .pill-btn.active {
+  background: #7c3aed;
+  border-color: #6d28d9;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
 }
 
 .pill-btn.active {

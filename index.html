@@ -51,18 +51,18 @@
       <nav class="sidebar-nav">
         <div class="nav-section-title">DANH MỤC HỆ THỐNG</div>
 
-        <button class="nav-item active" id="navItemNews" data-tab="news">
-          <div class="nav-icon-box" style="background: linear-gradient(135deg, #fef3c7, #fde68a); color: #d97706;">
+        <button class="nav-item nav-item-news active" id="navItemNews" data-tab="news">
+          <div class="nav-icon-box">
             <i class="fa-solid fa-bullhorn"></i>
           </div>
           <div class="nav-label-box">
             <span class="nav-title">Thông Báo</span>
             <span class="nav-desc">Trang chủ & tin tức</span>
           </div>
-          <span class="nav-badge" id="sidebarNewsCount" style="background: #f59e0b; color: #fff;">6</span>
+          <span class="nav-badge" id="sidebarNewsCount">6</span>
         </button>
 
-        <button class="nav-item" id="navItemGlv" data-tab="glv">
+        <button class="nav-item nav-item-glv" id="navItemGlv" data-tab="glv">
           <div class="nav-icon-box">
             <i class="fa-solid fa-user-graduate"></i>
           </div>
@@ -73,7 +73,7 @@
           <span class="nav-badge" id="sidebarGlvCount">41</span>
         </button>
 
-        <button class="nav-item" id="navItemClasses" data-tab="classes">
+        <button class="nav-item nav-item-classes" id="navItemClasses" data-tab="classes">
           <div class="nav-icon-box">
             <i class="fa-solid fa-chalkboard-user"></i>
           </div>
@@ -81,10 +81,10 @@
             <span class="nav-title">Lớp Giáo Lý</span>
             <span class="nav-desc">Khối lớp & phân công</span>
           </div>
-          <span class="nav-badge badge-classes" id="sidebarClassCount">14</span>
+          <span class="nav-badge" id="sidebarClassCount">14</span>
         </button>
 
-        <button class="nav-item" id="navItemStudents" data-tab="students">
+        <button class="nav-item nav-item-students" id="navItemStudents" data-tab="students">
           <div class="nav-icon-box">
             <i class="fa-solid fa-child-reaching"></i>
           </div>
@@ -92,18 +92,18 @@
             <span class="nav-title">Thiếu Nhi</span>
             <span class="nav-desc">Tra cứu & danh sách</span>
           </div>
-          <span class="nav-badge badge-students" id="sidebarStudentCount">0</span>
+          <span class="nav-badge" id="sidebarStudentCount">0</span>
         </button>
 
-        <button class="nav-item" id="navItemDocs" data-tab="docs">
-          <div class="nav-icon-box" style="background: linear-gradient(135deg, #ede9fe, #ddd6fe); color: #7c3aed;">
+        <button class="nav-item nav-item-docs" id="navItemDocs" data-tab="docs">
+          <div class="nav-icon-box">
             <i class="fa-solid fa-book-bookmark"></i>
           </div>
           <div class="nav-label-box">
             <span class="nav-title">Tài Liệu</span>
             <span class="nav-desc">Giáo trình & biểu mẫu</span>
           </div>
-          <span class="nav-badge" id="sidebarDocsCount" style="background: #8b5cf6; color: #fff;">10</span>
+          <span class="nav-badge" id="sidebarDocsCount">10</span>
         </button>
 
         <!-- Tiện ích nhanh cho Tab Thông Báo -->
@@ -307,8 +307,8 @@
           <!-- Header -->
           <header class="app-header">
             <div class="top-nav-bar desktop-only-bar">
-              <div class="header-badge">
-                <i class="fa-solid fa-cross"></i>
+              <div class="header-badge badge-glv-nav">
+                <i class="fa-solid fa-user-graduate"></i>
                 <span>HUYNH TRƯỞNG - GIÁO LÝ VIÊN</span>
               </div>
             </div>
