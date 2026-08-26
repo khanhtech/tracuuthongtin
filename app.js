@@ -5438,6 +5438,45 @@ function renderNewsView() {
   });
 }
 
+/**
+ * Tự động quét và chuyển đổi các đường dẫn URL thành liên kết có thể nhấp được (Clickable Links)
+ */
+function formatTextWithClickableLinks(rawText) {
+  if (!rawText) return '';
+  const lines = rawText.split('\n');
+  return lines.map(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return '<div style="height: 0.45rem;"></div>';
+
+    // Regex thông minh nhận diện link http://, https://, hoặc www.
+    const urlPattern = /(https?:\/\/[^\s<>"']+|www\.[^\s<>"']+)/gi;
+    const formattedLine = line.replace(urlPattern, (matchedUrl) => {
+      let href = matchedUrl;
+      let trailingPunct = '';
+
+      // Tách dấu chấm, phẩy ở cuối nếu có
+      const lastChar = href.slice(-1);
+      if ([',', '.', ';', '!', '?', ')', ']'].includes(lastChar)) {
+        trailingPunct = lastChar;
+        href = href.slice(0, -1);
+      }
+
+      if (!href.startsWith('http://') && !href.startsWith('https://')) {
+        href = 'https://' + href;
+      }
+
+      let displayUrl = href;
+      if (displayUrl.length > 55) {
+        displayUrl = displayUrl.substring(0, 50) + '...';
+      }
+
+      return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="content-auto-link" title="${href}"><i class="fa-solid fa-arrow-up-right-from-square"></i> ${displayUrl}</a>${trailingPunct}`;
+    });
+
+    return `<p style="margin-bottom: 0.75rem; line-height: 1.6; color: #334155;">${formattedLine}</p>`;
+  }).join('');
+}
+
 function openNewsDetailModal(newsId) {
   const news = newsDatabase.find(n => n.id === newsId);
   if (!news) return;
@@ -5447,10 +5486,7 @@ function openNewsDetailModal(newsId) {
   if (!modal || !body) return;
 
   const tagCls = getNewsCategoryTagClass(news.category);
-  const formattedContent = (news.content || '')
-    .split('\n')
-    .map(line => line.trim() ? `<p style="margin-bottom: 0.75rem; line-height: 1.6; color: #334155;">${line}</p>` : '<div style="height: 0.5rem;"></div>')
-    .join('');
+  const formattedContent = formatTextWithClickableLinks(news.content || '');
 
   body.innerHTML = `
     <div style="margin-bottom: 1.25rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem;">
@@ -5759,10 +5795,10 @@ function openDocPreviewModal(docId) {
       </div>
     </div>
     <div style="font-size: 0.92rem; color: #334155; line-height: 1.6; margin-bottom: 1rem;">
-      <p style="margin-bottom: 0.75rem;"><strong>Mô tả tóm tắt:</strong> ${doc.desc || ''}</p>
+      <p style="margin-bottom: 0.75rem;"><strong>Mô tả tóm tắt:</strong> ${formatTextWithClickableLinks(doc.desc || '')}</p>
       <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 1rem; margin-top: 1rem;">
         <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;"><i class="fa-solid fa-circle-info" style="color: #7c3aed;"></i> Tóm Tắt Nội Dung Giáo Lý / Biểu Mẫu:</h4>
-        <p style="font-size: 0.88rem; color: #475569; line-height: 1.5;">${doc.content || 'Tài liệu chuẩn mực phục vụ công tác giảng dạy giáo lý và sinh hoạt Thiếu Nhi Thánh Thể tại Giáo xứ Tân Mỹ.'}</p>
+        <div style="font-size: 0.88rem; color: #475569; line-height: 1.5;">${formatTextWithClickableLinks(doc.content || 'Tài liệu chuẩn mực phục vụ công tác giảng dạy giáo lý và sinh hoạt Thiếu Nhi Thánh Thể tại Giáo xứ Tân Mỹ.')}</div>
       </div>
     </div>
   `;

@@ -5436,6 +5436,63 @@ body {
   transform: translateY(-1px);
 }
 
+.btn-submit-news {
+  background: #d97706;
+  border: 1px solid #b45309;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.2);
+}
+
+.btn-submit-news:hover {
+  background: #b45309;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(217, 119, 6, 0.3);
+}
+
+.btn-submit-doc {
+  background: #7c3aed;
+  border: 1px solid #6d28d9;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.2);
+}
+
+.btn-submit-doc:hover {
+  background: #6d28d9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+}
+
+/* Tự Động Quét & Tạo Link Có Thể Nhấp (Auto-Scanned Clickable Link) */
+.content-auto-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #1d4ed8;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 0.22rem 0.65rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9em;
+  text-decoration: none;
+  word-break: break-all;
+  margin: 0.15rem 0.1rem;
+  transition: all 0.2s ease;
+  vertical-align: middle;
+}
+
+.content-auto-link:hover {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #1d4ed8;
+  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25);
+  transform: translateY(-1px);
+}
+
+.content-auto-link i {
+  font-size: 0.85em;
+}
+
 /* ==========================================================================
    TÀI LIỆU (DOCUMENTS COMPONENT)
    ========================================================================== */
