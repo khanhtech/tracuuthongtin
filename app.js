@@ -444,16 +444,23 @@ function switchTab(tabName) {
   currentTab = tabName;
   localStorage.setItem(ACTIVE_TAB_KEY, tabName);
 
+  const quickActionsGlv = document.getElementById('quickActionsGlv');
+  const quickActionsClasses = document.getElementById('quickActionsClasses');
+
   if (tabName === 'glv') {
     if (navItemGlv) navItemGlv.classList.add('active');
     if (navItemClasses) navItemClasses.classList.remove('active');
     if (tabGlvView) tabGlvView.style.display = 'block';
     if (tabClassView) tabClassView.style.display = 'none';
+    if (quickActionsGlv) quickActionsGlv.style.display = 'block';
+    if (quickActionsClasses) quickActionsClasses.style.display = 'none';
   } else if (tabName === 'classes') {
     if (navItemGlv) navItemGlv.classList.remove('active');
     if (navItemClasses) navItemClasses.classList.add('active');
     if (tabGlvView) tabGlvView.style.display = 'none';
     if (tabClassView) tabClassView.style.display = 'block';
+    if (quickActionsGlv) quickActionsGlv.style.display = 'none';
+    if (quickActionsClasses) quickActionsClasses.style.display = 'block';
     renderClassesView();
   }
 
@@ -517,16 +524,25 @@ function updateRoleUI() {
   }
 
   // Phân quyền các nút thao tác
+  const sidebarAddClassBtn = document.getElementById('sidebarAddClassBtn');
+  const modalToolbarAddClassBtn = document.getElementById('modalToolbarAddClassBtn');
+
   if (addNewGlvBtn) addNewGlvBtn.style.display = isAdmin ? 'inline-flex' : 'none';
   if (modalAddGlvBtn) modalAddGlvBtn.style.display = isAdmin ? 'inline-flex' : 'none';
   if (sidebarAddGlvBtn) sidebarAddGlvBtn.style.display = isAdmin ? 'flex' : 'none';
   if (resetDataBtn) resetDataBtn.style.display = isAdmin ? 'inline-flex' : 'none';
   if (addClassBtn) addClassBtn.style.display = isAdmin ? 'inline-flex' : 'none';
   if (sidebarAddClassBtn) sidebarAddClassBtn.style.display = isAdmin ? 'flex' : 'none';
+  if (modalToolbarAddClassBtn) modalToolbarAddClassBtn.style.display = isAdmin ? 'inline-flex' : 'none';
 
   // Làm mới bảng nếu đang mở
   if (allGlvModal && allGlvModal.style.display !== 'none') {
     applyModalFilters();
+  }
+
+  const allClassesModal = document.getElementById('allClassesModal');
+  if (allClassesModal && allClassesModal.style.display !== 'none') {
+    renderAllClassesTable();
   }
 
   // Cập nhật lại Grid Lớp học để ẩn/hiện nút sửa nhanh theo quyền
@@ -1435,6 +1451,232 @@ function syncClassesWithGlvDatabase() {
 }
 
 // ==========================================================================
+// BẢNG DANH SÁCH & QUẢN LÝ CÁC LỚP GIÁO LÝ (CLASS DIRECTORY MODAL)
+// ==========================================================================
+let currentClassSort = { column: 'stt', order: 'asc' };
+
+function openAllClassesModal() {
+  const allClassesModal = document.getElementById('allClassesModal');
+  const modalFilterClassInput = document.getElementById('modalFilterClassInput');
+  const modalFilterClassBlockSelect = document.getElementById('modalFilterClassBlockSelect');
+
+  if (modalFilterClassInput) modalFilterClassInput.value = '';
+  if (modalFilterClassBlockSelect) modalFilterClassBlockSelect.value = 'all';
+
+  renderAllClassesTable();
+  if (allClassesModal) allClassesModal.style.display = 'flex';
+}
+
+function closeAllClassesModal() {
+  const allClassesModal = document.getElementById('allClassesModal');
+  if (allClassesModal) allClassesModal.style.display = 'none';
+}
+
+function renderAllClassesTable() {
+  const allClassesTableBody = document.getElementById('allClassesTableBody');
+  const modalFilterClassInput = document.getElementById('modalFilterClassInput');
+  const modalFilterClassBlockSelect = document.getElementById('modalFilterClassBlockSelect');
+  const filterClassModalCount = document.getElementById('filterClassModalCount');
+  const filterClassModalStudents = document.getElementById('filterClassModalStudents');
+
+  if (!allClassesTableBody) return;
+
+  const query = (modalFilterClassInput ? modalFilterClassInput.value.trim().toLowerCase() : '');
+  const qNorm = removeVietnameseTones(query);
+  const blockFilter = modalFilterClassBlockSelect ? modalFilterClassBlockSelect.value : 'all';
+
+  let filtered = [...classDatabase];
+
+  if (blockFilter !== 'all') {
+    filtered = filtered.filter(c => c.block === blockFilter);
+  }
+
+  if (query) {
+    filtered = filtered.filter(cls => {
+      const nameNorm = removeVietnameseTones(cls.name || '');
+      const blockNorm = removeVietnameseTones(cls.block || '');
+      const roomNorm = removeVietnameseTones(cls.room || '');
+      const noteNorm = removeVietnameseTones(cls.note || '');
+      if (nameNorm.includes(qNorm) || blockNorm.includes(qNorm) || roomNorm.includes(qNorm) || noteNorm.includes(qNorm)) return true;
+
+      const teachers = getTeachersByClass(cls.teacherIds);
+      return teachers.some(t => {
+        const tNameNorm = removeVietnameseTones(`${t.holyName} ${t.lastName} ${t.firstName}`);
+        return tNameNorm.includes(qNorm) || t.id.toLowerCase().includes(qNorm);
+      });
+    });
+  }
+
+  // Sort
+  filtered.sort((a, b) => {
+    let valA, valB;
+    if (currentClassSort.column === 'stt' || currentClassSort.column === 'name') {
+      const rankA = getClassNameBaseRank(a.name);
+      const rankB = getClassNameBaseRank(b.name);
+      if (rankA !== rankB) return currentClassSort.order === 'asc' ? (rankA - rankB) : (rankB - rankA);
+      valA = String(a.name || '');
+      valB = String(b.name || '');
+      return currentClassSort.order === 'asc' ? valA.localeCompare(valB, 'vi') : valB.localeCompare(valA, 'vi');
+    } else if (currentClassSort.column === 'block') {
+      const wA = getBlockSortPriority(a.block);
+      const wB = getBlockSortPriority(b.block);
+      return currentClassSort.order === 'asc' ? (wA - wB) : (wB - wA);
+    } else if (currentClassSort.column === 'studentCount') {
+      valA = parseInt(a.studentCount, 10) || 0;
+      valB = parseInt(b.studentCount, 10) || 0;
+      return currentClassSort.order === 'asc' ? (valA - valB) : (valB - valA);
+    } else if (currentClassSort.column === 'room') {
+      valA = (a.room || '').toLowerCase();
+      valB = (b.room || '').toLowerCase();
+      return currentClassSort.order === 'asc' ? valA.localeCompare(valB, 'vi') : valB.localeCompare(valA, 'vi');
+    }
+    return 0;
+  });
+
+  const totalStudents = filtered.reduce((sum, c) => sum + (parseInt(c.studentCount) || 0), 0);
+  if (filterClassModalCount) filterClassModalCount.textContent = filtered.length;
+  if (filterClassModalStudents) filterClassModalStudents.textContent = totalStudents;
+
+  allClassesTableBody.innerHTML = '';
+
+  if (filtered.length === 0) {
+    allClassesTableBody.innerHTML = `
+      <tr>
+        <td colspan="9" style="text-align: center; padding: 2rem; color: #94a3b8;">
+          <i class="fa-solid fa-school-circle-xmark" style="font-size: 1.8rem; margin-bottom: 0.5rem; display: block; color: #fca5a5;"></i>
+          Không tìm thấy lớp học nào phù hợp với bộ lọc
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  const isAdmin = (currentUserRole === 'admin');
+
+  filtered.forEach((cls, index) => {
+    const teachers = getTeachersByClass(cls.teacherIds);
+    const badgeCls = getBlockBadgeClass(cls.block);
+    const tr = document.createElement('tr');
+
+    const teacherNames = teachers.length > 0 
+      ? teachers.map(t => `<span class="table-teacher-tag" data-glv-id="${t.id}" style="cursor: pointer; display: inline-block; background: #fff5f5; border: 1px solid #fecaca; border-radius: 4px; padding: 0.15rem 0.45rem; margin: 0.15rem 0.2rem; font-size: 0.78rem; font-weight: 700; color: #991b1b;" title="Bấm để xem nhanh hồ sơ">${t.holyName ? t.holyName + ' ' : ''}${t.lastName} ${t.firstName}</span>`).join('')
+      : '<span style="color: #94a3b8; font-style: italic; font-size: 0.8rem;">Chưa phân công</span>';
+
+    tr.innerHTML = `
+      <td style="font-weight: 800; color: var(--primary-gold-dark);">${String(index + 1).padStart(2, '0')}</td>
+      <td>
+        <strong style="color: #1e293b; font-size: 0.95rem;">${cls.name}</strong>
+      </td>
+      <td>
+        <span class="class-block-badge ${badgeCls}" style="font-size: 0.72rem; padding: 0.18rem 0.55rem;">
+          Khối ${cls.block}
+        </span>
+      </td>
+      <td><i class="fa-solid fa-door-open" style="color: #94a3b8; margin-right: 0.3rem;"></i>${cls.room || 'Chưa xếp'}</td>
+      <td style="font-size: 0.82rem; color: #475569;">${formatScheduleShort(cls.schedule)}</td>
+      <td style="text-align: center;">
+        <span style="display: inline-block; padding: 0.2rem 0.6rem; background: #eff6ff; color: #1d4ed8; font-weight: 800; border-radius: 12px; font-size: 0.84rem;">
+          ${cls.studentCount || 0} Em
+        </span>
+      </td>
+      <td style="max-width: 240px; white-space: normal;">
+        ${teacherNames}
+      </td>
+      <td style="max-width: 180px; white-space: normal; font-size: 0.8rem; color: #64748b;">
+        ${cls.note || '-'}
+      </td>
+      <td style="text-align: center;">
+        <div class="table-action-group">
+          <button class="btn-action-icon btn-action-view" data-view-class-id="${cls.id}" title="Xem Chi Tiết Lớp">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+          ${isAdmin ? `
+          <button class="btn-action-icon btn-action-edit" data-edit-class-id="${cls.id}" title="Sửa Lớp Học">
+            <i class="fa-solid fa-pen-to-square"></i>
+          </button>
+          <button class="btn-action-icon btn-action-delete" data-delete-class-id="${cls.id}" title="Xóa Lớp Học">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+          ` : ''}
+        </div>
+      </td>
+    `;
+
+    // Sự kiện nút Xem chi tiết
+    tr.querySelector('[data-view-class-id]').addEventListener('click', () => {
+      closeAllClassesModal();
+      openClassDetailModal(cls.id);
+    });
+
+    // Sự kiện bấm vào tên GLV
+    tr.querySelectorAll('.table-teacher-tag').forEach(tag => {
+      tag.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const glvId = tag.getAttribute('data-glv-id');
+        openGlvQuickView(glvId);
+      });
+    });
+
+    if (isAdmin) {
+      tr.querySelector('[data-edit-class-id]').addEventListener('click', () => {
+        closeAllClassesModal();
+        openEditClassModal(cls.id);
+      });
+      tr.querySelector('[data-delete-class-id]').addEventListener('click', () => {
+        deleteClass(cls.id);
+      });
+    }
+
+    allClassesTableBody.appendChild(tr);
+  });
+}
+
+function deleteClass(classId) {
+  if (currentUserRole !== 'admin') {
+    showToast('Chỉ Quản Trị Viên (Admin) mới có quyền xóa lớp học!');
+    return;
+  }
+  const cls = classDatabase.find(c => c.id === classId);
+  if (!cls) return;
+
+  if (confirm(`Bạn có chắc chắn muốn xóa lớp "${cls.name}" không? Thao tác này không thể hoàn tác.`)) {
+    classDatabase = classDatabase.filter(c => c.id !== classId);
+    saveClassesDatabase();
+    renderClassesView();
+    renderBlockFilterPillCounts();
+    renderAllClassesTable();
+    showToast(`Đã xóa lớp "${cls.name}" thành công!`);
+  }
+}
+
+function exportClassesDatabaseToExcel() {
+  if (typeof XLSX === 'undefined') {
+    showToast('Thư viện xuất Excel chưa tải xong!');
+    return;
+  }
+  const data = classDatabase.map((cls, idx) => {
+    const teachers = getTeachersByClass(cls.teacherIds);
+    const teacherNames = teachers.map(t => `${t.holyName ? t.holyName + ' ' : ''}${t.lastName} ${t.firstName}`.trim()).join(', ');
+    return {
+      'STT': idx + 1,
+      'Tên Lớp Học': cls.name || '',
+      'Khối Lớp': cls.block || '',
+      'Phòng Học': cls.room || '',
+      'Thời Gian Học': cls.schedule || '',
+      'Sĩ Số (Em)': cls.studentCount || 0,
+      'Huynh Trưởng Phụ Trách': teacherNames,
+      'Ghi Chú': cls.note || ''
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'DanhSachLopGiaoLy');
+  XLSX.writeFile(wb, `Danh_Sach_Cac_Lop_Giao_Ly_TanMy_2026_2027.xlsx`);
+  showToast('Đã xuất file Excel danh sách lớp thành công!');
+}
+
+// ==========================================================================
 // THIẾT LẬP TẤT CẢ SỰ KIỆN (EVENT LISTENERS)
 // ==========================================================================
 function setupEventListeners() {
@@ -1855,7 +2097,7 @@ function setupEventListeners() {
       if (e.target === quickGlvModal) closeGlvQuickView();
     });
   }
-  if (btnGoToGlvProfile) {
+    if (btnGoToGlvProfile) {
     btnGoToGlvProfile.addEventListener('click', () => {
       if (currentQuickViewGlvId) {
         closeGlvQuickView();
@@ -1868,6 +2110,77 @@ function setupEventListeners() {
       }
     });
   }
+
+  // 6. Sự kiện Bảng Danh Sách Lớp Học (All Classes Modal) & Tiện Ích Sidebar
+  const sidebarViewAllClassesBtn = document.getElementById('sidebarViewAllClassesBtn');
+  const sidebarExportGlvBtn = document.getElementById('sidebarExportGlvBtn');
+  const sidebarExportClassesBtn = document.getElementById('sidebarExportClassesBtn');
+  const allClassesModal = document.getElementById('allClassesModal');
+  const closeClassesModalBtn = document.getElementById('closeClassesModalBtn');
+  const modalToolbarAddClassBtn = document.getElementById('modalToolbarAddClassBtn');
+  const exportClassesTableExcelBtn = document.getElementById('exportClassesTableExcelBtn');
+  const modalFilterClassInput = document.getElementById('modalFilterClassInput');
+  const modalFilterClassBlockSelect = document.getElementById('modalFilterClassBlockSelect');
+
+  if (sidebarViewAllClassesBtn) {
+    sidebarViewAllClassesBtn.addEventListener('click', openAllClassesModal);
+  }
+  if (sidebarExportGlvBtn) {
+    sidebarExportGlvBtn.addEventListener('click', exportDatabaseToExcel);
+  }
+  if (sidebarExportClassesBtn) {
+    sidebarExportClassesBtn.addEventListener('click', exportClassesDatabaseToExcel);
+  }
+  if (closeClassesModalBtn) {
+    closeClassesModalBtn.addEventListener('click', closeAllClassesModal);
+  }
+  if (allClassesModal) {
+    allClassesModal.addEventListener('click', (e) => {
+      if (e.target === allClassesModal) closeAllClassesModal();
+    });
+  }
+  if (modalToolbarAddClassBtn) {
+    modalToolbarAddClassBtn.addEventListener('click', () => {
+      closeAllClassesModal();
+      openEditClassModal();
+    });
+  }
+  if (exportClassesTableExcelBtn) {
+    exportClassesTableExcelBtn.addEventListener('click', exportClassesDatabaseToExcel);
+  }
+  if (modalFilterClassInput) {
+    modalFilterClassInput.addEventListener('input', renderAllClassesTable);
+  }
+  if (modalFilterClassBlockSelect) {
+    modalFilterClassBlockSelect.addEventListener('change', renderAllClassesTable);
+  }
+
+  // Sortable headers trong All Classes Modal
+  document.querySelectorAll('th[data-sort-class]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.getAttribute('data-sort-class');
+      if (currentClassSort.column === col) {
+        currentClassSort.order = currentClassSort.order === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentClassSort.column = col;
+        currentClassSort.order = 'asc';
+      }
+
+      document.querySelectorAll('th[data-sort-class]').forEach(t => {
+        t.classList.remove('sorted-asc', 'sorted-desc');
+        const icon = t.querySelector('.sort-icon');
+        if (icon) icon.className = 'fa-solid fa-sort sort-icon';
+      });
+
+      th.classList.add(currentClassSort.order === 'asc' ? 'sorted-asc' : 'sorted-desc');
+      const activeIcon = th.querySelector('.sort-icon');
+      if (activeIcon) {
+        activeIcon.className = currentClassSort.order === 'asc' ? 'fa-solid fa-sort-up sort-icon' : 'fa-solid fa-sort-down sort-icon';
+      }
+
+      renderAllClassesTable();
+    });
+  });
 }
 
 // ==========================================================================

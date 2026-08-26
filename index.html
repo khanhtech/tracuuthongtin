@@ -73,22 +73,45 @@
           <span class="nav-badge badge-classes" id="sidebarClassCount">14</span>
         </button>
 
-        <div class="nav-section-title" style="margin-top: 1.5rem;">TIỆN ÍCH NHANH</div>
+        <!-- Tiện ích nhanh cho Tab Giáo Lý Viên -->
+        <div id="quickActionsGlv" class="sidebar-quick-group">
+          <div class="nav-section-title" style="margin-top: 1.5rem;">TIỆN ÍCH GLV</div>
 
-        <button class="nav-item-sub" id="sidebarViewAllGlvBtn">
-          <i class="fa-solid fa-table-list"></i>
-          <span>Bảng Danh Sách GLV</span>
-        </button>
+          <button class="nav-item-sub" id="sidebarViewAllGlvBtn">
+            <i class="fa-solid fa-table-list"></i>
+            <span>Bảng Danh Sách GLV</span>
+          </button>
 
-        <button class="nav-item-sub" id="sidebarAddGlvBtn">
-          <i class="fa-solid fa-user-plus"></i>
-          <span>Thêm GLV Mới</span>
-        </button>
+          <button class="nav-item-sub" id="sidebarAddGlvBtn">
+            <i class="fa-solid fa-user-plus"></i>
+            <span>Thêm GLV Mới</span>
+          </button>
 
-        <button class="nav-item-sub" id="sidebarAddClassBtn">
-          <i class="fa-solid fa-plus-circle"></i>
-          <span>Thêm Lớp Học Mới</span>
-        </button>
+          <button class="nav-item-sub" id="sidebarExportGlvBtn">
+            <i class="fa-solid fa-file-excel"></i>
+            <span>Xuất Excel GLV</span>
+          </button>
+        </div>
+
+        <!-- Tiện ích nhanh cho Tab Lớp Giáo Lý -->
+        <div id="quickActionsClasses" class="sidebar-quick-group" style="display: none;">
+          <div class="nav-section-title" style="margin-top: 1.5rem;">TIỆN ÍCH LỚP HỌC</div>
+
+          <button class="nav-item-sub" id="sidebarViewAllClassesBtn">
+            <i class="fa-solid fa-table-list"></i>
+            <span>Bảng Danh Sách Lớp</span>
+          </button>
+
+          <button class="nav-item-sub" id="sidebarAddClassBtn">
+            <i class="fa-solid fa-plus-circle"></i>
+            <span>Thêm Lớp Học Mới</span>
+          </button>
+
+          <button class="nav-item-sub" id="sidebarExportClassesBtn">
+            <i class="fa-solid fa-file-excel"></i>
+            <span>Xuất Excel Lớp Học</span>
+          </button>
+        </div>
       </nav>
 
       <!-- Sidebar Footer (Auth / Role Info) -->
@@ -542,6 +565,76 @@
             </tr>
           </thead>
           <tbody id="allGlvTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: DANH SÁCH & QUẢN LÝ CÁC LỚP GIÁO LÝ (CLASS DIRECTORY MODAL)
+       ========================================================================== -->
+  <div class="modal-backdrop" id="allClassesModal" style="display: none;">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-school"></i>
+          <span>Bảng Danh Sách & Thống Kê Các Lớp Giáo Lý</span>
+        </div>
+        <button class="modal-close-btn" id="closeClassesModalBtn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Toolbar: Tìm kiếm & Thao tác nhanh -->
+      <div class="modal-toolbar">
+        <div class="modal-search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="modalFilterClassInput" placeholder="Tìm nhanh tên lớp, phòng học hoặc tên Huynh Trưởng...">
+        </div>
+        <div class="modal-toolbar-actions">
+          <button class="btn-tool btn-tool-add" id="modalToolbarAddClassBtn">
+            <i class="fa-solid fa-plus"></i> Thêm Lớp Mới
+          </button>
+          <button class="btn-tool btn-tool-export" id="exportClassesTableExcelBtn"
+            title="Tải về file Excel chứa danh sách lớp học">
+            <i class="fa-solid fa-file-excel"></i> Xuất Excel (.xlsx)
+          </button>
+        </div>
+      </div>
+
+      <!-- Bộ Lọc Theo Khối & Thống Kê -->
+      <div class="modal-filters-bar">
+        <div class="filter-item">
+          <label for="modalFilterClassBlockSelect"><i class="fa-solid fa-layer-group"></i> Khối Lớp:</label>
+          <select id="modalFilterClassBlockSelect">
+            <option value="all">Tất cả các khối</option>
+            <option value="Khai Tâm">Khai Tâm</option>
+            <option value="Rước Lễ">Rước Lễ</option>
+            <option value="Thêm Sức">Thêm Sức</option>
+            <option value="Bao Đồng">Bao Đồng</option>
+            <option value="Vào Đời">Vào Đời</option>
+          </select>
+        </div>
+
+        <div class="filter-count">
+          <span>Hiển thị: <strong id="filterClassModalCount">13</strong> Lớp &bull; Tổng Sĩ Số: <strong id="filterClassModalStudents">344</strong> Em</span>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="glv-table">
+          <thead>
+            <tr>
+              <th class="th-sortable" data-sort-class="stt">STT <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="th-sortable" data-sort-class="name">Tên Lớp Học <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="th-sortable" data-sort-class="block">Khối Lớp <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th class="th-sortable" data-sort-class="room">Phòng Học <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th>Thời Gian Học</th>
+              <th class="th-sortable" data-sort-class="studentCount" style="text-align: center;">Sĩ Số (Em) <i class="fa-solid fa-sort sort-icon"></i></th>
+              <th>Huynh Trưởng / GLV Phụ Trách</th>
+              <th>Ghi Chú</th>
+              <th style="text-align: center;">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="allClassesTableBody"></tbody>
         </table>
       </div>
     </div>

@@ -3664,6 +3664,37 @@ body {
   text-overflow: ellipsis;
 }
 
+/* Sidebar Quick Groups */
+.sidebar-quick-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  animation: fadeInQuick 0.25s ease;
+}
+
+@keyframes fadeInQuick {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.table-teacher-tag {
+  transition: all 0.15s ease;
+}
+
+.table-teacher-tag:hover {
+  background: #fee2e2 !important;
+  border-color: #dc2626 !important;
+  color: #7f1d1d !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(220, 38, 38, 0.15);
+}
+
 /* ==========================================================================
    RESPONSIVE LAYOUT (MOBILE & TABLET)
    ========================================================================== */
