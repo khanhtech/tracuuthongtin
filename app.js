@@ -1392,11 +1392,16 @@ function openClassDetailModal(classId) {
         <div class="students-header-bar">
           <div class="detail-section-title" style="margin-bottom: 0;">
             <i class="fa-solid fa-children"></i>
-            <span>Danh Sách Thiếu Nhi (${students.length} Em)</span>
+            <span id="detailStudentCountTitle">Danh Sách Thiếu Nhi (${students.length} Em)</span>
           </div>
-          <button class="btn-export-students" id="btnExportThisClassStudents" title="Tải về danh sách thiếu nhi lớp này">
-            <i class="fa-solid fa-file-excel"></i> Xuất Excel Lớp
-          </button>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn-add-student" id="btnAddStudentToClass" title="Thêm em thiếu nhi mới vào lớp này">
+              <i class="fa-solid fa-user-plus"></i> Thêm Thiếu Nhi
+            </button>
+            <button class="btn-export-students" id="btnExportThisClassStudents" title="Tải về danh sách thiếu nhi lớp này">
+              <i class="fa-solid fa-file-excel"></i> Xuất Excel Lớp
+            </button>
+          </div>
         </div>
 
         <div class="students-search-box" style="margin-bottom: 0.75rem;">
@@ -1408,12 +1413,14 @@ function openClassDetailModal(classId) {
           <table class="table-class-students">
             <thead>
               <tr>
-                <th style="width: 45px; text-align: center;">STT</th>
-                <th style="width: 110px;">Mã Thiếu Nhi</th>
-                <th style="width: 110px;">Tên Thánh</th>
+                <th style="width: 40px; text-align: center;">STT</th>
+                <th style="width: 105px;">Mã Thiếu Nhi</th>
+                <th style="width: 100px;">Tên Thánh</th>
                 <th>Họ và Tên</th>
+                <th style="width: 80px; text-align: center;">Giới Tính</th>
                 <th style="width: 95px; text-align: center;">Ngày Sinh</th>
                 <th style="width: 120px;">Ghi Chú</th>
+                <th style="width: 80px; text-align: center;">Thao Tác</th>
               </tr>
             </thead>
             <tbody id="classStudentsTableBody">
@@ -1427,10 +1434,15 @@ function openClassDetailModal(classId) {
     // Hàm render bảng thiếu nhi theo bộ lọc tìm kiếm
     const renderStudentsInDetail = (filterText = '') => {
       const tbody = classDetailBody.querySelector('#classStudentsTableBody');
+      const countTitle = classDetailBody.querySelector('#detailStudentCountTitle');
       if (!tbody) return;
 
+      if (countTitle) {
+        countTitle.textContent = `Danh Sách Thiếu Nhi (${cls.students.length} Em)`;
+      }
+
       const q = removeVietnameseTones(filterText.toLowerCase().trim());
-      const filteredStudents = students.filter(s => {
+      const filteredStudents = cls.students.filter(s => {
         if (!q) return true;
         const holyNorm = removeVietnameseTones(s.holyName || '');
         const nameNorm = removeVietnameseTones(s.fullName || '');
@@ -1442,7 +1454,7 @@ function openClassDetailModal(classId) {
       if (filteredStudents.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="6" style="text-align: center; padding: 1.5rem; color: #94a3b8; font-style: italic;">
+            <td colspan="8" style="text-align: center; padding: 1.5rem; color: #94a3b8; font-style: italic;">
               Không tìm thấy thiếu nhi nào phù hợp từ khóa
             </td>
           </tr>
@@ -1450,23 +1462,66 @@ function openClassDetailModal(classId) {
         return;
       }
 
+      const isAdmin = (currentUserRole === 'admin');
+
       tbody.innerHTML = filteredStudents.map((s, idx) => `
         <tr>
           <td style="text-align: center; font-weight: 700; color: #64748b;">${s.stt || (idx + 1)}</td>
           <td><span class="student-id-badge">${s.id}</span></td>
           <td><span class="student-holy-name">${s.holyName || ''}</span></td>
           <td><strong style="color: #1e293b;">${s.fullName}</strong></td>
+          <td style="text-align: center; font-size: 0.8rem; font-weight: 600; color: ${s.gender === 'Nam' ? '#1d4ed8' : '#be185d'};">
+            ${s.gender === 'Nam' ? '♂ Nam' : '♀ Nữ'}
+          </td>
           <td style="text-align: center; color: #475569; font-size: 0.8rem;">${s.birthDate || '-'}</td>
           <td>
             <span class="student-note-tag ${s.note && s.note !== 'Đang theo học' ? 'special' : ''}">
               ${s.note || 'Đang theo học'}
             </span>
           </td>
+          <td style="text-align: center;">
+            <div class="table-action-group">
+              <button class="btn-action-icon btn-action-edit btn-edit-student" data-student-id="${s.id}" title="Chỉnh sửa thông tin em ${s.fullName}">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              ${isAdmin ? `
+              <button class="btn-action-icon btn-action-delete btn-delete-student" data-student-id="${s.id}" title="Xóa em ${s.fullName} khỏi lớp">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+              ` : ''}
+            </div>
+          </td>
         </tr>
       `).join('');
+
+      // Sự kiện sửa thiếu nhi
+      tbody.querySelectorAll('.btn-edit-student').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const sId = btn.getAttribute('data-student-id');
+          openEditStudentModal(sId, cls.id);
+        });
+      });
+
+      // Sự kiện xóa thiếu nhi
+      tbody.querySelectorAll('.btn-delete-student').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const sId = btn.getAttribute('data-student-id');
+          deleteStudentFromClass(sId, cls.id);
+        });
+      });
     };
 
     renderStudentsInDetail('');
+
+    // Sự kiện nút Thêm Thiếu Nhi
+    const btnAddStudent = classDetailBody.querySelector('#btnAddStudentToClass');
+    if (btnAddStudent) {
+      btnAddStudent.addEventListener('click', () => {
+        openEditStudentModal(null, cls.id);
+      });
+    }
 
     // Sự kiện tìm kiếm thiếu nhi trong lớp
     const studentSearchInput = classDetailBody.querySelector('#classStudentFilterInput');
@@ -1500,6 +1555,164 @@ function openClassDetailModal(classId) {
   }
 
   classDetailModal.style.display = 'flex';
+}
+
+// ==========================================================================
+// THÊM, SỬA, XÓA THIẾU NHI TRONG LỚP (STUDENT MANAGEMENT)
+// ==========================================================================
+function getStudentDomElements() {
+  return {
+    modal: document.getElementById('editStudentModal'),
+    title: document.getElementById('editStudentModalTitle'),
+    form: document.getElementById('studentEditForm'),
+    origId: document.getElementById('formStudentOriginalId'),
+    classId: document.getElementById('formStudentClassId'),
+    id: document.getElementById('formStudentId'),
+    holyName: document.getElementById('formStudentHolyName'),
+    fullName: document.getElementById('formStudentFullName'),
+    gender: document.getElementById('formStudentGender'),
+    birthDate: document.getElementById('formStudentBirthDate'),
+    note: document.getElementById('formStudentNote')
+  };
+}
+
+function openEditStudentModal(studentId = null, classId = null) {
+  if (!classId) return;
+  const cls = classDatabase.find(c => c.id === classId);
+  if (!cls) return;
+
+  const dom = getStudentDomElements();
+  const students = getClassStudents(cls);
+  dom.classId.value = classId;
+
+  if (studentId) {
+    // Chế độ Sửa thiếu nhi
+    const s = students.find(item => item.id === studentId);
+    if (!s) return;
+
+    dom.origId.value = s.id;
+    if (dom.title) {
+      dom.title.textContent = `Chỉnh Sửa Thiếu Nhi: ${s.fullName}`;
+    }
+    dom.id.value = s.id;
+    dom.id.readOnly = true;
+    dom.holyName.value = s.holyName || '';
+    dom.fullName.value = s.fullName || '';
+    dom.gender.value = s.gender || 'Nam';
+    dom.birthDate.value = s.birthDate || '';
+    dom.note.value = s.note || '';
+  } else {
+    // Chế độ Thêm mới thiếu nhi
+    dom.origId.value = '';
+    if (dom.title) {
+      dom.title.textContent = `Thêm Thiếu Nhi Mới - Lớp ${cls.name}`;
+    }
+    const code = (cls.id || 'CLS').replace('CLASS_', '');
+    const nextStt = students.length + 1;
+    dom.id.value = `TN-${code}-${String(nextStt).padStart(2, '0')}`;
+    dom.id.readOnly = false;
+    dom.holyName.value = '';
+    dom.fullName.value = '';
+    dom.gender.value = 'Nam';
+    dom.birthDate.value = '';
+    dom.note.value = 'Đang theo học';
+  }
+
+  if (dom.modal) dom.modal.style.display = 'flex';
+  if (dom.fullName) dom.fullName.focus();
+}
+
+function closeEditStudentModal() {
+  const dom = getStudentDomElements();
+  if (dom.modal) dom.modal.style.display = 'none';
+}
+
+function handleStudentFormSubmit(e) {
+  e.preventDefault();
+
+  const dom = getStudentDomElements();
+  const classId = dom.classId.value.trim();
+  const originalId = dom.origId.value.trim();
+  const id = dom.id.value.trim();
+  const holyName = dom.holyName.value.trim();
+  const fullName = dom.fullName.value.trim();
+  const gender = dom.gender.value;
+  const birthDate = dom.birthDate.value.trim();
+  const note = dom.note.value.trim();
+
+  if (!classId || !fullName || !id) {
+    showToast('Vui lòng điền đầy đủ thông tin bắt buộc!');
+    return;
+  }
+
+  const cls = classDatabase.find(c => c.id === classId);
+  if (!cls) return;
+
+  const students = getClassStudents(cls);
+
+  if (originalId) {
+    // Cập nhật
+    const idx = students.findIndex(s => s.id === originalId);
+    if (idx !== -1) {
+      students[idx] = {
+        ...students[idx],
+        id: id,
+        holyName: holyName,
+        fullName: fullName,
+        gender: gender,
+        birthDate: birthDate,
+        note: note
+      };
+      showToast(`Đã cập nhật thông tin em ${fullName}!`);
+    }
+  } else {
+    // Thêm mới
+    const newStudent = {
+      stt: students.length + 1,
+      id: id,
+      holyName: holyName,
+      fullName: fullName,
+      gender: gender,
+      birthDate: birthDate,
+      note: note || 'Đang theo học'
+    };
+    students.push(newStudent);
+    showToast(`Đã thêm em ${fullName} vào lớp ${cls.name}!`);
+  }
+
+  cls.students = students;
+  cls.studentCount = students.length;
+  saveClassesDatabase();
+  renderClassesView();
+  renderBlockFilterPillCounts();
+
+  closeEditStudentModal();
+
+  // Mở lại modal chi tiết lớp để cập nhật dữ liệu
+  openClassDetailModal(classId);
+}
+
+function deleteStudentFromClass(studentId, classId) {
+  const cls = classDatabase.find(c => c.id === classId);
+  if (!cls) return;
+
+  const students = getClassStudents(cls);
+  const target = students.find(s => s.id === studentId);
+  if (!target) return;
+
+  if (confirm(`Bạn có chắc chắn muốn xóa em "${target.holyName ? target.holyName + ' ' : ''}${target.fullName}" khỏi lớp ${cls.name} không?`)) {
+    cls.students = students.filter(s => s.id !== studentId);
+    // Cập nhật lại STT
+    cls.students.forEach((s, idx) => { s.stt = idx + 1; });
+    cls.studentCount = cls.students.length;
+
+    saveClassesDatabase();
+    renderClassesView();
+    renderBlockFilterPillCounts();
+    showToast(`Đã xóa em ${target.fullName} khỏi danh sách lớp!`);
+
+    openClassDetailModal(classId);
+  }
 }
 
 function openEditClassModal(classId = null) {
@@ -2378,6 +2591,27 @@ function setupEventListeners() {
       renderAllClassesTable();
     });
   });
+
+  // 7. Sự kiện Modal Thêm/Sửa Thiếu Nhi
+  const editStudentModal = document.getElementById('editStudentModal');
+  const closeEditStudentModalBtn = document.getElementById('closeEditStudentModalBtn');
+  const cancelEditStudentBtn = document.getElementById('cancelEditStudentBtn');
+  const studentEditForm = document.getElementById('studentEditForm');
+
+  if (closeEditStudentModalBtn) {
+    closeEditStudentModalBtn.addEventListener('click', closeEditStudentModal);
+  }
+  if (cancelEditStudentBtn) {
+    cancelEditStudentBtn.addEventListener('click', closeEditStudentModal);
+  }
+  if (editStudentModal) {
+    editStudentModal.addEventListener('click', (e) => {
+      if (e.target === editStudentModal) closeEditStudentModal();
+    });
+  }
+  if (studentEditForm) {
+    studentEditForm.addEventListener('submit', handleStudentFormSubmit);
+  }
 }
 
 // ==========================================================================

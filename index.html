@@ -843,6 +843,66 @@
   </div>
 
   <!-- ==========================================================================
+       MODAL: CHỈNH SỬA / THÊM MỚI THIẾU NHI (STUDENT MODAL)
+       ========================================================================== -->
+  <div class="modal-backdrop modal-backdrop-top" id="editStudentModal" style="display: none;">
+    <div class="modal-content modal-form">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-child-reaching"></i>
+          <span id="editStudentModalTitle">Chỉnh Sửa Thông Tin Thiếu Nhi</span>
+        </div>
+        <button class="modal-close-btn" id="closeEditStudentModalBtn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="studentEditForm" class="modal-form-body">
+        <input type="hidden" id="formStudentOriginalId">
+        <input type="hidden" id="formStudentClassId">
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="formStudentId">Mã Thiếu Nhi</label>
+            <input type="text" id="formStudentId" placeholder="Ví dụ: TN-DBKT-01" required>
+          </div>
+
+          <div class="form-group">
+            <label for="formStudentHolyName">Tên Thánh (Bổn Mạng)</label>
+            <input type="text" id="formStudentHolyName" placeholder="Ví dụ: Maria, Giuse, Têrêsa...">
+          </div>
+
+          <div class="form-group">
+            <label for="formStudentFullName">Họ và Tên <span style="color: var(--primary-red);">*</span></label>
+            <input type="text" id="formStudentFullName" placeholder="Ví dụ: Nguyễn Minh An" required>
+          </div>
+
+          <div class="form-group">
+            <label for="formStudentGender">Giới Tính</label>
+            <select id="formStudentGender">
+              <option value="Nam">Nam</option>
+              <option value="Nữ">Nữ</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="formStudentBirthDate">Ngày Sinh (DD/MM/YYYY)</label>
+            <input type="text" id="formStudentBirthDate" placeholder="Ví dụ: 15/04/2019">
+          </div>
+
+          <div class="form-group">
+            <label for="formStudentNote">Ghi Chú / Vai Trò</label>
+            <input type="text" id="formStudentNote" placeholder="Ví dụ: Lớp trưởng, Ban Lễ Sinh, Đang theo học...">
+          </div>
+        </div>
+
+        <div class="form-footer">
+          <button type="button" class="btn-cancel" id="cancelEditStudentBtn">Hủy Bỏ</button>
+          <button type="submit" class="btn-save"><i class="fa-solid fa-floppy-disk"></i> Lưu Thiếu Nhi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
        MODAL: ĐĂNG NHẬP / ĐỔI VAI TRÒ ADMIN VS GUEST
        ========================================================================== -->
   <div class="modal-backdrop" id="loginModal" style="display: none;">
