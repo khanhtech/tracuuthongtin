@@ -1,5 +1,5 @@
 /**
- * HỆ THỐNG QUẢN TRỊ & TRA CỨU - XỨ ĐOÀN THIẾU NHI THÁNH THỂ TÂN MỸ
+ * HỆ THỐNG QUẢN TRỊ & TRA CỨU - ĐOÀN THIẾU NHI THÁNH THỂ TÂN MỸ
  * Bao gồm:
  * 1. Phân hệ Tra cứu & Thẻ Giáo Lý Viên (GLV)
  * 2. Phân hệ Quản lý & Tra cứu Các Lớp Giáo Lý
@@ -789,7 +789,7 @@ function displayMultipleResults(list) {
       </div>
       <span class="mini-holy">${item.holyName || ''}</span>
       <span class="mini-name">${item.lastName} ${item.firstName}</span>
-      <span style="font-size: 0.8rem; color: #64748b;">${item.block ? 'Khối ' + item.block : (item.teachingClass || 'Xứ Đoàn Tân Mỹ')}</span>
+      <span style="font-size: 0.8rem; color: #64748b;">${item.block ? 'Khối ' + item.block : (item.teachingClass || 'Đoàn Tân Mỹ')}</span>
     `;
 
     div.addEventListener('click', () => {
@@ -1143,7 +1143,7 @@ function openClassDetailModal(classId) {
       <div class="class-detail-hero">
         <div>
           <h2 class="class-hero-title">${cls.name}</h2>
-          <p class="class-hero-subtitle">Xứ Đoàn Thiếu Nhi Thánh Thể Tân Mỹ &bull; Niên Khóa 2026 - 2027</p>
+          <p class="class-hero-subtitle">Đoàn Thiếu Nhi Thánh Thể Tân Mỹ &bull; Niên Khóa 2026 - 2027</p>
         </div>
         <span class="class-block-badge ${badgeCls}" style="font-size: 0.88rem; padding: 0.4rem 0.95rem;">
           <i class="fa-solid fa-layer-group"></i> Khối ${cls.block}

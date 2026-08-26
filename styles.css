@@ -3266,6 +3266,10 @@ body {
    ========================================================================== */
 .modal-class-detail {
   max-width: 680px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .class-detail-body {
@@ -3273,6 +3277,25 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.class-detail-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.class-detail-body::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+.class-detail-body::-webkit-scrollbar-thumb {
+  background: #fca5a5;
+  border-radius: 4px;
+}
+
+.class-detail-body::-webkit-scrollbar-thumb:hover {
+  background: #dc2626;
 }
 
 .class-detail-hero {
