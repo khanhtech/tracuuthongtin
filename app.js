@@ -1207,6 +1207,105 @@ function closeGlvQuickView() {
   }
 }
 
+// ==========================================================================
+// DỮ LIỆU & QUẢN LÝ THIẾU NHI THEO LỚP
+// ==========================================================================
+const CATHOLIC_HOLY_NAMES_MALE = ['Giuse', 'Phêrô', 'Gioan', 'Phaolô', 'Đaminh', 'Phanxicô', 'Antôn', 'Anrê', 'Micae', 'Tôma', 'Gioan Baotixita', 'Giacôbê', 'Inhaxiô', 'Augustinô'];
+const CATHOLIC_HOLY_NAMES_FEMALE = ['Maria', 'Anna', 'Têrêsa', 'Macta', 'Cêcilia', 'Agata', 'Lucia', 'Rosa', 'Têrêsa HĐCG', 'Maria Mađalêna', 'Êlisabéth'];
+
+const VIET_LAST_NAMES = ['Nguyễn', 'Trần', 'Lê', 'Phạm', 'Hoàng', 'Huỳnh', 'Phan', 'Vũ', 'Võ', 'Đặng', 'Bùi', 'Đỗ', 'Hồ', 'Ngô', 'Dương', 'Lý'];
+const VIET_MIDDLE_MALE = ['Văn', 'Đức', 'Hữu', 'Minh', 'Hoàng', 'Nhật', 'Quang', 'Thành', 'Tuấn', 'Bảo', 'Gia'];
+const VIET_MIDDLE_FEMALE = ['Thị', 'Ngọc', 'Thanh', 'Phương', 'Mai', 'Thùy', 'Hà', 'Kim', 'Bảo', 'Khánh'];
+const VIET_FIRST_MALE = ['An', 'Bình', 'Cường', 'Dũng', 'Đạt', 'Hải', 'Huy', 'Khánh', 'Khoa', 'Lâm', 'Long', 'Minh', 'Nam', 'Nghĩa', 'Phong', 'Phúc', 'Quân', 'Sơn', 'Tâm', 'Thắng', 'Thịnh', 'Toàn', 'Trung', 'Tú', 'Việt', 'Vinh'];
+const VIET_FIRST_FEMALE = ['Anh', 'Bích', 'Châu', 'Chi', 'Dung', 'Duyên', 'Giang', 'Hà', 'Hân', 'Hiền', 'Hoa', 'Hương', 'Linh', 'Mai', 'My', 'Nga', 'Ngân', 'Nhi', 'Như', 'Nhung', 'Oanh', 'Phương', 'Quỳnh', 'Thảo', 'Thu', 'Trang', 'Trâm', 'Trúc', 'Tú', 'Uyên', 'Vân', 'Vy', 'Yến'];
+
+const SAMPLE_STUDENT_NOTES = ['Đang theo học', 'Đang theo học', 'Đang theo học', 'Lớp trưởng', 'Lớp phó', 'Ban Lễ Sinh', 'Ca đoàn Thiếu Nhi', 'Đang theo học', 'Đang theo học'];
+
+function getClassStudents(cls) {
+  if (cls.students && Array.isArray(cls.students) && cls.students.length > 0) {
+    return cls.students;
+  }
+
+  const count = parseInt(cls.studentCount, 10) || 24;
+  const block = cls.block || 'Khai Tâm';
+  let baseYear = 2018;
+  if (block === 'Khai Tâm') baseYear = (cls.id === 'CLASS_DBKT') ? 2019 : 2018;
+  else if (block === 'Rước Lễ') baseYear = 2016;
+  else if (block === 'Thêm Sức') baseYear = 2014;
+  else if (block === 'Bao Đồng') baseYear = 2012;
+  else if (block === 'Vào Đời') baseYear = 2009;
+
+  const code = (cls.id || 'CLS').replace('CLASS_', '');
+  const list = [];
+  let seed = 0;
+  for (let i = 0; i < (cls.id || 'CLS').length; i++) {
+    seed = (seed * 31 + (cls.id || 'CLS').charCodeAt(i)) % 100000;
+  }
+
+  for (let i = 1; i <= count; i++) {
+    const isMale = ((seed + i * 7) % 2 === 0);
+    const holy = isMale 
+      ? CATHOLIC_HOLY_NAMES_MALE[(seed + i * 3) % CATHOLIC_HOLY_NAMES_MALE.length]
+      : CATHOLIC_HOLY_NAMES_FEMALE[(seed + i * 3) % CATHOLIC_HOLY_NAMES_FEMALE.length];
+
+    const last = VIET_LAST_NAMES[(seed + i * 5) % VIET_LAST_NAMES.length];
+    const mid = isMale 
+      ? VIET_MIDDLE_MALE[(seed + i * 11) % VIET_MIDDLE_MALE.length]
+      : VIET_MIDDLE_FEMALE[(seed + i * 11) % VIET_MIDDLE_FEMALE.length];
+    const first = isMale 
+      ? VIET_FIRST_MALE[(seed + i * 13) % VIET_FIRST_MALE.length]
+      : VIET_FIRST_FEMALE[(seed + i * 13) % VIET_FIRST_FEMALE.length];
+
+    const day = String(1 + ((seed + i * 17) % 28)).padStart(2, '0');
+    const month = String(1 + ((seed + i * 19) % 12)).padStart(2, '0');
+    const yearOffset = (seed + i) % 2;
+    const year = baseYear + yearOffset;
+
+    let note = SAMPLE_STUDENT_NOTES[(seed + i * 23) % SAMPLE_STUDENT_NOTES.length];
+    if (i === 1) note = 'Lớp trưởng';
+    else if (i === 2) note = 'Lớp phó học tập';
+
+    list.push({
+      stt: i,
+      id: `TN-${code}-${String(i).padStart(2, '0')}`,
+      holyName: holy,
+      fullName: `${last} ${mid} ${first}`,
+      gender: isMale ? 'Nam' : 'Nữ',
+      birthDate: `${day}/${month}/${year}`,
+      note: note
+    });
+  }
+
+  cls.students = list;
+  return list;
+}
+
+function exportClassStudentsToExcel(cls) {
+  if (typeof XLSX === 'undefined') {
+    showToast('Thư viện xuất Excel chưa tải xong!');
+    return;
+  }
+  const students = getClassStudents(cls);
+  const data = students.map((s, idx) => ({
+    'STT': idx + 1,
+    'Mã Thiếu Nhi': s.id,
+    'Tên Thánh': s.holyName,
+    'Họ và Tên': s.fullName,
+    'Giới Tính': s.gender,
+    'Ngày Sinh': s.birthDate,
+    'Lớp Giáo Lý': cls.name,
+    'Khối Lớp': cls.block,
+    'Ghi Chú': s.note
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'DanhSachThieuNhi');
+  const safeName = removeVietnameseTones(cls.name).replace(/\s+/g, '_');
+  XLSX.writeFile(wb, `Danh_Sach_Lop_${safeName}_TanMy_2026_2027.xlsx`);
+  showToast(`Đã xuất file Excel danh sách lớp ${cls.name}!`);
+}
+
 function openClassDetailModal(classId) {
   const cls = classDatabase.find(c => c.id === classId);
   if (!cls) return;
@@ -1214,6 +1313,7 @@ function openClassDetailModal(classId) {
   currentDisplayedClass = cls;
   const teachers = getTeachersByClass(cls.teacherIds);
   const badgeCls = getBlockBadgeClass(cls.block);
+  const students = getClassStudents(cls);
 
   if (classDetailModalTitle) {
     classDetailModalTitle.textContent = `Thông Tin Lớp ${cls.name}`;
@@ -1265,6 +1365,7 @@ function openClassDetailModal(classId) {
         </div>
       </div>
 
+      <!-- Danh Sách Huynh Trưởng / GLV -->
       <div class="detail-teachers-container">
         <div class="detail-section-title">
           <i class="fa-solid fa-users-line"></i>
@@ -1285,7 +1386,103 @@ function openClassDetailModal(classId) {
           </div>
         `).join('') : '<p style="color: #64748b; font-style: italic;">Chưa phân công Huynh Trưởng cho lớp học này.</p>'}
       </div>
+
+      <!-- Danh Sách Thiếu Nhi Trong Lớp -->
+      <div class="detail-students-container">
+        <div class="students-header-bar">
+          <div class="detail-section-title" style="margin-bottom: 0;">
+            <i class="fa-solid fa-children"></i>
+            <span>Danh Sách Thiếu Nhi (${students.length} Em)</span>
+          </div>
+          <button class="btn-export-students" id="btnExportThisClassStudents" title="Tải về danh sách thiếu nhi lớp này">
+            <i class="fa-solid fa-file-excel"></i> Xuất Excel Lớp
+          </button>
+        </div>
+
+        <div class="students-search-box" style="margin-bottom: 0.75rem;">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="classStudentFilterInput" placeholder="Tìm tên thánh, họ tên hoặc mã thiếu nhi trong lớp...">
+        </div>
+
+        <div class="students-table-wrap">
+          <table class="table-class-students">
+            <thead>
+              <tr>
+                <th style="width: 45px; text-align: center;">STT</th>
+                <th style="width: 110px;">Mã Thiếu Nhi</th>
+                <th style="width: 110px;">Tên Thánh</th>
+                <th>Họ và Tên</th>
+                <th style="width: 95px; text-align: center;">Ngày Sinh</th>
+                <th style="width: 120px;">Ghi Chú</th>
+              </tr>
+            </thead>
+            <tbody id="classStudentsTableBody">
+              <!-- Render động danh sách thiếu nhi -->
+            </tbody>
+          </table>
+        </div>
+      </div>
     `;
+
+    // Hàm render bảng thiếu nhi theo bộ lọc tìm kiếm
+    const renderStudentsInDetail = (filterText = '') => {
+      const tbody = classDetailBody.querySelector('#classStudentsTableBody');
+      if (!tbody) return;
+
+      const q = removeVietnameseTones(filterText.toLowerCase().trim());
+      const filteredStudents = students.filter(s => {
+        if (!q) return true;
+        const holyNorm = removeVietnameseTones(s.holyName || '');
+        const nameNorm = removeVietnameseTones(s.fullName || '');
+        const idNorm = s.id.toLowerCase();
+        const noteNorm = removeVietnameseTones(s.note || '');
+        return holyNorm.includes(q) || nameNorm.includes(q) || idNorm.includes(q) || noteNorm.includes(q);
+      });
+
+      if (filteredStudents.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 1.5rem; color: #94a3b8; font-style: italic;">
+              Không tìm thấy thiếu nhi nào phù hợp từ khóa
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filteredStudents.map((s, idx) => `
+        <tr>
+          <td style="text-align: center; font-weight: 700; color: #64748b;">${s.stt || (idx + 1)}</td>
+          <td><span class="student-id-badge">${s.id}</span></td>
+          <td><span class="student-holy-name">${s.holyName || ''}</span></td>
+          <td><strong style="color: #1e293b;">${s.fullName}</strong></td>
+          <td style="text-align: center; color: #475569; font-size: 0.8rem;">${s.birthDate || '-'}</td>
+          <td>
+            <span class="student-note-tag ${s.note && s.note !== 'Đang theo học' ? 'special' : ''}">
+              ${s.note || 'Đang theo học'}
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    };
+
+    renderStudentsInDetail('');
+
+    // Sự kiện tìm kiếm thiếu nhi trong lớp
+    const studentSearchInput = classDetailBody.querySelector('#classStudentFilterInput');
+    if (studentSearchInput) {
+      studentSearchInput.addEventListener('input', (e) => {
+        renderStudentsInDetail(e.target.value);
+      });
+    }
+
+    // Sự kiện xuất Excel danh sách thiếu nhi lớp này
+    const btnExportClass = classDetailBody.querySelector('#btnExportThisClassStudents');
+    if (btnExportClass) {
+      btnExportClass.addEventListener('click', () => {
+        exportClassStudentsToExcel(cls);
+      });
+    }
 
     // Sự kiện nút "Xem Thẻ" của từng GLV trong modal chi tiết lớp -> Mở xem nhanh thẻ GLV trên modal
     classDetailBody.querySelectorAll('.btn-view-teacher-glv').forEach(btn => {
