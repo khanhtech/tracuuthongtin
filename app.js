@@ -276,14 +276,18 @@ const sidebarExportAllStudentsBtn = document.getElementById('sidebarExportAllStu
 // KHỞI ĐỘNG ỨNG DỤNG
 // ==========================================================================
 document.addEventListener('DOMContentLoaded', () => {
-  initUserRole();
-  updateStatsDisplay();
-  initClassModule();
-  updateStudentStatsDisplay();
-  setupEventListeners();
-  switchTab(currentTab);
-  initApiSync();
-  tryAutoFetchExcel();
+  try {
+    initUserRole();
+    updateStatsDisplay();
+    initClassModule();
+    updateStudentStatsDisplay();
+    setupEventListeners();
+    switchTab(currentTab);
+    initApiSync();
+    tryAutoFetchExcel();
+  } catch (err) {
+    console.error('Lỗi khởi động ứng dụng:', err);
+  }
 });
 
 async function initApiSync() {
@@ -1386,6 +1390,25 @@ function openClassDetailModal(classId) {
 // CỬA SỔ QUẢN LÝ DANH SÁCH THIẾU NHI RIÊNG BIỆT (STUDENT ROSTER MODAL)
 // ==========================================================================
 let currentRosterClassId = null;
+
+function getClassStudents(cls) {
+  if (!cls) return [];
+  if (Array.isArray(cls.students)) {
+    return cls.students.map((s, idx) => ({
+      stt: s.stt || (idx + 1),
+      id: s.id || `TN-${(cls.id || 'CLS').replace('CLASS_', '')}-${String(idx + 1).padStart(2, '0')}`,
+      holyName: s.holyName || '',
+      fullName: s.fullName || s.name || 'Chưa cập nhật tên',
+      gender: s.gender || 'Nam',
+      birthDate: s.birthDate || s.birth_date || '',
+      note: s.note || 'Đang theo học',
+      parentName: s.parentName || s.parent_name || '',
+      parentPhone: s.parentPhone || s.parent_phone || '',
+      address: s.address || ''
+    }));
+  }
+  return [];
+}
 
 async function openClassStudentsRosterModal(classId) {
   const cls = classDatabase.find(c => c.id === classId);
@@ -2714,46 +2737,54 @@ function setupEventListeners() {
 
   // 2. Tìm kiếm GLV realtime
   let debounceTimer;
-  searchInput.addEventListener('input', (e) => {
-    const val = e.target.value.trim();
-    if (val.length > 0) {
-      clearSearchBtn.style.display = 'flex';
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        const suggs = getSuggestions(val);
-        renderSuggestions(suggs);
-      }, 150);
-    } else {
-      clearSearchBtn.style.display = 'none';
-      suggestionsBox.style.display = 'none';
-    }
-  });
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      if (val.length > 0) {
+        if (clearSearchBtn) clearSearchBtn.style.display = 'flex';
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          const suggs = getSuggestions(val);
+          renderSuggestions(suggs);
+        }, 150);
+      } else {
+        if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+        if (suggestionsBox) suggestionsBox.style.display = 'none';
+      }
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        if (suggestionsBox) suggestionsBox.style.display = 'none';
+        executeSearch(searchInput.value);
+      }
+    });
+  }
 
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.search-card')) {
-      suggestionsBox.style.display = 'none';
+      if (suggestionsBox) suggestionsBox.style.display = 'none';
     }
   });
 
-  searchBtn.addEventListener('click', () => {
-    suggestionsBox.style.display = 'none';
-    executeSearch(searchInput.value);
-  });
+  if (searchBtn) {
+    searchBtn.addEventListener('click', () => {
+      if (suggestionsBox) suggestionsBox.style.display = 'none';
+      if (searchInput) executeSearch(searchInput.value);
+    });
+  }
 
-  searchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      suggestionsBox.style.display = 'none';
-      executeSearch(searchInput.value);
-    }
-  });
-
-  clearSearchBtn.addEventListener('click', () => {
-    searchInput.value = '';
-    clearSearchBtn.style.display = 'none';
-    suggestionsBox.style.display = 'none';
-    searchInput.focus();
-    showWelcomeState();
-  });
+  if (clearSearchBtn) {
+    clearSearchBtn.addEventListener('click', () => {
+      if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+      }
+      clearSearchBtn.style.display = 'none';
+      if (suggestionsBox) suggestionsBox.style.display = 'none';
+      showWelcomeState();
+    });
+  }
 
   // 3. Phân quyền Admin / Guest & Login Modal
   if (authSwitchBtn) {
@@ -2815,16 +2846,18 @@ function setupEventListeners() {
   document.querySelectorAll('.quick-tag-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const q = btn.getAttribute('data-query');
-      searchInput.value = q;
-      clearSearchBtn.style.display = 'flex';
+      if (searchInput) searchInput.value = q;
+      if (clearSearchBtn) clearSearchBtn.style.display = 'flex';
       executeSearch(q);
     });
   });
 
   // Thao tác trên thẻ GLV
-  printBtn.addEventListener('click', () => {
-    window.print();
-  });
+  if (printBtn) {
+    printBtn.addEventListener('click', () => {
+      window.print();
+    });
+  }
 
   if (editCurrentGlvBtn) {
     editCurrentGlvBtn.addEventListener('click', () => {
@@ -2834,24 +2867,30 @@ function setupEventListeners() {
     });
   }
 
-  copyBtn.addEventListener('click', () => {
-    if (!currentDisplayedGLV) return;
-    const g = currentDisplayedGLV;
-    const textToCopy = `[THÔNG TIN GIÁO LÝ VIÊN]\n- Mã ID: ${g.id}\n- Tên Thánh: ${g.holyName}\n- Họ và Tên: ${g.lastName} ${g.firstName}\n- Giới tính: ${g.gender || 'Nữ'}\n- Chứng chỉ: ${g.cert ? 'Cấp ' + g.cert : 'Chưa có'}\n- Khối Lớp: ${g.block ? 'Khối ' + g.block : 'Chưa phân khối'}\n- Lớp giảng dạy: ${g.teachingClass || 'Chưa phân công'}`;
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      if (!currentDisplayedGLV) return;
+      const g = currentDisplayedGLV;
+      const textToCopy = `[THÔNG TIN GIÁO LÝ VIÊN]\n- Mã ID: ${g.id}\n- Tên Thánh: ${g.holyName}\n- Họ và Tên: ${g.lastName} ${g.firstName}\n- Giới tính: ${g.gender || 'Nữ'}\n- Chứng chỉ: ${g.cert ? 'Cấp ' + g.cert : 'Chưa có'}\n- Khối Lớp: ${g.block ? 'Khối ' + g.block : 'Chưa phân khối'}\n- Lớp giảng dạy: ${g.teachingClass || 'Chưa phân công'}`;
 
-    navigator.clipboard.writeText(textToCopy).then(() => {
-      showToast('Đã sao chép thông tin Giáo Lý Viên!');
-    }).catch(() => {
-      showToast('Không thể tự động sao chép!');
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        showToast('Đã sao chép thông tin Giáo Lý Viên!');
+      }).catch(() => {
+        showToast('Không thể tự động sao chép!');
+      });
     });
-  });
+  }
 
-  resetBtn.addEventListener('click', () => {
-    searchInput.value = '';
-    clearSearchBtn.style.display = 'none';
-    searchInput.focus();
-    showWelcomeState();
-  });
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+      }
+      if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+      showWelcomeState();
+    });
+  }
 
   // Modal Danh Sách Toàn Bộ GLV
   if (viewAllBtn) {
