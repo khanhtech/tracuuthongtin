@@ -13,7 +13,8 @@
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="css/styles.css?v=2.0.5">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="css/styles.css?v=2.0.6">
 </head>
 
 <body>
@@ -1353,18 +1354,21 @@
           </div>
 
           <div class="form-group">
-            <label for="formStudentBirthDate">Ngày Sinh (DD/MM/YYYY)</label>
+            <label for="formStudentBirthDate"><i class="fa-solid fa-cake-candles"></i> Ngày Sinh (DD/MM/YYYY)</label>
             <div class="input-icon-wrap">
-              <i class="fa-solid fa-cake-candles"></i>
-              <input type="text" id="formStudentBirthDate" placeholder="Ví dụ: 15/04/2019">
+              <i class="fa-solid fa-calendar-days" style="color: #0284c7;"></i>
+              <input type="text" id="formStudentBirthDate" placeholder="Chọn ngày sinh (DD/MM/YYYY)..." autocomplete="off" style="cursor: pointer;">
             </div>
           </div>
 
           <div class="form-group">
-            <label for="formStudentNote">Ghi Chú / Vai Trò Trong Lớp</label>
+            <label for="formStudentNote"><i class="fa-solid fa-user-tag"></i> Vai Trò Trong Lớp</label>
             <div class="input-icon-wrap">
-              <i class="fa-solid fa-tag"></i>
-              <input type="text" id="formStudentNote" placeholder="Ví dụ: Lớp trưởng, Ban Lễ Sinh, Đang theo học...">
+              <i class="fa-solid fa-crown" style="color: #d97706;"></i>
+              <select id="formStudentNote">
+                <option value="Thiếu nhi" selected>🌱 Thiếu nhi</option>
+                <option value="Lớp trưởng">👑 Lớp trưởng</option>
+              </select>
             </div>
           </div>
 
@@ -1942,11 +1946,13 @@
     <span id="toastMessage">Đã lưu thông tin thành công!</span>
   </div>
 
-  <!-- CDN Scripts for SheetJS & QR Code -->
+  <!-- CDN Scripts for SheetJS, QR Code & Flatpickr Datepicker -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="js/api.js?v=2.0.5"></script>
-  <script src="js/app.js?v=2.0.5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
+  <script src="js/api.js?v=2.0.6"></script>
+  <script src="js/app.js?v=2.0.6"></script>
 </body>
 
 </html>

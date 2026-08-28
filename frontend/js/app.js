@@ -1136,7 +1136,7 @@ function generateDefaultStudentsForClass(cls, count = 25) {
       fullName: fullName,
       gender: isMale ? 'Nam' : 'Nữ',
       birthDate: birthDate,
-      note: i === 1 ? 'Lớp trưởng' : (i === 2 ? 'Lớp phó' : 'Đang theo học'),
+      note: i === 1 ? 'Lớp trưởng' : 'Thiếu nhi',
       parentName: parentName,
       parentPhone: parentPhone,
       address: `Giáo họ ${['Thánh Tâm', 'Mân Côi', 'Kitô Vua', 'Vô Nhiễm'][(i * 3) % 4]}`,
@@ -1147,6 +1147,14 @@ function generateDefaultStudentsForClass(cls, count = 25) {
     });
   }
   return list;
+}
+
+function getStudentRoleBadge(roleOrNote) {
+  const isLeader = (roleOrNote === 'Lớp trưởng');
+  if (isLeader) {
+    return `<span class="student-note-tag leader"><i class="fa-solid fa-crown"></i> Lớp trưởng</span>`;
+  }
+  return `<span class="student-note-tag member"><i class="fa-solid fa-child"></i> Thiếu nhi</span>`;
 }
 
 function getRoleBadge(role) {
@@ -1294,6 +1302,15 @@ function ensureDefaultStudentsForAllClasses() {
       cls.students = generateDefaultStudentsForClass(cls, count);
       cls.studentCount = cls.students.length;
       changed = true;
+    } else {
+      cls.students.forEach(s => {
+        const currentNote = s.note || s.role || '';
+        const normalized = (currentNote === 'Lớp trưởng') ? 'Lớp trưởng' : 'Thiếu nhi';
+        if (s.note !== normalized) {
+          s.note = normalized;
+          changed = true;
+        }
+      });
     }
   });
   if (changed) {
@@ -3162,11 +3179,7 @@ async function openClassStudentsRosterModal(classId) {
           ${s.gender === 'Nam' ? '♂ Nam' : '♀ Nữ'}
         </td>
         <td style="text-align: center; color: #475569; font-weight: 500;">${s.birthDate || '-'}</td>
-        <td>
-          <span class="student-note-tag ${s.note && s.note !== 'Đang theo học' ? 'special' : ''}">
-            ${s.note || 'Đang theo học'}
-          </span>
-        </td>
+        <td style="text-align: center;">${getStudentRoleBadge(s.note || s.role || 'Thiếu nhi')}</td>
         <td style="text-align: center;">
           ${canEdit ? `
           <div class="table-action-group" style="justify-content: center;">
@@ -3256,6 +3269,22 @@ function getStudentDomElements() {
   };
 }
 
+let studentDatePicker = null;
+
+function initStudentDatePicker() {
+  const birthInput = document.getElementById('formStudentBirthDate');
+  if (birthInput && typeof flatpickr !== 'undefined') {
+    if (!studentDatePicker) {
+      studentDatePicker = flatpickr(birthInput, {
+        dateFormat: "d/m/Y",
+        allowInput: true,
+        locale: (typeof flatpickr.l10ns !== 'undefined' && flatpickr.l10ns.vn) ? flatpickr.l10ns.vn : 'default',
+        disableMobile: "true"
+      });
+    }
+  }
+}
+
 function openEditStudentModal(studentId = null, classId = null) {
   if (currentUserRole === 'guest') {
     showToast('Tài khoản Khách chỉ có quyền xem, không thể thêm hoặc sửa thiếu nhi!');
@@ -3270,6 +3299,9 @@ function openEditStudentModal(studentId = null, classId = null) {
 
   const dom = getStudentDomElements();
   if (!dom.modal) return;
+
+  // Khởi tạo thư viện chọn ngày sinh Flatpickr
+  initStudentDatePicker();
 
   const students = getClassStudents(cls);
   if (dom.classId) dom.classId.value = cls.id;
@@ -3290,8 +3322,19 @@ function openEditStudentModal(studentId = null, classId = null) {
     if (dom.holyName) dom.holyName.value = s.holyName || '';
     if (dom.fullName) dom.fullName.value = s.fullName || '';
     if (dom.gender) dom.gender.value = s.gender || 'Nam';
-    if (dom.birthDate) dom.birthDate.value = s.birthDate || '';
-    if (dom.note) dom.note.value = s.note || '';
+    if (dom.birthDate) {
+      dom.birthDate.value = s.birthDate || '';
+      if (studentDatePicker) {
+        if (s.birthDate) {
+          studentDatePicker.setDate(s.birthDate, false, 'd/m/Y');
+        } else {
+          studentDatePicker.clear();
+        }
+      }
+    }
+    if (dom.note) {
+      dom.note.value = (s.note === 'Lớp trưởng' || s.role === 'Lớp trưởng') ? 'Lớp trưởng' : 'Thiếu nhi';
+    }
     if (dom.parentName) dom.parentName.value = s.parentName || s.parent_name || '';
     if (dom.parentPhone) dom.parentPhone.value = s.parentPhone || s.parent_phone || '';
     if (dom.address) dom.address.value = s.address || '';
@@ -3310,8 +3353,11 @@ function openEditStudentModal(studentId = null, classId = null) {
     if (dom.holyName) dom.holyName.value = '';
     if (dom.fullName) dom.fullName.value = '';
     if (dom.gender) dom.gender.value = 'Nam';
-    if (dom.birthDate) dom.birthDate.value = '';
-    if (dom.note) dom.note.value = 'Đang theo học';
+    if (dom.birthDate) {
+      dom.birthDate.value = '';
+      if (studentDatePicker) studentDatePicker.clear();
+    }
+    if (dom.note) dom.note.value = 'Thiếu nhi';
     if (dom.parentName) dom.parentName.value = '';
     if (dom.parentPhone) dom.parentPhone.value = '';
     if (dom.address) dom.address.value = '';
@@ -3337,7 +3383,7 @@ function handleStudentFormSubmit(e) {
   const fullName = dom.fullName.value.trim();
   const gender = dom.gender.value;
   const birthDate = dom.birthDate.value.trim();
-  const note = dom.note.value.trim();
+  const note = (dom.note.value.trim() === 'Lớp trưởng') ? 'Lớp trưởng' : 'Thiếu nhi';
   const parentName = dom.parentName ? dom.parentName.value.trim() : '';
   const parentPhone = dom.parentPhone ? dom.parentPhone.value.trim() : '';
   const address = dom.address ? dom.address.value.trim() : '';
@@ -4449,7 +4495,7 @@ function renderAllStudentsView() {
           <i class="fa-solid fa-school" style="color: #059669; margin-right: 3px;"></i> ${s.className || '-'}
         </span>
       </td>
-      <td><span class="student-note-tag">${s.note || 'Đang theo học'}</span></td>
+      <td style="text-align: center;">${getStudentRoleBadge(s.note || s.role || 'Thiếu nhi')}</td>
       <td>
         <div style="font-size: 0.84rem; color: #1e293b; font-weight: 600;">${s.parentName || '-'}</div>
         ${s.parentPhone ? `<div style="font-size: 0.78rem; color: #64748b;"><i class="fa-solid fa-phone" style="font-size: 0.7rem; color: #059669;"></i> ${s.parentPhone}</div>` : ''}

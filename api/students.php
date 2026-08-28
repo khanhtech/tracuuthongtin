@@ -120,8 +120,8 @@ switch ($method) {
 
                     $holyName = trim($s['holyName'] ?? ($s['holy_name'] ?? ''));
                     $gender = trim($s['gender'] ?? 'Nam');
-                    $birthDate = trim($s['birthDate'] ?? ($s['birth_date'] ?? ''));
-                    $note = trim($s['note'] ?? ($s['role_in_class'] ?? 'Đang theo học'));
+                    $rawNote = trim($s['note'] ?? ($s['role_in_class'] ?? 'Thiếu nhi'));
+                    $note = ($rawNote === 'Lớp trưởng') ? 'Lớp trưởng' : 'Thiếu nhi';
                     $parentName = trim($s['parentName'] ?? ($s['parent_name'] ?? ''));
                     $parentPhone = trim($s['parentPhone'] ?? ($s['parent_phone'] ?? ''));
                     $address = trim($s['address'] ?? '');
@@ -214,8 +214,8 @@ switch ($method) {
         $holyName = trim($data['holyName'] ?? ($data['holy_name'] ?? ''));
         $fullName = trim($data['fullName'] ?? ($data['full_name'] ?? ''));
         $gender = trim($data['gender'] ?? 'Nam');
-        $birthDate = trim($data['birthDate'] ?? ($data['birth_date'] ?? ''));
-        $note = trim($data['note'] ?? ($data['role_in_class'] ?? 'Đang theo học'));
+        $rawNote = trim($data['note'] ?? ($data['role_in_class'] ?? 'Thiếu nhi'));
+        $note = ($rawNote === 'Lớp trưởng') ? 'Lớp trưởng' : 'Thiếu nhi';
 
         if (empty($fullName)) {
             jsonResponse(false, "Họ và tên thiếu nhi không được để trống!", null, 400);
@@ -310,8 +310,8 @@ switch ($method) {
             $holyName = trim($data['holyName'] ?? ($data['holy_name'] ?? ''));
             $fullName = trim($data['fullName'] ?? ($data['full_name'] ?? ''));
             $gender = trim($data['gender'] ?? 'Nam');
-            $birthDate = trim($data['birthDate'] ?? ($data['birth_date'] ?? ''));
-            $note = trim($data['note'] ?? ($data['role_in_class'] ?? 'Đang theo học'));
+            $rawNote = trim($data['note'] ?? ($data['role_in_class'] ?? 'Thiếu nhi'));
+            $note = ($rawNote === 'Lớp trưởng') ? 'Lớp trưởng' : 'Thiếu nhi';
             $parentName = trim($data['parentName'] ?? ($data['parent_name'] ?? ''));
             $parentPhone = trim($data['parentPhone'] ?? ($data['parent_phone'] ?? ''));
             $address = trim($data['address'] ?? '');
