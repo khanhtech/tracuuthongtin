@@ -17,6 +17,12 @@ const API = {
    * Kiểm tra kết nối tới Backend PHP & MySQL
    */
   async checkBackendStatus() {
+    // Trên GitHub Pages hoặc giao thức file:, tự động chạy chế độ Client-side Offline an toàn
+    if (window.location.protocol === 'file:' || window.location.hostname.includes('github.io')) {
+      this.isOnline = false;
+      return false;
+    }
+
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT);
@@ -28,8 +34,13 @@ const API = {
       clearTimeout(timeoutId);
 
       if (res.ok) {
-        const json = await res.json();
-        this.isOnline = (json && json.success);
+        const text = await res.text();
+        try {
+          const json = JSON.parse(text);
+          this.isOnline = Boolean(json && json.success === true);
+        } catch (e) {
+          this.isOnline = false;
+        }
       } else {
         this.isOnline = false;
       }
