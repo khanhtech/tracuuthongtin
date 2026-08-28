@@ -6,7 +6,7 @@
  */
 
 const API_CONFIG = {
-  BASE_URL: 'api',
+  BASE_URL: window.location.pathname.includes('/frontend') ? '../api' : 'api',
   TIMEOUT: 6000
 };
 
@@ -58,6 +58,8 @@ const API = {
           cert: item.cert || '',
           block: item.block || '',
           teachingClass: item.teachingClass || item.teaching_class || '',
+          role: item.role || 'Chưa phân công',
+          status: item.status || 'Đang dạy học',
           photo: item.photo || item.photo_url || ''
         }));
       }
@@ -87,6 +89,8 @@ const API = {
           cert: glv.cert,
           block: glv.block,
           teachingClass: glv.teachingClass,
+          role: glv.role || 'Đồng hành',
+          status: glv.status || 'Đang dạy học',
           photo: glv.photo
         })
       });
@@ -132,6 +136,7 @@ const API = {
           room: c.room || '',
           schedule: c.schedule || 'Chủ Nhật: 07:30 - 09:00',
           studentCount: parseInt(c.studentCount || c.student_count, 10) || 0,
+          teachers: c.teachers || [],
           teacherIds: c.teacherIds || [],
           note: c.note || ''
         }));
@@ -230,8 +235,27 @@ const API = {
   },
 
   /**
-   * 7.1 LẤY TOÀN BỘ THIẾU NHI TRONG HỆ THỐNG
+   * 7.0 LƯU BẢNG ĐIỂM SỐ & CHUYÊN CẦN CỦA LỚP VÀO MYSQL
    */
+  async saveClassGrades(classId, grades) {
+    try {
+      const res = await fetch(`${API_CONFIG.BASE_URL}/students.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'save_class_grades',
+          class_id: classId,
+          grades: grades
+        })
+      });
+      const json = await res.json();
+      if (json.success) this.isOnline = true;
+      return json && json.success;
+    } catch (e) {
+      console.warn('Lỗi lưu điểm qua API:', e);
+      return false;
+    }
+  },
   async getAllStudents() {
     try {
       const res = await fetch(`${API_CONFIG.BASE_URL}/students.php`);

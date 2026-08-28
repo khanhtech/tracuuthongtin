@@ -177,6 +177,61 @@ function generateDefaultStudentsForClass(cls, count = 25) {
   return list;
 }
 
+function getRoleBadge(role) {
+  const norm = removeVietnameseTones(role || '').toLowerCase().trim();
+  if (norm.includes('chu nhiem') || norm.includes('phu trach') || norm.includes('truong lop')) {
+    return {
+      text: '👑 Chủ Nhiệm',
+      cls: 'role-chunhiem',
+      raw: 'Chủ nhiệm'
+    };
+  } else if (norm.includes('dong hanh') || norm.includes('dung lop') || norm.includes('giang day')) {
+    return {
+      text: '🤝 Đồng Hành',
+      cls: 'role-donghanh',
+      raw: 'Đồng hành'
+    };
+  } else if (norm.includes('ho tro') || norm.includes('tro ta') || norm.includes('du truong') || norm.includes('tap su')) {
+    return {
+      text: '🌱 Hỗ Trợ',
+      cls: 'role-hotro',
+      raw: 'Hỗ trợ'
+    };
+  }
+  return {
+    text: 'Chưa phân công',
+    cls: 'role-unassigned',
+    raw: 'Chưa phân công'
+  };
+}
+
+function getGlvStatusBadge(status) {
+  const s = String(status || '').trim();
+  const norm = removeVietnameseTones(s).toLowerCase();
+
+  if (norm.includes('tam nghi') || norm.includes('nghi')) {
+    return {
+      text: 'Tạm nghỉ',
+      badgeClass: 'status-pause',
+      icon: 'fa-solid fa-circle-pause',
+      html: '<span class="status-badge status-pause"><i class="fa-solid fa-circle-pause"></i> Tạm nghỉ</span>'
+    };
+  } else if (norm.includes('ho tro') || norm.includes('tro')) {
+    return {
+      text: 'Hỗ trợ',
+      badgeClass: 'status-support',
+      icon: 'fa-solid fa-handshake-angle',
+      html: '<span class="status-badge status-support"><i class="fa-solid fa-handshake-angle"></i> Hỗ trợ</span>'
+    };
+  }
+  return {
+    text: 'Đang dạy học',
+    badgeClass: 'status-teaching',
+    icon: 'fa-solid fa-circle-check',
+    html: '<span class="status-badge status-teaching"><i class="fa-solid fa-circle-check"></i> Đang dạy học</span>'
+  };
+}
+
 function loadSavedDatabase() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -193,6 +248,8 @@ function loadSavedDatabase() {
           cert: (item.cert || '').replace(/BMVTT/gi, 'BMVTN'),
           block: item.block || '',
           teachingClass: item.teachingClass || '',
+          role: item.role || 'Chưa phân công',
+          status: item.status || 'Đang dạy học',
           photo: item.photo || ''
         }));
       }
@@ -602,6 +659,8 @@ const cardCert = document.getElementById('cardCert');
 const cardGender = document.getElementById('cardGender');
 const cardClass = document.getElementById('cardClass');
 const cardBlock = document.getElementById('cardBlock');
+const cardRole = document.getElementById('cardRole');
+const cardStatus = document.getElementById('cardStatus');
 const cardAvatarImg = document.getElementById('cardAvatarImg');
 const cardGenderIcon = document.getElementById('cardGenderIcon');
 const qrcodeContainer = document.getElementById('qrcodeContainer');
@@ -626,6 +685,7 @@ const modalFilterInput = document.getElementById('modalFilterInput');
 const allGlvTableBody = document.getElementById('allGlvTableBody');
 const filterGender = document.getElementById('filterGender');
 const filterBlock = document.getElementById('filterBlock');
+const filterRole = document.getElementById('filterRole');
 const filterCert = document.getElementById('filterCert');
 const filterResultCount = document.getElementById('filterResultCount');
 
@@ -645,6 +705,8 @@ const formFirstName = document.getElementById('formFirstName');
 const formCert = document.getElementById('formCert');
 const formBlock = document.getElementById('formBlock');
 const formClass = document.getElementById('formClass');
+const formRole = document.getElementById('formRole');
+const formStatus = document.getElementById('formStatus');
 const formPhotoInput = document.getElementById('formPhotoInput');
 const formPhotoPreview = document.getElementById('formPhotoPreview');
 const formPhotoResetBtn = document.getElementById('formPhotoResetBtn');
@@ -997,12 +1059,12 @@ function updateRoleUI() {
     if (isAdmin) {
       authSwitchBtn.className = 'btn-auth-icon-right role-admin';
       authSwitchBtn.title = 'Vai trò: Quản Trị Viên (Admin). Bấm để đổi vai trò';
-      if (authRoleIcon) authRoleIcon.className = 'fa-solid fa-shield-halved';
+      if (authRoleIcon) authRoleIcon.className = 'fa-solid fa-cross';
       if (authRoleText) authRoleText.textContent = 'Admin';
     } else if (isGlv) {
       authSwitchBtn.className = 'btn-auth-icon-right role-glv';
       authSwitchBtn.title = 'Vai trò: Huynh Trưởng (GLV). Bấm để đổi vai trò';
-      if (authRoleIcon) authRoleIcon.className = 'fa-solid fa-user-graduate';
+      if (authRoleIcon) authRoleIcon.className = 'fa-solid fa-fire';
       if (authRoleText) authRoleText.textContent = 'Huynh Trưởng';
     } else {
       authSwitchBtn.className = 'btn-auth-icon-right role-guest';
@@ -1018,7 +1080,7 @@ function updateRoleUI() {
   }
   if (sidebarRoleIcon) {
     sidebarRoleIcon.className = isAdmin ? 'role-avatar-icon admin' : (isGlv ? 'role-avatar-icon glv' : 'role-avatar-icon');
-    sidebarRoleIcon.innerHTML = isAdmin ? '<i class="fa-solid fa-shield-halved"></i>' : (isGlv ? '<i class="fa-solid fa-user-graduate"></i>' : '<i class="fa-solid fa-user"></i>');
+    sidebarRoleIcon.innerHTML = isAdmin ? '<i class="fa-solid fa-cross"></i>' : (isGlv ? '<i class="fa-solid fa-fire"></i>' : '<i class="fa-solid fa-user"></i>');
   }
 
   // Phân quyền các nút thao tác
@@ -1374,6 +1436,18 @@ function displayProfileCard(glv) {
     cardBlock.textContent = glv.block ? `Khối ${glv.block}` : 'Chưa phân khối';
   }
 
+  if (cardRole) {
+    const roleInfo = getRoleBadge(glv.role);
+    cardRole.textContent = roleInfo.text;
+    cardRole.className = `badge-role ${roleInfo.cls}`;
+  }
+
+  if (cardStatus) {
+    const statusInfo = getGlvStatusBadge(glv.status || 'Đang dạy học');
+    cardStatus.innerHTML = `<i class="${statusInfo.icon}"></i> ${statusInfo.text}`;
+    cardStatus.className = `status-badge ${statusInfo.badgeClass}`;
+  }
+
   generateQRCode(glv);
   resultCard.style.display = 'block';
 }
@@ -1514,15 +1588,25 @@ function getBlockBadgeClass(blockName) {
 
 function getTeachersByClass(teacherIds) {
   if (!Array.isArray(teacherIds)) return [];
-  return teacherIds.map(tid => {
-    return glvDatabase.find(g => g.id.toUpperCase() === tid.toUpperCase()) || {
+  return teacherIds.map((item, idx) => {
+    const tid = (typeof item === 'object' && item !== null) ? (item.id || '') : item;
+    const itemRole = (typeof item === 'object' && item !== null) ? (item.role || '') : '';
+    const glv = glvDatabase.find(g => g.id.toUpperCase() === String(tid).toUpperCase());
+    if (glv) {
+      return {
+        ...glv,
+        role: itemRole || glv.role || (idx === 0 ? 'Chủ nhiệm' : 'Đồng hành')
+      };
+    }
+    return {
       id: tid,
       holyName: '',
       lastName: '',
       firstName: tid,
       gender: 'Nữ',
       cert: '',
-      photo: ''
+      photo: '',
+      role: itemRole || (idx === 0 ? 'Chủ nhiệm' : 'Đồng hành')
     };
   });
 }
@@ -1625,17 +1709,21 @@ function renderClassCards(classesList, searchKeyword) {
 
         <div class="class-teachers-section">
           <div class="teachers-header">
-            <span><i class="fa-solid fa-user-graduate"></i> Huynh Trưởng / GLV (${teachers.length})</span>
+            <span><i class="fa-solid fa-fire"></i> Huynh Trưởng / GLV (${teachers.length})</span>
           </div>
           <div class="teachers-chips-list">
-            ${teachers.length > 0 ? teachers.map(t => `
-              <div class="teacher-chip" data-glv-id="${t.id}" title="Bấm để xem hồ sơ ${t.holyName} ${t.lastName} ${t.firstName}">
+            ${teachers.length > 0 ? teachers.map(t => {
+              const rInfo = getRoleBadge(t.role);
+              return `
+              <div class="teacher-chip" data-glv-id="${t.id}" title="Vai trò: ${rInfo.text} - Bấm xem hồ sơ">
                 <span class="chip-name-box">
                   <strong class="chip-holy">${t.holyName || ''}</strong>
                   <span class="chip-name">${t.lastName} ${t.firstName}</span>
                 </span>
+                <span class="teacher-role-tag ${rInfo.cls}">${rInfo.raw}</span>
               </div>
-            `).join('') : '<span style="font-size: 0.78rem; color: #94a3b8; font-style: italic;">Chưa phân công Huynh Trưởng</span>'}
+              `;
+            }).join('') : '<span style="font-size: 0.78rem; color: #94a3b8; font-style: italic;">Chưa phân công Huynh Trưởng</span>'}
           </div>
         </div>
 
@@ -1739,6 +1827,14 @@ function openGlvQuickView(glvId) {
           <tr>
             <td><i class="fa-solid fa-school"></i> Lớp giảng dạy:</td>
             <td><strong style="color: #b91c1c;">${classText}</strong></td>
+          </tr>
+          <tr>
+            <td><i class="fa-solid fa-user-tag"></i> Vai trò:</td>
+            <td><span class="badge-role ${(getRoleBadge(glv.role)).cls}" style="font-size: 0.8rem; padding: 0.2rem 0.65rem;">${(getRoleBadge(glv.role)).text}</span></td>
+          </tr>
+          <tr>
+            <td><i class="fa-solid fa-user-check"></i> Trạng thái:</td>
+            <td><span class="status-badge ${(getGlvStatusBadge(glv.status)).badgeClass}" style="font-size: 0.8rem; padding: 0.2rem 0.65rem;"><i class="${(getGlvStatusBadge(glv.status)).icon}"></i> ${(getGlvStatusBadge(glv.status)).text}</span></td>
           </tr>
         </tbody>
       </table>
@@ -1859,19 +1955,29 @@ function openClassDetailModal(classId) {
           <span>Danh Sách Giáo Lý Viên / Huynh Trưởng Phụ Trách (${teachers.length})</span>
         </div>
 
-        ${teachers.length > 0 ? teachers.map(t => `
+        ${teachers.length > 0 ? teachers.map(t => {
+          const rInfo = getRoleBadge(t.role);
+          return `
           <div class="teacher-detail-card">
             <img class="teacher-card-avatar" src="${getGlvAvatar(t)}" alt="avatar">
             <div class="teacher-card-info">
               <span class="teacher-card-holy">${t.holyName || ''}</span>
               <span class="teacher-card-name">${t.lastName} ${t.firstName}</span>
-              <span class="teacher-card-meta">Mã: <strong>${t.id}</strong> &bull; ${t.gender === 'Nam' ? '♂ Nam' : '♀ Nữ'} &bull; ${t.cert ? 'Chứng chỉ Cấp ' + t.cert : 'Chưa có chứng chỉ'}</span>
+              <span class="teacher-card-meta">
+                Mã: <strong>${t.id}</strong> &bull; ${t.gender === 'Nam' ? '♂ Nam' : '♀ Nữ'} &bull; ${t.cert ? 'Chứng chỉ Cấp ' + t.cert : 'Chưa có chứng chỉ'}
+              </span>
+              <div style="margin-top: 0.35rem;">
+                <span class="badge-role ${rInfo.cls}" style="font-size: 0.78rem; padding: 0.15rem 0.6rem;">
+                  ${rInfo.text}
+                </span>
+              </div>
             </div>
             <button class="btn-view-teacher-glv" data-glv-id="${t.id}" title="Xem thẻ Giáo Lý Viên">
               <i class="fa-solid fa-id-badge"></i> Xem Thẻ
             </button>
           </div>
-        `).join('') : '<p style="color: #64748b; font-style: italic;">Chưa phân công Huynh Trưởng cho lớp học này.</p>'}
+          `;
+        }).join('') : '<p style="color: #64748b; font-style: italic;">Chưa phân công Huynh Trưởng cho lớp học này.</p>'}
       </div>
 
       <!-- Khối Xem & Quản Lý Danh Sách Thiếu Nhi -->
@@ -1941,25 +2047,6 @@ function openClassDetailModal(classId) {
 // CỬA SỔ QUẢN LÝ DANH SÁCH THIẾU NHI RIÊNG BIỆT (STUDENT ROSTER MODAL)
 // ==========================================================================
 let currentRosterClassId = null;
-
-function getClassStudents(cls) {
-  if (!cls) return [];
-  if (Array.isArray(cls.students)) {
-    return cls.students.map((s, idx) => ({
-      stt: s.stt || (idx + 1),
-      id: s.id || `TN-${(cls.id || 'CLS').replace('CLASS_', '')}-${String(idx + 1).padStart(2, '0')}`,
-      holyName: s.holyName || '',
-      fullName: s.fullName || s.name || 'Chưa cập nhật tên',
-      gender: s.gender || 'Nam',
-      birthDate: s.birthDate || s.birth_date || '',
-      note: s.note || 'Đang theo học',
-      parentName: s.parentName || s.parent_name || '',
-      parentPhone: s.parentPhone || s.parent_phone || '',
-      address: s.address || ''
-    }));
-  }
-  return [];
-}
 
 async function openClassStudentsRosterModal(classId) {
   const cls = classDatabase.find(c => c.id === classId);
@@ -3709,8 +3796,9 @@ function setupEventListeners() {
     viewAllBtn.addEventListener('click', () => {
       allGlvModal.style.display = 'flex';
       if (modalFilterInput) modalFilterInput.value = '';
-      if (filterGender) filterGender.value = 'all';
       if (filterBlock) filterBlock.value = 'all';
+      if (filterRole) filterRole.value = 'all';
+      if (filterGender) filterGender.value = 'all';
       if (filterCert) filterCert.value = 'all';
       currentSort = { column: 'stt', order: 'asc' };
       applyModalFilters();
@@ -3736,8 +3824,9 @@ function setupEventListeners() {
     modalFilterInput.addEventListener('input', applyModalFilters);
   }
 
-  if (filterGender) filterGender.addEventListener('change', applyModalFilters);
   if (filterBlock) filterBlock.addEventListener('change', applyModalFilters);
+  if (filterRole) filterRole.addEventListener('change', applyModalFilters);
+  if (filterGender) filterGender.addEventListener('change', applyModalFilters);
   if (filterCert) filterCert.addEventListener('change', applyModalFilters);
 
   document.querySelectorAll('.th-sortable').forEach(th => {
@@ -4264,7 +4353,14 @@ function setupEventListeners() {
 
   if (btnPrintSingleReportCard) {
     btnPrintSingleReportCard.addEventListener('click', () => {
-      window.print();
+      printStudentReportCard();
+    });
+  }
+
+  const btnPrintReportCardHeader = document.getElementById('btnPrintReportCardHeader');
+  if (btnPrintReportCardHeader) {
+    btnPrintReportCardHeader.addEventListener('click', () => {
+      printStudentReportCard();
     });
   }
 
@@ -4374,17 +4470,35 @@ function setupEventListeners() {
 // ==========================================================================
 // CÁC HÀM XỬ LÝ CHỈNH SỬA / THÊM / XÓA GLV
 // ==========================================================================
+function generateNextGlvId() {
+  let maxNum = 0;
+  glvDatabase.forEach(g => {
+    const match = String(g.id || '').match(/^GLV(\d+)$/i);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (!isNaN(num) && num > maxNum) {
+        maxNum = num;
+      }
+    }
+  });
+  const nextNum = maxNum + 1;
+  return `GLV${String(nextNum).padStart(2, '0')}`;
+}
+
 function openAddModal() {
-  if (currentUserRole === 'guest') {
-    showToast('Tài khoản Khách chỉ có quyền xem, không thể thêm Huynh Trưởng / GLV!');
+  if (currentUserRole !== 'admin') {
+    showToast('Chỉ Quản Trị Viên (Admin) mới có quyền thêm mới Huynh Trưởng / GLV!');
     return;
   }
 
   editOriginalId.value = '';
-  editModalTitle.innerHTML = '<i class="fa-solid fa-user-plus"></i> Thêm Giáo Lý Viên Mới';
+  const editModalIcon = document.getElementById('editModalIcon');
+  if (editModalIcon) editModalIcon.className = 'fa-solid fa-user-plus';
+  editModalTitle.textContent = 'Thêm Giáo Lý Viên Mới';
   
-  const nextNumber = glvDatabase.length + 1;
-  formId.value = `GLV${String(nextNumber).padStart(2, '0')}`;
+  const nextId = generateNextGlvId();
+  formId.value = nextId;
+  formId.readOnly = true;
   formGender.value = 'Nữ';
   formHolyName.value = '';
   formLastName.value = '';
@@ -4392,6 +4506,8 @@ function openAddModal() {
   formCert.value = '';
   if (formBlock) formBlock.value = '';
   formClass.value = '';
+  if (formRole) formRole.value = 'Đồng hành';
+  if (formStatus) formStatus.value = 'Đang dạy học';
   
   formPhotoData.value = '';
   if (formPhotoInput) formPhotoInput.value = '';
@@ -4417,9 +4533,12 @@ function openEditModal(glvId) {
   }
 
   editOriginalId.value = glv.id;
-  editModalTitle.innerHTML = `<i class="fa-solid fa-user-pen"></i> Chỉnh Sửa: ${glv.id}`;
+  const editModalIcon = document.getElementById('editModalIcon');
+  if (editModalIcon) editModalIcon.className = 'fa-solid fa-user-pen';
+  editModalTitle.textContent = `Chỉnh Sửa: ${glv.id}`;
   
   formId.value = glv.id;
+  formId.readOnly = true;
   formGender.value = glv.gender || 'Nữ';
   formHolyName.value = glv.holyName || '';
   formLastName.value = glv.lastName || '';
@@ -4427,6 +4546,8 @@ function openEditModal(glvId) {
   formCert.value = glv.cert || '';
   if (formBlock) formBlock.value = glv.block || '';
   formClass.value = glv.teachingClass || '';
+  if (formRole) formRole.value = glv.role || 'Đồng hành';
+  if (formStatus) formStatus.value = glv.status || 'Đang dạy học';
 
   formPhotoData.value = glv.photo || '';
   if (formPhotoInput) formPhotoInput.value = '';
@@ -4446,9 +4567,12 @@ function setFormInputsLockState(isLocked) {
   const saveBtn = editGlvModal ? editGlvModal.querySelector('.btn-save') : null;
   if (saveBtn) saveBtn.style.display = isLocked ? 'none' : 'inline-flex';
 
+  const isAdmin = (currentUserRole === 'admin');
+
   if (formId) {
-    formId.disabled = isLocked;
-    formId.classList.toggle('input-locked', isLocked);
+    formId.disabled = false;
+    formId.readOnly = true;
+    formId.classList.add('input-readonly', 'input-locked-code');
   }
   if (formGender) {
     formGender.disabled = isLocked;
@@ -4465,6 +4589,16 @@ function setFormInputsLockState(isLocked) {
   if (formClass) {
     formClass.disabled = isLocked;
     formClass.classList.toggle('input-locked', isLocked);
+  }
+  if (formRole) {
+    const lockRole = isLocked || !isAdmin;
+    formRole.disabled = lockRole;
+    formRole.classList.toggle('input-locked', lockRole);
+  }
+  if (formStatus) {
+    const lockStatus = isLocked || !isAdmin;
+    formStatus.disabled = lockStatus;
+    formStatus.classList.toggle('input-locked', lockStatus);
   }
   if (formHolyName) {
     formHolyName.disabled = isLocked;
@@ -4492,8 +4626,9 @@ function saveGlvForm() {
     return;
   }
 
+  const isAdmin = (currentUserRole === 'admin');
   const originalId = editOriginalId.value.trim();
-  const id = formId.value.trim().toUpperCase();
+  const id = originalId ? originalId : (formId.value.trim().toUpperCase() || generateNextGlvId());
   const gender = formGender.value;
   const holyName = formHolyName.value.trim().toUpperCase();
   const lastName = formLastName.value.trim().toUpperCase();
@@ -4511,6 +4646,10 @@ function saveGlvForm() {
   if (originalId) {
     const index = glvDatabase.findIndex(item => item.id.toUpperCase() === originalId.toUpperCase());
     if (index !== -1) {
+      // Nếu không phải Admin, bảo lưu Vai trò và Trạng thái ban đầu
+      const role = isAdmin ? (formRole ? formRole.value.trim() : (glvDatabase[index].role || 'Đồng hành')) : (glvDatabase[index].role || 'Đồng hành');
+      const status = isAdmin ? (formStatus ? formStatus.value.trim() : (glvDatabase[index].status || 'Đang dạy học')) : (glvDatabase[index].status || 'Đang dạy học');
+
       glvDatabase[index] = {
         ...glvDatabase[index],
         id,
@@ -4521,6 +4660,8 @@ function saveGlvForm() {
         cert,
         block,
         teachingClass,
+        role,
+        status,
         photo
       };
 
@@ -4536,8 +4677,8 @@ function saveGlvForm() {
       }
     }
   } else {
-    if (isGuest) {
-      alert('Tài khoản Khách không có quyền thêm mới Giáo Lý Viên!');
+    if (!isAdmin) {
+      alert('Chỉ Quản Trị Viên (Admin) mới có quyền thêm mới Giáo Lý Viên!');
       return;
     }
 
@@ -4552,6 +4693,9 @@ function saveGlvForm() {
       return;
     }
 
+    const role = formRole ? formRole.value.trim() : 'Đồng hành';
+    const status = formStatus ? formStatus.value.trim() : 'Đang dạy học';
+
     const newGLV = {
       stt: glvDatabase.length + 1,
       id,
@@ -4562,6 +4706,8 @@ function saveGlvForm() {
       cert,
       block,
       teachingClass,
+      role,
+      status,
       photo
     };
 
@@ -4612,6 +4758,7 @@ async function deleteGLV(glvId) {
     API.deleteTeacher(glv.id);
   }
 
+  updateStatsDisplay();
   if (currentDisplayedGLV && currentDisplayedGLV.id.toUpperCase() === glvId.toUpperCase()) {
     showWelcomeState();
   }
@@ -4674,6 +4821,7 @@ async function resetDatabaseToOriginal() {
   if (modalFilterInput) modalFilterInput.value = '';
   if (filterGender) filterGender.value = 'all';
   if (filterBlock) filterBlock.value = 'all';
+  if (filterRole) filterRole.value = 'all';
   if (filterCert) filterCert.value = 'all';
   currentSort = { column: 'stt', order: 'asc' };
   
@@ -4685,29 +4833,35 @@ async function resetDatabaseToOriginal() {
 
 function applyModalFilters() {
   const textQuery = modalFilterInput ? modalFilterInput.value.trim() : '';
-  const selGender = filterGender ? filterGender.value : 'all';
   const selBlock = filterBlock ? filterBlock.value : 'all';
-  const selCert = filterCert ? filterCert.value : 'all';
+  const selRole = filterRole ? filterRole.value : 'all';
 
   let filtered = textQuery ? searchGLV(textQuery) : [...glvDatabase];
 
-  if (selGender !== 'all') {
-    filtered = filtered.filter(item => item.gender === selGender);
-  }
-
-  if (selBlock !== 'all') {
+  if (selBlock && selBlock !== 'all') {
     if (selBlock === 'none') {
       filtered = filtered.filter(item => !item.block || item.block.trim() === '');
     } else {
-      filtered = filtered.filter(item => item.block === selBlock);
+      const targetNorm = removeVietnameseTones(selBlock).toLowerCase().trim();
+      filtered = filtered.filter(item => {
+        const itemNorm = removeVietnameseTones(item.block || '').toLowerCase().trim();
+        return itemNorm.includes(targetNorm);
+      });
     }
   }
 
-  if (selCert !== 'all') {
-    if (selCert === 'none') {
-      filtered = filtered.filter(item => !item.cert || item.cert.trim() === '');
+  if (selRole && selRole !== 'all') {
+    if (selRole === 'none') {
+      filtered = filtered.filter(item => {
+        const r = (item.role || '').trim();
+        return !r || removeVietnameseTones(r).toLowerCase().includes('chua phan cong');
+      });
     } else {
-      filtered = filtered.filter(item => String(item.cert || '').includes(selCert));
+      const targetNorm = removeVietnameseTones(selRole).toLowerCase().trim();
+      filtered = filtered.filter(item => {
+        const itemNorm = removeVietnameseTones(item.role || '').toLowerCase().trim();
+        return itemNorm.includes(targetNorm);
+      });
     }
   }
 
@@ -4725,6 +4879,10 @@ function applyModalFilters() {
     if (currentSort.column === 'class') {
       valA = a.teachingClass || '';
       valB = b.teachingClass || '';
+    }
+    if (currentSort.column === 'role') {
+      valA = a.role || '';
+      valB = b.role || '';
     }
 
     const comp = String(valA).localeCompare(String(valB), 'vi', { sensitivity: 'base' });
@@ -4763,12 +4921,13 @@ function updateSortHeaderIcons() {
 function renderAllGlvTable(list) {
   allGlvTableBody.innerHTML = '';
   if (list.length === 0) {
-    allGlvTableBody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #64748b; padding: 2rem;">Không tìm thấy Giáo Lý Viên nào phù hợp</td></tr>';
+    allGlvTableBody.innerHTML = '<tr><td colspan="11" style="text-align: center; color: #64748b; padding: 2rem;">Không tìm thấy Giáo Lý Viên nào phù hợp</td></tr>';
     return;
   }
 
   list.forEach(item => {
     const isMale = (item.gender === 'Nam');
+    const rInfo = getRoleBadge(item.role);
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><strong>#${item.stt}</strong></td>
@@ -4788,6 +4947,11 @@ function renderAllGlvTable(list) {
       <td><span class="badge-cert" style="font-size: 0.78rem;">${item.cert ? 'Cấp ' + item.cert : '—'}</span></td>
       <td style="color: #0369a1; font-weight: 700;">${item.block ? 'Khối ' + item.block : '—'}</td>
       <td style="color: #475569; font-weight: 500;">${item.teachingClass || 'Chưa phân công'}</td>
+      <td>
+        <span class="badge-role ${rInfo.cls}" style="font-size: 0.75rem; padding: 0.15rem 0.55rem; white-space: nowrap;">
+          ${rInfo.text}
+        </span>
+      </td>
       <td>
         <div class="table-action-group">
           <button class="btn-action-icon btn-action-view" data-id="${item.id}" title="Xem thẻ Giáo Lý Viên">
@@ -4988,11 +5152,15 @@ function calcAttendanceAvg(t5, cn, gl) {
   const vCN = parseFloat(cn);
   const vGL = parseFloat(gl);
 
-  const validCount = (!isNaN(vT5) ? 1 : 0) + (!isNaN(vCN) ? 2 : 0) + (!isNaN(vGL) ? 2 : 0);
-  if (validCount === 0) return null;
+  let totalWeight = 0;
+  let totalScore = 0;
 
-  const sum = (isNaN(vT5) ? 0 : vT5) + (isNaN(vCN) ? 0 : vCN * 2) + (isNaN(vGL) ? 0 : vGL * 2);
-  return Math.round((sum / validCount) * 10) / 10;
+  if (!isNaN(vT5)) { totalScore += vT5 * 0.3; totalWeight += 0.3; }
+  if (!isNaN(vCN)) { totalScore += vCN * 0.3; totalWeight += 0.3; }
+  if (!isNaN(vGL)) { totalScore += vGL * 0.4; totalWeight += 0.4; }
+
+  if (totalWeight === 0) return null;
+  return Math.round((totalScore / totalWeight) * 10) / 10;
 }
 
 function calcSubjectAvg(oral, m15, p1, exam) {
@@ -5013,13 +5181,31 @@ function calcSubjectAvg(oral, m15, p1, exam) {
   return Math.round((totalScore / totalWeight) * 10) / 10;
 }
 
+function calcSemesterTotal(attAvg, subjAvg) {
+  const vAtt = parseFloat(attAvg);
+  const vSubj = parseFloat(subjAvg);
+  if (isNaN(vAtt) && isNaN(vSubj)) return null;
+  if (isNaN(vAtt)) return vSubj;
+  if (isNaN(vSubj)) return vAtt;
+  return Math.round((vAtt * 0.4 + vSubj * 0.6) * 10) / 10;
+}
+
 function calcYearAvg(hk1, hk2) {
   const v1 = parseFloat(hk1);
   const v2 = parseFloat(hk2);
   if (isNaN(v1) && isNaN(v2)) return null;
   if (isNaN(v1)) return v2;
   if (isNaN(v2)) return v1;
-  return Math.round(((v1 + v2 * 2) / 3) * 10) / 10;
+  return Math.round(((v1 * 0.5 + v2 * 0.5)) * 10) / 10;
+}
+
+function calcFinalTotal(attYear, subjYear) {
+  const vAtt = parseFloat(attYear);
+  const vSubj = parseFloat(subjYear);
+  if (isNaN(vAtt) && isNaN(vSubj)) return null;
+  if (isNaN(vAtt)) return vSubj;
+  if (isNaN(vSubj)) return vAtt;
+  return Math.round((vAtt * 0.4 + vSubj * 0.6) * 10) / 10;
 }
 
 function getRankGrade(score) {
@@ -5078,9 +5264,85 @@ function openClassGradebookModal(classId, semester = 'hk1') {
   }
 }
 
-function renderGradebookTable() {
+function renderRankBadge(rankNum) {
+  if (rankNum === undefined || rankNum === null || rankNum === '--') {
+    return '<span style="color: #94a3b8; font-weight: 600;">--</span>';
+  }
+  const num = parseInt(rankNum, 10);
+  if (num === 1) {
+    return `<span class="rank-pos-badge rank-pos-1" title="Hạng 1 xuất sắc"><i class="fa-solid fa-crown"></i> 1</span>`;
+  }
+  if (num === 2) {
+    return `<span class="rank-pos-badge rank-pos-2" title="Hạng 2"><i class="fa-solid fa-medal"></i> 2</span>`;
+  }
+  if (num === 3) {
+    return `<span class="rank-pos-badge rank-pos-3" title="Hạng 3"><i class="fa-solid fa-medal"></i> 3</span>`;
+  }
+  return `<span class="rank-pos-badge rank-pos-normal" title="Hạng ${num}">${num}</span>`;
+}
+
+function updateClassRankingsInDOM(sem) {
   const cls = classDatabase.find(c => c.id === currentGradebookClassId);
-  if (!cls || !gradebookTableHead || !gradebookTableBody) return;
+  if (!cls || !gradebookTableBody) return;
+
+  const rows = gradebookTableBody.querySelectorAll('tr[data-student-id]');
+  if (rows.length === 0) return;
+
+  const students = getClassStudents(cls);
+  const rankScores = [];
+
+  rows.forEach(row => {
+    const sId = row.getAttribute('data-student-id');
+    const s = students.find(item => item.id === sId);
+    if (!s) return;
+
+    const g = getStudentGrades(s);
+    if (sem === 'hk1' || sem === 'hk2') {
+      const gSem = g[sem] || {};
+      const att = calcAttendanceAvg(gSem.t5, gSem.cn, gSem.gl);
+      const subj = calcSubjectAvg(gSem.oral, gSem.m15, gSem.p1, gSem.exam);
+      const total = calcSemesterTotal(att, subj);
+      rankScores.push({ id: sId, score: total !== null ? total : (subj !== null ? subj : -1) });
+    } else {
+      const att1 = calcAttendanceAvg(g.hk1?.t5, g.hk1?.cn, g.hk1?.gl);
+      const subj1 = calcSubjectAvg(g.hk1?.oral, g.hk1?.m15, g.hk1?.p1, g.hk1?.exam);
+      const att2 = calcAttendanceAvg(g.hk2?.t5, g.hk2?.cn, g.hk2?.gl);
+      const subj2 = calcSubjectAvg(g.hk2?.oral, g.hk2?.m15, g.hk2?.p1, g.hk2?.exam);
+      const finalAtt = calcYearAvg(att1, att2);
+      const finalSubj = calcYearAvg(subj1, subj2);
+      const total = calcFinalTotal(finalAtt, finalSubj);
+      rankScores.push({ id: sId, score: total !== null ? total : -1 });
+    }
+  });
+
+  const sorted = [...rankScores].sort((a, b) => b.score - a.score);
+  const rankMap = new Map();
+  let curRank = 1;
+  sorted.forEach((item, index) => {
+    if (item.score < 0) {
+      rankMap.set(item.id, '--');
+      return;
+    }
+    if (index > 0 && item.score < sorted[index - 1].score) {
+      curRank = index + 1;
+    }
+    rankMap.set(item.id, curRank);
+  });
+
+  rows.forEach(row => {
+    const sId = row.getAttribute('data-student-id');
+    const cellRank = row.querySelector('.cell-class-rank');
+    if (cellRank) {
+      cellRank.innerHTML = renderRankBadge(rankMap.get(sId));
+    }
+  });
+}
+
+function renderGradebookTable() {
+  if (!gradebookTableHead || !gradebookTableBody) return;
+
+  const cls = classDatabase.find(c => c.id === currentGradebookClassId);
+  if (!cls) return;
 
   const students = getClassStudents(cls);
   const sem = currentGradebookSemester;
@@ -5095,30 +5357,69 @@ function renderGradebookTable() {
     return matchName || matchHoly || matchId;
   });
 
+  // Tính xếp hạng trong lớp
+  const studentRankScores = filtered.map(s => {
+    const g = getStudentGrades(s);
+    if (sem === 'hk1' || sem === 'hk2') {
+      const gSem = g[sem] || {};
+      const att = calcAttendanceAvg(gSem.t5, gSem.cn, gSem.gl);
+      const subj = calcSubjectAvg(gSem.oral, gSem.m15, gSem.p1, gSem.exam);
+      const total = calcSemesterTotal(att, subj);
+      return { id: s.id, score: total !== null ? total : (subj !== null ? subj : -1) };
+    } else {
+      const att1 = calcAttendanceAvg(g.hk1?.t5, g.hk1?.cn, g.hk1?.gl);
+      const subj1 = calcSubjectAvg(g.hk1?.oral, g.hk1?.m15, g.hk1?.p1, g.hk1?.exam);
+      const att2 = calcAttendanceAvg(g.hk2?.t5, g.hk2?.cn, g.hk2?.gl);
+      const subj2 = calcSubjectAvg(g.hk2?.oral, g.hk2?.m15, g.hk2?.p1, g.hk2?.exam);
+      const finalAtt = calcYearAvg(att1, att2);
+      const finalSubj = calcYearAvg(subj1, subj2);
+      const total = calcFinalTotal(finalAtt, finalSubj);
+      return { id: s.id, score: total !== null ? total : -1 };
+    }
+  });
+
+  const sortedRankScores = [...studentRankScores].sort((a, b) => b.score - a.score);
+  const classRankMap = new Map();
+  let rNum = 1;
+  sortedRankScores.forEach((item, index) => {
+    if (item.score < 0) {
+      classRankMap.set(item.id, '--');
+      return;
+    }
+    if (index > 0 && item.score < sortedRankScores[index - 1].score) {
+      rNum = index + 1;
+    }
+    classRankMap.set(item.id, rNum);
+  });
+
   // 1. Render Table Head
   if (sem === 'hk1' || sem === 'hk2') {
     const semName = sem === 'hk1' ? 'HỌC KỲ 1' : 'HỌC KỲ 2';
     gradebookTableHead.innerHTML = `
       <tr>
         <th rowspan="2" style="width: 45px; text-align: center;">STT</th>
-        <th rowspan="2" style="width: 110px;">Mã TN</th>
-        <th rowspan="2" style="width: 110px;">Tên Thánh</th>
-        <th rowspan="2" style="min-width: 170px;">Họ và Tên</th>
+        <th rowspan="2" style="width: 100px;">Mã TN</th>
+        <th rowspan="2" style="width: 105px;">Tên Thánh</th>
+        <th rowspan="2" style="min-width: 160px;">Họ và Tên</th>
         <th colspan="4" class="th-group-header th-group-att"><i class="fa-solid fa-church"></i> ĐIỂM CHUYÊN CẦN (${semName})</th>
         <th colspan="5" class="th-group-header th-group-exam"><i class="fa-solid fa-book-bible"></i> KIỂM TRA GIÁO LÝ (${semName})</th>
-        <th rowspan="2" style="width: 110px; text-align: center;">Xếp Loại</th>
+        <th colspan="3" class="th-group-header th-group-final"><i class="fa-solid fa-award"></i> KẾT QUẢ (${semName})</th>
       </tr>
       <tr>
-        <th class="th-group-att" style="width: 65px; text-align: center;" title="Đi Lễ Thứ 5 hàng tuần (Hệ số 1)">Lễ T5</th>
-        <th class="th-group-att" style="width: 65px; text-align: center;" title="Đi Lễ Chúa Nhật hàng tuần (Hệ số 2)">Lễ CN</th>
-        <th class="th-group-att" style="width: 65px; text-align: center;" title="Đi học Giáo Lý hàng tuần (Hệ số 2)">Học GL</th>
-        <th class="th-group-att" style="width: 80px; text-align: center; font-weight: 900;" title="ĐTB Chuyên Cần = (Lễ T5 + Lễ CN*2 + Học GL*2)/5">ĐTB CC</th>
+        <th class="th-group-att" style="width: 58px; text-align: center;" title="Đi Lễ Thứ 5 hàng tuần (30% điểm chuyên cần)">Lễ T5</th>
+        <th class="th-group-att" style="width: 58px; text-align: center;" title="Đi Lễ Chúa Nhật hàng tuần (30% điểm chuyên cần)">Lễ CN</th>
+        <th class="th-group-att" style="width: 58px; text-align: center;" title="Đi học Giáo Lý hàng tuần (40% điểm chuyên cần)">Học GL</th>
+        <th class="th-group-att" style="width: 72px; text-align: center; font-weight: 900;" title="ĐTB Chuyên Cần = Lễ T5*30% + Lễ CN*30% + Học GL*40% (Chiếm 40% tổng điểm)">ĐTB CC</th>
         
-        <th class="th-group-exam" style="width: 65px; text-align: center;" title="Điểm kiểm tra Miệng (Hệ số 1)">Miệng</th>
-        <th class="th-group-exam" style="width: 65px; text-align: center;" title="Điểm kiểm tra 15 Phút (Hệ số 1)">15 Phút</th>
-        <th class="th-group-exam" style="width: 65px; text-align: center;" title="Điểm kiểm tra 1 Tiết (Hệ số 2)">1 Tiết</th>
-        <th class="th-group-exam" style="width: 65px; text-align: center;" title="Điểm Thi Học Kỳ (Hệ số 3)">Thi HK</th>
-        <th class="th-group-exam" style="width: 80px; text-align: center; font-weight: 900;" title="ĐTB Giáo Lý = (Miệng + 15p + 1Tiet*2 + ThiHK*3)/7">ĐTB GL</th>
+        <th class="th-group-exam" style="width: 58px; text-align: center;" title="Điểm kiểm tra Miệng (Hệ số 1)">Miệng</th>
+        <th class="th-group-exam" style="width: 58px; text-align: center;" title="Điểm kiểm tra 15 Phút (Hệ số 1)">15 Phút</th>
+        <th class="th-group-exam" style="width: 58px; text-align: center;" title="Điểm kiểm tra 1 Tiết (Hệ số 2)">1 Tiết</th>
+        <th class="th-group-exam" style="width: 58px; text-align: center;" title="Điểm Thi Học Kỳ (Hệ số 3)">Thi HK</th>
+        <th class="th-group-exam" style="width: 72px; text-align: center; font-weight: 900;" title="ĐTB Giáo Lý = (Miệng*1 + 15p*1 + 1Tiết*2 + ThiHK*3)/7 (Chiếm 60% tổng điểm)">ĐTB GL</th>
+
+        <th class="th-group-final" style="width: 80px; text-align: center; font-weight: 900;" title="Điểm Tổng Kết Học Kỳ = ĐTB CC*40% + ĐTB GL*60%">ĐTB Tổng</th>
+        <th class="th-group-final" style="width: 90px; text-align: center;">Xếp Loại</th>
+        <th class="th-group-final" style="width: 75px; text-align: center;">Xếp Hạng</th>
       </tr>
     `;
   } else {
@@ -5126,17 +5427,18 @@ function renderGradebookTable() {
     gradebookTableHead.innerHTML = `
       <tr>
         <th style="width: 45px; text-align: center;">STT</th>
-        <th style="width: 110px;">Mã TN</th>
-        <th style="width: 110px;">Tên Thánh</th>
-        <th style="min-width: 170px;">Họ và Tên</th>
-        <th class="th-group-att" style="width: 100px; text-align: center;" title="Điểm TB Chuyên Cần cả năm">ĐTB Chuyên Cần</th>
-        <th class="th-group-exam" style="width: 85px; text-align: center;" title="ĐTB Giáo Lý Học Kỳ 1">ĐTB HK1</th>
-        <th class="th-group-exam" style="width: 85px; text-align: center;" title="ĐTB Giáo Lý Học Kỳ 2">ĐTB HK2</th>
-        <th class="th-group-final" style="width: 100px; text-align: center; font-weight: 900;" title="ĐTB Cả Năm = (HK1 + HK2*2)/3">ĐTB Cả Năm</th>
-        <th style="width: 110px; text-align: center;">Xếp Loại GL</th>
-        <th style="width: 120px; text-align: center;">Xếp Loại Chuyên Cần</th>
-        <th style="width: 120px; text-align: center;">Kết Quả / Bí Tích</th>
-        <th style="width: 90px; text-align: center;">Phiếu Điểm</th>
+        <th style="width: 100px;">Mã TN</th>
+        <th style="width: 105px;">Tên Thánh</th>
+        <th style="min-width: 160px;">Họ và Tên</th>
+        <th class="th-group-att" style="width: 90px; text-align: center;" title="ĐTB Chuyên Cần Cả Năm = (HK1*50% + HK2*50%)">ĐTB CC</th>
+        <th class="th-group-exam" style="width: 80px; text-align: center;" title="ĐTB Giáo Lý Học Kỳ 1">GL HK1</th>
+        <th class="th-group-exam" style="width: 80px; text-align: center;" title="ĐTB Giáo Lý Học Kỳ 2">GL HK2</th>
+        <th class="th-group-exam" style="width: 85px; text-align: center;" title="ĐTB Giáo Lý Cả Năm = (HK1*50% + HK2*50%)">ĐTB GL</th>
+        <th class="th-group-final" style="width: 95px; text-align: center; font-weight: 900;" title="ĐTB Cả Năm = ĐTB Chuyên Cần*40% + ĐTB Giáo Lý*60%">ĐTB Tổng</th>
+        <th style="width: 90px; text-align: center;">Xếp Loại</th>
+        <th style="width: 75px; text-align: center;">Xếp Hạng</th>
+        <th style="width: 110px; text-align: center;">Kết Quả</th>
+        <th style="width: 75px; text-align: center;">Phiếu Điểm</th>
       </tr>
     `;
   }
@@ -5152,7 +5454,7 @@ function renderGradebookTable() {
   let countYeu = 0;
 
   if (filtered.length === 0) {
-    const cols = (sem === 'final') ? 12 : 14;
+    const cols = (sem === 'final') ? 13 : 16;
     gradebookTableBody.innerHTML = `
       <tr>
         <td colspan="${cols}" style="text-align: center; padding: 2.5rem; color: #94a3b8;">
@@ -5165,6 +5467,7 @@ function renderGradebookTable() {
     gradebookTableBody.innerHTML = filtered.map((s, idx) => {
       const g = getStudentGrades(s);
       const gSem = g[sem] || {};
+      const classRank = classRankMap.get(s.id);
 
       // Tính điểm HK1 & HK2
       const attAvg1 = calcAttendanceAvg(g.hk1?.t5, g.hk1?.cn, g.hk1?.gl);
@@ -5176,14 +5479,15 @@ function renderGradebookTable() {
       if (sem === 'hk1' || sem === 'hk2') {
         const curAttAvg = (sem === 'hk1') ? attAvg1 : attAvg2;
         const curSubjAvg = (sem === 'hk1') ? subjAvg1 : subjAvg2;
-        const rank = getRankGrade(curSubjAvg);
+        const semTotal = calcSemesterTotal(curAttAvg, curSubjAvg);
+        const rank = getRankGrade(semTotal !== null ? semTotal : curSubjAvg);
 
-        if (curSubjAvg !== null) {
-          totalScoreGL += curSubjAvg;
+        if (semTotal !== null) {
+          totalScoreGL += semTotal;
           countGL++;
-          if (curSubjAvg >= 8.0) countGioi++;
-          else if (curSubjAvg >= 6.5) countKha++;
-          else if (curSubjAvg >= 5.0) countTb++;
+          if (semTotal >= 8.0) countGioi++;
+          else if (semTotal >= 6.5) countKha++;
+          else if (semTotal >= 5.0) countTb++;
           else countYeu++;
         }
 
@@ -5199,57 +5503,67 @@ function renderGradebookTable() {
             <td style="font-weight: 700; color: #b45309;">${s.holyName || ''}</td>
             <td style="font-weight: 700; color: #0f172a;">${s.fullName}</td>
             
-            <!-- Chuyên cần inputs -->
+            <!-- Chuyên cần inputs (T5: 30%, CN: 30%, GL: 40%) -->
             <td style="text-align: center;">
-              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="t5" value="${gSem.t5 ?? ''}" onchange="handleGradeInputChange('${s.id}', '${sem}', 't5', this.value)">
+              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="t5" value="${gSem.t5 ?? ''}" oninput="handleGradeInputChange('${s.id}', '${sem}', 't5', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 't5', this.value)">
             </td>
             <td style="text-align: center;">
-              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="cn" value="${gSem.cn ?? ''}" onchange="handleGradeInputChange('${s.id}', '${sem}', 'cn', this.value)">
+              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="cn" value="${gSem.cn ?? ''}" oninput="handleGradeInputChange('${s.id}', '${sem}', 'cn', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 'cn', this.value)">
             </td>
             <td style="text-align: center;">
-              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="gl" value="${gSem.gl ?? ''}" onchange="handleGradeInputChange('${s.id}', '${sem}', 'gl', this.value)">
+              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="gl" value="${gSem.gl ?? ''}" oninput="handleGradeInputChange('${s.id}', '${sem}', 'gl', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 'gl', this.value)">
             </td>
             <td style="text-align: center;">
               <span class="grade-avg-badge grade-avg-att cell-att-avg">${curAttAvg !== null ? curAttAvg.toFixed(1) : '--'}</span>
             </td>
 
-            <!-- Kiểm tra môn giáo lý inputs -->
+            <!-- Kiểm tra môn giáo lý inputs (Miệng:1, 15p:1, 1 Tiết:2, Thi HK:3 / 7) -->
             <td style="text-align: center;">
-              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="oral" value="${gSem.oral ?? ''}" onchange="handleGradeInputChange('${s.id}', '${sem}', 'oral', this.value)">
+              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="oral" value="${gSem.oral ?? ''}" oninput="handleGradeInputChange('${s.id}', '${sem}', 'oral', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 'oral', this.value)">
             </td>
             <td style="text-align: center;">
-              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="m15" value="${gSem.m15 ?? ''}" onchange="handleGradeInputChange('${s.id}', '${sem}', 'm15', this.value)">
+              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="m15" value="${gSem.m15 ?? ''}" oninput="handleGradeInputChange('${s.id}', '${sem}', 'm15', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 'm15', this.value)">
             </td>
             <td style="text-align: center;">
-              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="p1" value="${gSem.p1 ?? ''}" onchange="handleGradeInputChange('${s.id}', '${sem}', 'p1', this.value)">
+              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="p1" value="${gSem.p1 ?? ''}" oninput="handleGradeInputChange('${s.id}', '${sem}', 'p1', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 'p1', this.value)">
             </td>
             <td style="text-align: center;">
-              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="exam" value="${gSem.exam ?? ''}" onchange="handleGradeInputChange('${s.id}', '${sem}', 'exam', this.value)">
+              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="exam" value="${gSem.exam ?? ''}" oninput="handleGradeInputChange('${s.id}', '${sem}', 'exam', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 'exam', this.value)">
             </td>
             <td style="text-align: center;">
               <span class="grade-avg-badge grade-avg-subject cell-subj-avg">${curSubjAvg !== null ? curSubjAvg.toFixed(1) : '--'}</span>
+            </td>
+
+            <!-- ĐTB Tổng Kết Học Kỳ (CC 40% + GL 60%) -->
+            <td style="text-align: center;">
+              <span class="grade-avg-badge grade-avg-final cell-sem-total">${semTotal !== null ? semTotal.toFixed(1) : '--'}</span>
             </td>
 
             <!-- Xếp loại -->
             <td style="text-align: center;">
               <span class="rank-badge ${rank.cls} cell-rank">${rank.text}</span>
             </td>
+
+            <!-- Xếp hạng trong lớp -->
+            <td style="text-align: center;" class="cell-class-rank">
+              ${renderRankBadge(classRank)}
+            </td>
           </tr>
         `;
       } else {
         // Final Summary Row
-        const finalAttAvg = calcYearAvg(attAvg1, attAvg2);
-        const finalSubjAvg = calcYearAvg(subjAvg1, subjAvg2);
-        const rankGL = getRankGrade(finalSubjAvg);
-        const rankCC = getAttendanceRank(finalAttAvg);
-        const isPass = (finalSubjAvg !== null && finalSubjAvg >= 5.0 && finalAttAvg !== null && finalAttAvg >= 5.0);
+        const finalAttAvg = calcYearAvg(attAvg1, attAvg2); // HK1 50% + HK2 50%
+        const finalSubjAvg = calcYearAvg(subjAvg1, subjAvg2); // HK1 50% + HK2 50%
+        const finalTotal = calcFinalTotal(finalAttAvg, finalSubjAvg); // CC 40% + GL 60%
+        const rankGL = getRankGrade(finalTotal !== null ? finalTotal : finalSubjAvg);
+        const isPass = (finalTotal !== null && finalTotal >= 5.0 && finalAttAvg !== null && finalAttAvg >= 5.0);
 
-        if (finalSubjAvg !== null) {
-          totalScoreGL += finalSubjAvg;
+        if (finalTotal !== null) {
+          totalScoreGL += finalTotal;
           countGL++;
-          if (finalSubjAvg >= 8.0) countGioi++;
-          else if (finalSubjAvg >= 6.5) countKha++;
-          else if (finalSubjAvg >= 5.0) countTb++;
+          if (finalTotal >= 8.0) countGioi++;
+          else if (finalTotal >= 6.5) countKha++;
+          else if (finalTotal >= 5.0) countTb++;
           else countYeu++;
         }
 
@@ -5275,13 +5589,16 @@ function renderGradebookTable() {
               ${subjAvg2 !== null ? subjAvg2.toFixed(1) : '--'}
             </td>
             <td style="text-align: center;">
-              <span class="grade-avg-badge grade-avg-final" style="font-size: 0.95rem;">${finalSubjAvg !== null ? finalSubjAvg.toFixed(1) : '--'}</span>
+              <span class="grade-avg-badge grade-avg-subject">${finalSubjAvg !== null ? finalSubjAvg.toFixed(1) : '--'}</span>
+            </td>
+            <td style="text-align: center;">
+              <span class="grade-avg-badge grade-avg-final" style="font-size: 0.95rem;">${finalTotal !== null ? finalTotal.toFixed(1) : '--'}</span>
             </td>
             <td style="text-align: center;">
               <span class="rank-badge ${rankGL.cls}">${rankGL.text}</span>
             </td>
-            <td style="text-align: center;">
-              <span class="rank-badge ${rankCC.cls}">${rankCC.text}</span>
+            <td style="text-align: center;" class="cell-class-rank">
+              ${renderRankBadge(classRank)}
             </td>
             <td style="text-align: center;">
               ${isPass ? '<span style="color: #059669; font-weight: 800;"><i class="fa-solid fa-circle-check"></i> Đủ ĐK Lên Lớp</span>' : '<span style="color: #dc2626; font-weight: 700;"><i class="fa-solid fa-circle-xmark"></i> Cần Cố Gắng</span>'}
@@ -5334,13 +5651,17 @@ function handleGradeInputChange(studentId, sem, field, value) {
   if (row) {
     const curAttAvg = calcAttendanceAvg(g[sem]?.t5, g[sem]?.cn, g[sem]?.gl);
     const curSubjAvg = calcSubjectAvg(g[sem]?.oral, g[sem]?.m15, g[sem]?.p1, g[sem]?.exam);
-    const rank = getRankGrade(curSubjAvg);
+    const semTotal = calcSemesterTotal(curAttAvg, curSubjAvg);
+    const rank = getRankGrade(semTotal !== null ? semTotal : curSubjAvg);
 
     const cellAtt = row.querySelector('.cell-att-avg');
     if (cellAtt) cellAtt.textContent = curAttAvg !== null ? curAttAvg.toFixed(1) : '--';
 
     const cellSubj = row.querySelector('.cell-subj-avg');
     if (cellSubj) cellSubj.textContent = curSubjAvg !== null ? curSubjAvg.toFixed(1) : '--';
+
+    const cellSemTotal = row.querySelector('.cell-sem-total');
+    if (cellSemTotal) cellSemTotal.textContent = semTotal !== null ? semTotal.toFixed(1) : '--';
 
     const cellRank = row.querySelector('.cell-rank');
     if (cellRank) {
@@ -5349,12 +5670,64 @@ function handleGradeInputChange(studentId, sem, field, value) {
     }
   }
 
+  // Cập nhật lại thứ hạng Xếp Hạng của tất cả học sinh trong bảng theo điểm mới
+  updateClassRankingsInDOM(sem);
+
   // Tự động lưu ngầm vào localStorage
   saveClassesDatabase();
 }
 
-function saveClassGradebook() {
+async function saveClassGradebook() {
+  const cls = classDatabase.find(c => c.id === currentGradebookClassId);
+  if (!cls) return;
+
   saveClassesDatabase();
+
+  // Đồng bộ lên MySQL qua API
+  if (typeof API !== 'undefined') {
+    const students = getClassStudents(cls);
+    const gradesPayload = students.map(s => {
+      const g = getStudentGrades(s);
+      const att1 = calcAttendanceAvg(g.hk1?.t5, g.hk1?.cn, g.hk1?.gl);
+      const subj1 = calcSubjectAvg(g.hk1?.oral, g.hk1?.m15, g.hk1?.p1, g.hk1?.exam);
+      const att2 = calcAttendanceAvg(g.hk2?.t5, g.hk2?.cn, g.hk2?.gl);
+      const subj2 = calcSubjectAvg(g.hk2?.oral, g.hk2?.m15, g.hk2?.p1, g.hk2?.exam);
+      const attFinal = calcYearAvg(att1, att2);
+      const subjFinal = calcYearAvg(subj1, subj2);
+      const finalTotal = calcFinalTotal(attFinal, subjFinal);
+      const rank = getRankGrade(subjFinal);
+
+      return {
+        studentId: s.id,
+        id: s.id,
+        score_attendance_1: att1,
+        score_oral_1: g.hk1?.oral ?? null,
+        score_15m_1: g.hk1?.m15 ?? null,
+        score_1period_1: g.hk1?.p1 ?? null,
+        score_exam_1: g.hk1?.exam ?? null,
+        score_avg_1: subj1,
+        score_attendance_2: att2,
+        score_oral_2: g.hk2?.oral ?? null,
+        score_15m_2: g.hk2?.m15 ?? null,
+        score_1period_2: g.hk2?.p1 ?? null,
+        score_exam_2: g.hk2?.exam ?? null,
+        score_avg_2: subj2,
+        score_final: finalTotal,
+        evaluation: rank.text
+      };
+    });
+
+    try {
+      const ok = await API.saveClassGrades(cls.id, gradesPayload);
+      if (ok) {
+        showToast('Đã lưu & đồng bộ điểm số vào MySQL Database thành công!');
+        return;
+      }
+    } catch (e) {
+      console.warn('Lỗi API lưu điểm:', e);
+    }
+  }
+
   showToast('Đã lưu toàn bộ điểm số & chuyên cần thành công!');
 }
 
@@ -5371,47 +5744,98 @@ function exportGradebookToExcel() {
   const wb = XLSX.utils.book_new();
 
   // Sheet 1: Học Kỳ 1
+  const hk1RankScores = students.map(s => {
+    const g = getStudentGrades(s);
+    const att = calcAttendanceAvg(g.hk1?.t5, g.hk1?.cn, g.hk1?.gl);
+    const subj = calcSubjectAvg(g.hk1?.oral, g.hk1?.m15, g.hk1?.p1, g.hk1?.exam);
+    const total = calcSemesterTotal(att, subj);
+    return { id: s.id, score: total !== null ? total : -1 };
+  }).sort((a, b) => b.score - a.score);
+  const hk1RankMap = new Map();
+  let r1 = 1;
+  hk1RankScores.forEach((item, idx) => {
+    if (item.score < 0) { hk1RankMap.set(item.id, '--'); return; }
+    if (idx > 0 && item.score < hk1RankScores[idx - 1].score) r1 = idx + 1;
+    hk1RankMap.set(item.id, r1);
+  });
+
   const hk1Data = [
     [`BẢNG ĐIỂM HỌC KỲ 1 - LỚP ${cls.name.toUpperCase()} (${cls.block}) - NIÊN KHÓA 2026-2027`],
-    ['STT', 'Mã Thiếu Nhi', 'Tên Thánh', 'Họ và Tên', 'Lễ Thứ 5', 'Lễ Chúa Nhật', 'Học Giáo Lý', 'ĐTB Chuyên Cần', 'Miệng', '15 Phút', '1 Tiết', 'Thi HK1', 'ĐTB Giáo Lý HK1', 'Xếp Loại']
+    ['STT', 'Mã Thiếu Nhi', 'Tên Thánh', 'Họ và Tên', 'Lễ Thứ 5', 'Lễ Chúa Nhật', 'Học Giáo Lý', 'ĐTB Chuyên Cần', 'Miệng', '15 Phút', '1 Tiết', 'Thi HK1', 'ĐTB Giáo Lý HK1', 'ĐTB Tổng Kết HK1', 'Xếp Loại', 'Xếp Hạng']
   ];
   students.forEach((s, idx) => {
     const g = getStudentGrades(s);
     const att = calcAttendanceAvg(g.hk1?.t5, g.hk1?.cn, g.hk1?.gl);
     const subj = calcSubjectAvg(g.hk1?.oral, g.hk1?.m15, g.hk1?.p1, g.hk1?.exam);
-    const rank = getRankGrade(subj);
+    const total = calcSemesterTotal(att, subj);
+    const rank = getRankGrade(total !== null ? total : subj);
     hk1Data.push([
       idx + 1, s.id, s.holyName, s.fullName,
       g.hk1?.t5 ?? '', g.hk1?.cn ?? '', g.hk1?.gl ?? '', att ?? '',
-      g.hk1?.oral ?? '', g.hk1?.m15 ?? '', g.hk1?.p1 ?? '', g.hk1?.exam ?? '', subj ?? '', rank.text
+      g.hk1?.oral ?? '', g.hk1?.m15 ?? '', g.hk1?.p1 ?? '', g.hk1?.exam ?? '', subj ?? '', total ?? '', rank.text, hk1RankMap.get(s.id) ?? '--'
     ]);
   });
   const ws1 = XLSX.utils.aoa_to_sheet(hk1Data);
   XLSX.utils.book_append_sheet(wb, ws1, 'Học Kỳ 1');
 
   // Sheet 2: Học Kỳ 2
+  const hk2RankScores = students.map(s => {
+    const g = getStudentGrades(s);
+    const att = calcAttendanceAvg(g.hk2?.t5, g.hk2?.cn, g.hk2?.gl);
+    const subj = calcSubjectAvg(g.hk2?.oral, g.hk2?.m15, g.hk2?.p1, g.hk2?.exam);
+    const total = calcSemesterTotal(att, subj);
+    return { id: s.id, score: total !== null ? total : -1 };
+  }).sort((a, b) => b.score - a.score);
+  const hk2RankMap = new Map();
+  let r2 = 1;
+  hk2RankScores.forEach((item, idx) => {
+    if (item.score < 0) { hk2RankMap.set(item.id, '--'); return; }
+    if (idx > 0 && item.score < hk2RankScores[idx - 1].score) r2 = idx + 1;
+    hk2RankMap.set(item.id, r2);
+  });
+
   const hk2Data = [
     [`BẢNG ĐIỂM HỌC KỲ 2 - LỚP ${cls.name.toUpperCase()} (${cls.block}) - NIÊN KHÓA 2026-2027`],
-    ['STT', 'Mã Thiếu Nhi', 'Tên Thánh', 'Họ và Tên', 'Lễ Thứ 5', 'Lễ Chúa Nhật', 'Học Giáo Lý', 'ĐTB Chuyên Cần', 'Miệng', '15 Phút', '1 Tiết', 'Thi HK2', 'ĐTB Giáo Lý HK2', 'Xếp Loại']
+    ['STT', 'Mã Thiếu Nhi', 'Tên Thánh', 'Họ và Tên', 'Lễ Thứ 5', 'Lễ Chúa Nhật', 'Học Giáo Lý', 'ĐTB Chuyên Cần', 'Miệng', '15 Phút', '1 Tiết', 'Thi HK2', 'ĐTB Giáo Lý HK2', 'ĐTB Tổng Kết HK2', 'Xếp Loại', 'Xếp Hạng']
   ];
   students.forEach((s, idx) => {
     const g = getStudentGrades(s);
     const att = calcAttendanceAvg(g.hk2?.t5, g.hk2?.cn, g.hk2?.gl);
     const subj = calcSubjectAvg(g.hk2?.oral, g.hk2?.m15, g.hk2?.p1, g.hk2?.exam);
-    const rank = getRankGrade(subj);
+    const total = calcSemesterTotal(att, subj);
+    const rank = getRankGrade(total !== null ? total : subj);
     hk2Data.push([
       idx + 1, s.id, s.holyName, s.fullName,
       g.hk2?.t5 ?? '', g.hk2?.cn ?? '', g.hk2?.gl ?? '', att ?? '',
-      g.hk2?.oral ?? '', g.hk2?.m15 ?? '', g.hk2?.p1 ?? '', g.hk2?.exam ?? '', subj ?? '', rank.text
+      g.hk2?.oral ?? '', g.hk2?.m15 ?? '', g.hk2?.p1 ?? '', g.hk2?.exam ?? '', subj ?? '', total ?? '', rank.text, hk2RankMap.get(s.id) ?? '--'
     ]);
   });
   const ws2 = XLSX.utils.aoa_to_sheet(hk2Data);
   XLSX.utils.book_append_sheet(wb, ws2, 'Học Kỳ 2');
 
   // Sheet 3: Tổng Kết Cả Năm
+  const finalRankScores = students.map(s => {
+    const g = getStudentGrades(s);
+    const att1 = calcAttendanceAvg(g.hk1?.t5, g.hk1?.cn, g.hk1?.gl);
+    const subj1 = calcSubjectAvg(g.hk1?.oral, g.hk1?.m15, g.hk1?.p1, g.hk1?.exam);
+    const att2 = calcAttendanceAvg(g.hk2?.t5, g.hk2?.cn, g.hk2?.gl);
+    const subj2 = calcSubjectAvg(g.hk2?.oral, g.hk2?.m15, g.hk2?.p1, g.hk2?.exam);
+    const attFinal = calcYearAvg(att1, att2);
+    const subjFinal = calcYearAvg(subj1, subj2);
+    const finalTotal = calcFinalTotal(attFinal, subjFinal);
+    return { id: s.id, score: finalTotal !== null ? finalTotal : -1 };
+  }).sort((a, b) => b.score - a.score);
+  const finalRankMap = new Map();
+  let rFinal = 1;
+  finalRankScores.forEach((item, idx) => {
+    if (item.score < 0) { finalRankMap.set(item.id, '--'); return; }
+    if (idx > 0 && item.score < finalRankScores[idx - 1].score) rFinal = idx + 1;
+    finalRankMap.set(item.id, rFinal);
+  });
+
   const finalData = [
     [`BẢNG TỔNG KẾT ĐIỂM CẢ NĂM - LỚP ${cls.name.toUpperCase()} - NIÊN KHÓA 2026-2027`],
-    ['STT', 'Mã Thiếu Nhi', 'Tên Thánh', 'Họ và Tên', 'ĐTB Chuyên Cần', 'ĐTB HK1', 'ĐTB HK2', 'ĐTB Cả Năm', 'Xếp Loại Giáo Lý', 'Xếp Loại Chuyên Cần', 'Kết Quả']
+    ['STT', 'Mã Thiếu Nhi', 'Tên Thánh', 'Họ và Tên', 'ĐTB Chuyên Cần', 'ĐTB GL HK1', 'ĐTB GL HK2', 'ĐTB Giáo Lý', 'ĐTB Tổng Cả Năm', 'Xếp Loại', 'Xếp Hạng', 'Kết Quả']
   ];
   students.forEach((s, idx) => {
     const g = getStudentGrades(s);
@@ -5422,14 +5846,14 @@ function exportGradebookToExcel() {
 
     const attFinal = calcYearAvg(att1, att2);
     const subjFinal = calcYearAvg(subj1, subj2);
-    const rankGL = getRankGrade(subjFinal);
-    const rankCC = getAttendanceRank(attFinal);
-    const isPass = (subjFinal !== null && subjFinal >= 5.0 && attFinal !== null && attFinal >= 5.0);
+    const finalTotal = calcFinalTotal(attFinal, subjFinal);
+    const rankTotal = getRankGrade(finalTotal !== null ? finalTotal : subjFinal);
+    const isPass = (finalTotal !== null && finalTotal >= 5.0 && attFinal !== null && attFinal >= 5.0);
 
     finalData.push([
       idx + 1, s.id, s.holyName, s.fullName,
-      attFinal ?? '', subj1 ?? '', subj2 ?? '', subjFinal ?? '',
-      rankGL.text, rankCC.text, isPass ? 'Lên Lớp' : 'Cần Cố Gắng'
+      attFinal ?? '', subj1 ?? '', subj2 ?? '', subjFinal ?? '', finalTotal ?? '',
+      rankTotal.text, finalRankMap.get(s.id) ?? '--', isPass ? 'Đủ ĐK Lên Lớp' : 'Cần Cố Gắng'
     ]);
   });
   const wsFinal = XLSX.utils.aoa_to_sheet(finalData);
@@ -5520,67 +5944,122 @@ function importGradebookFromExcel(file) {
   reader.readAsArrayBuffer(file);
 }
 
+function printStudentReportCard() {
+  const nameEl = document.getElementById('rcStudentName');
+  const idEl = document.getElementById('rcStudentId');
+  const studentName = nameEl ? nameEl.textContent.trim() : 'Thieu_Nhi';
+  const studentId = idEl ? idEl.textContent.trim() : '';
+  const originalTitle = document.title;
+
+  document.title = `Phieu_Bao_Diem_${studentName.replace(/\s+/g, '_')}${studentId ? '_' + studentId : ''}`;
+  document.body.classList.add('printing-report-card');
+
+  window.print();
+
+  setTimeout(() => {
+    document.body.classList.remove('printing-report-card');
+    document.title = originalTitle;
+  }, 1000);
+}
+
 function openStudentReportCard(studentId) {
-  const cls = classDatabase.find(c => c.id === currentGradebookClassId);
-  if (!cls) return;
+  let cls = classDatabase.find(c => c.id === currentGradebookClassId);
+  if (!cls) {
+    // Tìm trong toàn bộ danh sách lớp
+    for (const c of classDatabase) {
+      const students = getClassStudents(c);
+      if (students.some(s => s.id === studentId)) {
+        cls = c;
+        break;
+      }
+    }
+  }
+  if (!cls) {
+    showToast('Không tìm thấy thông tin lớp học của thiếu nhi này', 'error');
+    return;
+  }
 
   const students = getClassStudents(cls);
   const student = students.find(s => s.id === studentId);
-  if (!student || !reportCardPrintArea) return;
+  if (!student || !reportCardPrintArea) {
+    showToast('Không tìm thấy thông tin thiếu nhi', 'error');
+    return;
+  }
 
   const g = getStudentGrades(student);
 
   // Điểm HK1
   const att1 = calcAttendanceAvg(g.hk1?.t5, g.hk1?.cn, g.hk1?.gl);
   const subj1 = calcSubjectAvg(g.hk1?.oral, g.hk1?.m15, g.hk1?.p1, g.hk1?.exam);
-  const rank1 = getRankGrade(subj1);
+  const total1 = calcSemesterTotal(att1, subj1);
+  const rank1 = getRankGrade(total1 !== null ? total1 : subj1);
 
   // Điểm HK2
   const att2 = calcAttendanceAvg(g.hk2?.t5, g.hk2?.cn, g.hk2?.gl);
   const subj2 = calcSubjectAvg(g.hk2?.oral, g.hk2?.m15, g.hk2?.p1, g.hk2?.exam);
-  const rank2 = getRankGrade(subj2);
+  const total2 = calcSemesterTotal(att2, subj2);
+  const rank2 = getRankGrade(total2 !== null ? total2 : subj2);
 
-  // Cả năm
+  // Cả năm (CC: HK1 50% + HK2 50%, GL: HK1 50% + HK2 50%, Tổng: CC 40% + GL 60%)
   const attFinal = calcYearAvg(att1, att2);
   const subjFinal = calcYearAvg(subj1, subj2);
+  const finalTotal = calcFinalTotal(attFinal, subjFinal);
   const rankFinal = getRankGrade(subjFinal);
   const rankCCFinal = getAttendanceRank(attFinal);
-  const isPass = (subjFinal !== null && subjFinal >= 5.0 && attFinal !== null && attFinal >= 5.0);
+  const isPass = (finalTotal !== null && finalTotal >= 5.0 && attFinal !== null && attFinal >= 5.0 && subjFinal !== null && subjFinal >= 5.0);
+
+  // Lời nhận xét mặc định phù hợp với thành tích của em
+  let defaultRemark = 'Em siêng năng tham dự Thánh Lễ, ngoan ngoãn và tích cực phát biểu xây dựng bài Giáo Lý.';
+  if (rankFinal.text === 'Xuất Sắc') {
+    defaultRemark = 'Em rất siêng năng tham dự Thánh Lễ, lễ phép, học bài chăm chỉ và đạt thành tích xuất sắc trong niên khóa.';
+  } else if (rankFinal.text === 'Giỏi') {
+    defaultRemark = 'Em siêng năng tham dự Thánh Lễ, tích cực phát biểu xây dựng bài Giáo Lý và đạt kết quả giỏi.';
+  } else if (rankFinal.text === 'Khá') {
+    defaultRemark = 'Em có nhiều cố gắng trong học tập Giáo Lý và duy trì tốt nền nếp chuyên cần của Đoàn.';
+  } else if (rankFinal.text === 'Trung Bình' || !isPass) {
+    defaultRemark = 'Cần siêng năng tham dự Thánh Lễ đều đặn hơn và chăm chỉ ôn luyện bài Giáo Lý để tiến bộ hơn.';
+  }
+
+  // Tên GLV phụ trách lớp
+  const teacherNames = (cls.teacherIds || []).map(tid => {
+    const t = glvDatabase.find(glv => glv.id === tid);
+    return t ? `${t.holyName ? t.holyName + ' ' : ''}${t.fullName}` : tid;
+  }).join(' - ') || 'Ban Giáo Lý Đoàn TNTT';
 
   reportCardPrintArea.innerHTML = `
     <div class="rc-header">
       <div class="rc-org-title">GIÁO PHẬN PHÚ CƯỜNG &bull; GIÁO XỨ TÂN MỸ</div>
-      <div style="font-weight: 700; font-size: 1.05rem;">ĐOÀN THIẾU NHI THÁNH THỂ TÂN MỸ</div>
+      <div style="font-weight: 700; font-size: 1.05rem; letter-spacing: 0.5px;">ĐOÀN THIẾU NHI THÁNH THỂ TÂN MỸ</div>
       <div class="rc-main-title">PHIẾU BÁO KẾT QUẢ GIÁO LÝ & CHUYÊN CẦN</div>
-      <div class="rc-sub-title">Niên Khóa: 2026 – 2027 &bull; Lớp: ${cls.name} (${cls.block})</div>
+      <div class="rc-sub-title">Niên Khóa: 2026 – 2027 &bull; Lớp: <strong>${cls.name}</strong> (${cls.block})</div>
     </div>
 
     <div class="rc-student-info-grid">
-      <div><strong>Họ và Tên:</strong> ${student.fullName}</div>
-      <div><strong>Mã Thiếu Nhi:</strong> ${student.id}</div>
-      <div><strong>Tên Thánh (Bổn Mạng):</strong> ${student.holyName || 'Chưa cập nhật'}</div>
-      <div><strong>Ngày Sinh:</strong> ${student.birthDate || 'Chưa cập nhật'}</div>
-      <div><strong>Phụ Huynh:</strong> ${student.parentName || 'Chưa cập nhật'}</div>
-      <div><strong>Số Điện Thoại:</strong> ${student.parentPhone || 'Chưa cập nhật'}</div>
+      <div><strong>Họ và Tên:</strong> <span id="rcStudentName" style="font-size: 1.1rem; color: #0f172a; font-weight: bold;">${student.fullName}</span></div>
+      <div><strong>Mã Thiếu Nhi:</strong> <span id="rcStudentId" style="font-family: monospace; font-weight: 700;">${student.id}</span></div>
+      <div><strong>Tên Thánh (Bổn Mạng):</strong> <span>${student.holyName || 'Chưa cập nhật'}</span></div>
+      <div><strong>Ngày Sinh:</strong> <span>${student.birthDate || 'Chưa cập nhật'}</span></div>
+      <div><strong>Phụ Huynh:</strong> <span>${student.parentName || 'Chưa cập nhật'}</span></div>
+      <div><strong>Số Điện Thoại:</strong> <span>${student.parentPhone || 'Chưa cập nhật'}</span></div>
     </div>
 
     <table class="rc-table">
       <thead>
         <tr>
-          <th rowspan="2">NỘI DUNG ĐÁNH GIÁ</th>
-          <th colspan="4">ĐIỂM CHUYÊN CẦN</th>
-          <th colspan="5">KIỂM TRA GIÁO LÝ</th>
-          <th rowspan="2">XẾP LOẠI</th>
+          <th rowspan="2" style="width: 14%;">NỘI DUNG ĐÁNH GIÁ</th>
+          <th colspan="4" style="width: 36%;">ĐIỂM CHUYÊN CẦN (40%)</th>
+          <th colspan="5" style="width: 38%;">KIỂM TRA GIÁO LÝ (60%)</th>
+          <th rowspan="2" style="width: 12%;">XẾP LOẠI</th>
         </tr>
         <tr>
-          <th>Lễ T5</th>
-          <th>Lễ CN</th>
-          <th>Học GL</th>
+          <th>Lễ T5 (30%)</th>
+          <th>Lễ CN (30%)</th>
+          <th>Học GL (40%)</th>
           <th>ĐTB CC</th>
-          <th>Miệng</th>
-          <th>15 Phút</th>
-          <th>1 Tiết</th>
-          <th>Thi HK</th>
+          <th>Miệng (x1)</th>
+          <th>15 Phút (x1)</th>
+          <th>1 Tiết (x2)</th>
+          <th>Thi HK (x3)</th>
           <th>ĐTB GL</th>
         </tr>
       </thead>
@@ -5612,16 +6091,19 @@ function openStudentReportCard(studentId) {
           <td><strong>${rank2.text}</strong></td>
         </tr>
         <tr style="background: #f8fafc; font-weight: bold;">
-          <td>TỔNG KẾT CẢ NĂM</td>
+          <td style="font-size: 0.95rem;">TỔNG KẾT CẢ NĂM</td>
           <td colspan="4" style="color: #059669;">ĐTB Chuyên Cần: ${attFinal !== null ? attFinal.toFixed(1) : '--'} (${rankCCFinal.text})</td>
-          <td colspan="5" style="color: #991b1b;">ĐTB Giáo Lý Cả Năm: ${subjFinal !== null ? subjFinal.toFixed(1) : '--'} (${rankFinal.text})</td>
-          <td style="color: ${isPass ? '#059669' : '#dc2626'};">${isPass ? 'LÊN LỚP' : 'CẦN CỐ GẮNG'}</td>
+          <td colspan="5" style="color: #991b1b;">ĐTB Giáo Lý: ${subjFinal !== null ? subjFinal.toFixed(1) : '--'} &bull; ĐTB Cả Năm: <span style="font-size: 1.1rem; color: #b45309;">${finalTotal !== null ? finalTotal.toFixed(1) : '--'}</span> (${rankFinal.text})</td>
+          <td style="color: ${isPass ? '#059669' : '#dc2626'}; font-weight: 800;">${isPass ? 'LÊN LỚP' : 'CẦN CỐ GẮNG'}</td>
         </tr>
       </tbody>
     </table>
 
     <div class="rc-evaluation-box">
-      <div><strong>Nhận xét của Giáo Lý Viên phụ trách:</strong> Em siêng năng tham dự Thánh Lễ, tích cực phát biểu xây dựng bài Giáo Lý trong các giờ sinh hoạt.</div>
+      <div>
+        <strong>Nhận xét của Giáo Lý Viên phụ trách:</strong>
+        <span class="rc-eval-editable" contenteditable="true" title="Bấm vào đây để chỉnh sửa lời nhận xét trước khi in nếu muốn">${defaultRemark}</span>
+      </div>
     </div>
 
     <div class="rc-signatures">
@@ -5629,11 +6111,14 @@ function openStudentReportCard(studentId) {
         <em>Ngày ..... tháng ..... năm 2027</em><br>
         <strong>Ý KIẾN PHỤ HUYNH</strong><br>
         <span style="font-size: 0.85rem; color: #64748b;">(Ký và ghi rõ họ tên)</span>
+        <div style="height: 60px;"></div>
       </div>
       <div>
         <em>Tân Mỹ, ngày ..... tháng ..... năm 2027</em><br>
         <strong>GIÁO LÝ VIÊN PHỤ TRÁCH</strong><br>
         <span style="font-size: 0.85rem; color: #64748b;">(Ký và ghi rõ họ tên)</span>
+        <div style="height: 60px;"></div>
+        <div style="font-weight: 600; font-size: 0.95rem; color: #334155;">${teacherNames}</div>
       </div>
     </div>
   `;

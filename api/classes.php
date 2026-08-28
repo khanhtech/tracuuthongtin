@@ -15,10 +15,17 @@ switch ($method) {
             $stmt->execute([$id]);
             $class = $stmt->fetch();
             if ($class) {
-                // Lấy danh sách ID các GLV phụ trách từ class_assignments
-                $tStmt = $pdo->prepare("SELECT teacher_id FROM class_assignments WHERE class_id = ?");
+                // Lấy danh sách GLV phụ trách kèm vai trò từ class_assignments
+                $tStmt = $pdo->prepare("
+                    SELECT ca.teacher_id as id, ca.role, t.holy_name as holyName, t.last_name as lastName, t.first_name as firstName, t.gender
+                    FROM class_assignments ca
+                    JOIN teachers t ON ca.teacher_id = t.teacher_id
+                    WHERE ca.class_id = ?
+                    ORDER BY CASE WHEN ca.role = 'Chủ nhiệm' THEN 1 WHEN ca.role = 'Đồng hành' THEN 2 ELSE 3 END, t.stt ASC
+                ");
                 $tStmt->execute([$id]);
-                $teacherIds = $tStmt->fetchAll(PDO::FETCH_COLUMN);
+                $teachersDetailed = $tStmt->fetchAll();
+                $teacherIds = array_column($teachersDetailed, 'id');
 
                 // Lấy danh sách thiếu nhi & điểm từ enrollments_and_grades + students
                 $sStmt = $pdo->prepare("
@@ -47,6 +54,7 @@ switch ($method) {
                     "room" => $class['room'],
                     "schedule" => $class['schedule'],
                     "studentCount" => count($students),
+                    "teachers" => $teachersDetailed,
                     "teacherIds" => $teacherIds,
                     "students" => $students,
                     "note" => $class['note']
@@ -56,7 +64,7 @@ switch ($method) {
                 jsonResponse(false, "Không tìm thấy lớp học", null, 404);
             }
         } else {
-            // Lấy tất cả các lớp kèm teacherIds và đếm số thiếu nhi
+            // Lấy tất cả các lớp kèm teachers (có vai trò) và đếm số thiếu nhi
             $stmt = $pdo->query("
                 SELECT c.class_id as id,
                        c.class_name as name,
@@ -73,9 +81,16 @@ switch ($method) {
 
             foreach ($classes as &$c) {
                 $c['studentCount'] = intval($c['studentCount']);
-                $tStmt = $pdo->prepare("SELECT teacher_id FROM class_assignments WHERE class_id = ?");
+                $tStmt = $pdo->prepare("
+                    SELECT ca.teacher_id as id, ca.role, t.holy_name as holyName, t.last_name as lastName, t.first_name as firstName, t.gender
+                    FROM class_assignments ca
+                    JOIN teachers t ON ca.teacher_id = t.teacher_id
+                    WHERE ca.class_id = ?
+                    ORDER BY CASE WHEN ca.role = 'Chủ nhiệm' THEN 1 WHEN ca.role = 'Đồng hành' THEN 2 ELSE 3 END, t.stt ASC
+                ");
                 $tStmt->execute([$c['id']]);
-                $c['teacherIds'] = $tStmt->fetchAll(PDO::FETCH_COLUMN) ?? [];
+                $c['teachers'] = $tStmt->fetchAll() ?? [];
+                $c['teacherIds'] = array_column($c['teachers'], 'id') ?? [];
             }
             jsonResponse(true, "Lấy danh sách lớp học thành công", $classes);
         }
@@ -91,6 +106,7 @@ switch ($method) {
         $schedule = trim($data['schedule'] ?? 'Chủ Nhật: 07:30 - 09:00');
         $note = trim($data['note'] ?? '');
         $teacherIds = $data['teacherIds'] ?? [];
+        $teachers = $data['teachers'] ?? [];
 
         if (empty($id) || empty($name)) {
             jsonResponse(false, "Mã lớp và Tên lớp không được để trống!", null, 400);
@@ -109,10 +125,24 @@ switch ($method) {
         $stmt->execute([$id, $name, $block, $academicYear, $room, $schedule, $note]);
 
         // Cập nhật phân công GLV trong class_assignments
-        if (!empty($teacherIds) && is_array($teacherIds)) {
-            $asStmt = $pdo->prepare("INSERT IGNORE INTO class_assignments (class_id, teacher_id, role) VALUES (?, ?, 'Huynh trưởng phụ trách')");
-            foreach ($teacherIds as $tId) {
-                if (!empty($tId)) $asStmt->execute([$id, $tId]);
+        $pdo->prepare("DELETE FROM class_assignments WHERE class_id = ?")->execute([$id]);
+        $asStmt = $pdo->prepare("INSERT INTO class_assignments (class_id, teacher_id, role) VALUES (?, ?, ?)");
+
+        if (!empty($teachers) && is_array($teachers)) {
+            foreach ($teachers as $t) {
+                $tid = is_array($t) ? strtoupper(trim($t['id'] ?? '')) : strtoupper(trim($t));
+                $trole = is_array($t) ? trim($t['role'] ?? 'Đồng hành') : 'Đồng hành';
+                if (!empty($tid)) {
+                    $asStmt->execute([$id, $tid, $trole]);
+                }
+            }
+        } else if (!empty($teacherIds) && is_array($teacherIds)) {
+            foreach ($teacherIds as $idx => $tId) {
+                $tId = strtoupper(trim($tId));
+                $trole = ($idx === 0) ? 'Chủ nhiệm' : 'Đồng hành';
+                if (!empty($tId)) {
+                    $asStmt->execute([$id, $tId, $trole]);
+                }
             }
         }
 
@@ -147,12 +177,26 @@ switch ($method) {
         ");
         $upStmt->execute([$name, $block, $room, $schedule, $note, $id]);
 
-        // Cập nhật lại phân công GLV
-        if (isset($data['teacherIds']) && is_array($data['teacherIds'])) {
+        // Cập nhật lại phân công GLV kèm vai trò
+        if (isset($data['teachers']) && is_array($data['teachers'])) {
             $pdo->prepare("DELETE FROM class_assignments WHERE class_id = ?")->execute([$id]);
-            $asStmt = $pdo->prepare("INSERT INTO class_assignments (class_id, teacher_id, role) VALUES (?, ?, 'Huynh trưởng phụ trách')");
-            foreach ($data['teacherIds'] as $tId) {
-                if (!empty($tId)) $asStmt->execute([$id, $tId]);
+            $asStmt = $pdo->prepare("INSERT INTO class_assignments (class_id, teacher_id, role) VALUES (?, ?, ?)");
+            foreach ($data['teachers'] as $t) {
+                $tid = is_array($t) ? strtoupper(trim($t['id'] ?? '')) : strtoupper(trim($t));
+                $trole = is_array($t) ? trim($t['role'] ?? 'Đồng hành') : 'Đồng hành';
+                if (!empty($tid)) {
+                    $asStmt->execute([$id, $tid, $trole]);
+                }
+            }
+        } else if (isset($data['teacherIds']) && is_array($data['teacherIds'])) {
+            $pdo->prepare("DELETE FROM class_assignments WHERE class_id = ?")->execute([$id]);
+            $asStmt = $pdo->prepare("INSERT INTO class_assignments (class_id, teacher_id, role) VALUES (?, ?, ?)");
+            foreach ($data['teacherIds'] as $idx => $tId) {
+                $tId = strtoupper(trim($tId));
+                $trole = ($idx === 0) ? 'Chủ nhiệm' : 'Đồng hành';
+                if (!empty($tId)) {
+                    $asStmt->execute([$id, $tId, $trole]);
+                }
             }
         }
 
