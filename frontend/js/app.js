@@ -5609,6 +5609,7 @@ function setupEventListeners() {
   if (docForm) {
     docForm.addEventListener('submit', handleDocFormSubmit);
   }
+  initDocUploadListeners();
 }
 
 // ==========================================================================
@@ -7780,6 +7781,138 @@ function renderDocsView() {
   });
 }
 
+let currentDocFileData = null;
+let currentDocFileName = '';
+let currentDocFileSize = '';
+
+function formatDocFileSize(bytes) {
+  if (!bytes || bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+function getFileIconByExtension(ext) {
+  const e = (ext || '').toLowerCase().replace('.', '');
+  if (e === 'pdf') return 'fa-solid fa-file-pdf';
+  if (['doc', 'docx'].includes(e)) return 'fa-solid fa-file-word';
+  if (['xls', 'xlsx'].includes(e)) return 'fa-solid fa-file-excel';
+  if (['ppt', 'pptx'].includes(e)) return 'fa-solid fa-file-powerpoint';
+  if (['mp3', 'wav', 'ogg', 'm4a'].includes(e)) return 'fa-solid fa-file-audio';
+  if (['zip', 'rar', '7z'].includes(e)) return 'fa-solid fa-file-zipper';
+  if (['png', 'jpg', 'jpeg', 'webp'].includes(e)) return 'fa-solid fa-file-image';
+  return 'fa-solid fa-file-lines';
+}
+
+function initDocUploadListeners() {
+  const dropzone = document.getElementById('docDropzone');
+  const fileInput = document.getElementById('docFileInput');
+  const btnRemove = document.getElementById('btnRemoveSelectedDoc');
+  if (!dropzone || !fileInput) return;
+
+  dropzone.addEventListener('click', (e) => {
+    if (e.target.closest('#btnRemoveSelectedDoc')) return;
+    fileInput.click();
+  });
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.add('dragover');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.remove('dragover');
+    });
+  });
+
+  dropzone.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    if (files && files.length > 0) {
+      handleSelectedDocFile(files[0]);
+    }
+  });
+
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleSelectedDocFile(e.target.files[0]);
+    }
+  });
+
+  if (btnRemove) {
+    btnRemove.addEventListener('click', (e) => {
+      e.stopPropagation();
+      clearSelectedDocFile();
+    });
+  }
+}
+
+function handleSelectedDocFile(file) {
+  if (!file) return;
+  currentDocFileName = file.name;
+  currentDocFileSize = formatDocFileSize(file.size);
+
+  const ext = file.name.split('.').pop() || '';
+  const extLower = ext.toLowerCase();
+
+  // Tự động nhận diện và chuyển đổi định dạng
+  const formatSelect = document.getElementById('docFormFormat');
+  if (formatSelect) {
+    if (extLower === 'pdf') formatSelect.value = 'PDF';
+    else if (['doc', 'docx'].includes(extLower)) formatSelect.value = 'DOCX';
+    else if (['xls', 'xlsx'].includes(extLower)) formatSelect.value = 'XLSX';
+    else if (['mp3', 'wav', 'ogg'].includes(extLower)) formatSelect.value = 'MP3';
+  }
+
+  // Tự động điền Tên tài liệu nếu ô tên đang trống
+  const titleInput = document.getElementById('docFormTitle');
+  if (titleInput && !titleInput.value.trim()) {
+    const rawName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, ' ');
+    titleInput.value = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+  }
+
+  // Cập nhật giao diện file đã chọn
+  const emptyState = document.getElementById('docUploadEmptyState');
+  const selectedState = document.getElementById('docUploadSelectedState');
+  const nameEl = document.getElementById('selectedFileName');
+  const sizeEl = document.getElementById('selectedFileSize');
+  const iconEl = document.getElementById('selectedFileIcon');
+
+  if (emptyState) emptyState.style.display = 'none';
+  if (selectedState) selectedState.style.display = 'block';
+  if (nameEl) nameEl.textContent = file.name;
+  if (sizeEl) sizeEl.textContent = `Dung lượng thực: ${currentDocFileSize}`;
+  if (iconEl) iconEl.className = getFileIconByExtension(ext);
+
+  // Đọc file sang Base64 Data URL để lưu trữ và tải về
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    currentDocFileData = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearSelectedDocFile() {
+  currentDocFileData = null;
+  currentDocFileName = '';
+  currentDocFileSize = '';
+
+  const fileInput = document.getElementById('docFileInput');
+  if (fileInput) fileInput.value = '';
+
+  const emptyState = document.getElementById('docUploadEmptyState');
+  const selectedState = document.getElementById('docUploadSelectedState');
+  if (emptyState) emptyState.style.display = 'flex';
+  if (selectedState) selectedState.style.display = 'none';
+}
+
 function openDocPreviewModal(docId) {
   const doc = docsDatabase.find(d => d.id === docId);
   if (!doc) return;
@@ -7795,24 +7928,40 @@ function openDocPreviewModal(docId) {
 
   body.innerHTML = `
     <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid #e2e8f0;">
-      <div class="doc-icon-box ${fmt.cls}" style="width: 56px; height: 56px; font-size: 1.75rem;">
+      <div class="doc-icon-box ${fmt.cls}" style="width: 56px; height: 56px; font-size: 1.75rem; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
         <i class="${fmt.icon}"></i>
       </div>
-      <div>
-        <h3 style="font-size: 1.2rem; font-weight: 700; color: #1e293b; margin-bottom: 0.35rem;">${doc.title}</h3>
-        <div style="display: flex; gap: 0.5rem; font-size: 0.82rem; color: #64748b;">
+      <div style="flex: 1; min-width: 0;">
+        <h3 style="font-size: 1.15rem; font-weight: 700; color: #1e293b; margin-bottom: 0.35rem;">${doc.title}</h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.82rem; color: #64748b;">
           <span class="doc-target-badge">${doc.category}</span>
           <span>&bull; Đối tượng: <strong>${doc.target}</strong></span>
-          <span>&bull; Dung lượng: <strong>${doc.size}</strong></span>
+          <span>&bull; Dung lượng: <strong>${doc.size || 'Đính kèm'}</strong></span>
         </div>
       </div>
     </div>
     <div style="font-size: 0.92rem; color: #334155; line-height: 1.6; margin-bottom: 1rem;">
+      ${doc.fileName ? `
+        <div style="background: #f5f3ff; border: 1.5px solid #ddd6fe; border-radius: 8px; padding: 0.65rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; min-width: 0;">
+            <i class="fa-solid fa-paperclip" style="color: #7c3aed;"></i>
+            <span style="font-weight: 700; font-size: 0.85rem; color: #4c1d95; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">File đính kèm: ${doc.fileName}</span>
+          </div>
+          <span style="font-size: 0.78rem; font-weight: 700; color: #059669; flex-shrink: 0; margin-left: 0.5rem;">${doc.size || ''}</span>
+        </div>
+      ` : ''}
       <p style="margin-bottom: 0.75rem;"><strong>Mô tả tóm tắt:</strong> ${formatTextWithClickableLinks(doc.desc || '')}</p>
       <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 1rem; margin-top: 1rem;">
         <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;"><i class="fa-solid fa-circle-info" style="color: #7c3aed;"></i> Tóm Tắt Nội Dung Giáo Lý / Biểu Mẫu:</h4>
         <div style="font-size: 0.88rem; color: #475569; line-height: 1.5;">${formatTextWithClickableLinks(doc.content || 'Tài liệu chuẩn mực phục vụ công tác giảng dạy giáo lý và sinh hoạt Thiếu Nhi Thánh Thể tại Giáo xứ Tân Mỹ.')}</div>
       </div>
+      ${doc.fileUrl ? `
+        <div style="margin-top: 1rem;">
+          <a href="${doc.fileUrl}" target="_blank" style="display: inline-flex; align-items: center; gap: 0.45rem; color: #2563eb; font-weight: 700; font-size: 0.85rem; text-decoration: none; padding: 0.45rem 0.85rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px;">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Mở Liên Kết Trực Tuyến
+          </a>
+        </div>
+      ` : ''}
     </div>
   `;
 
@@ -7839,8 +7988,10 @@ function openDocEditModal(docId = null) {
   const categorySelect = document.getElementById('docFormCategory');
   const formatSelect = document.getElementById('docFormFormat');
   const targetInput = document.getElementById('docFormTarget');
-  const sizeInput = document.getElementById('docFormSize');
+  const fileUrlInput = document.getElementById('docFormFileUrl');
   const descInput = document.getElementById('docFormDesc');
+
+  clearSelectedDocFile();
 
   if (docId) {
     const doc = docsDatabase.find(d => d.id === docId);
@@ -7851,14 +8002,32 @@ function openDocEditModal(docId = null) {
     categorySelect.value = doc.category || 'Giáo Trình';
     formatSelect.value = doc.format || 'PDF';
     targetInput.value = doc.target || '';
-    sizeInput.value = doc.size || '';
+    if (fileUrlInput) fileUrlInput.value = doc.fileUrl || '';
     descInput.value = doc.desc || '';
+
+    if (doc.fileData || doc.fileName) {
+      currentDocFileData = doc.fileData || null;
+      currentDocFileName = doc.fileName || `${doc.title}.${(doc.format || 'pdf').toLowerCase()}`;
+      currentDocFileSize = doc.size || 'Tài liệu đính kèm';
+
+      const emptyState = document.getElementById('docUploadEmptyState');
+      const selectedState = document.getElementById('docUploadSelectedState');
+      const nameEl = document.getElementById('selectedFileName');
+      const sizeEl = document.getElementById('selectedFileSize');
+      const iconEl = document.getElementById('selectedFileIcon');
+
+      if (emptyState) emptyState.style.display = 'none';
+      if (selectedState) selectedState.style.display = 'block';
+      if (nameEl) nameEl.textContent = currentDocFileName;
+      if (sizeEl) sizeEl.textContent = `Dung lượng: ${currentDocFileSize}`;
+      if (iconEl) iconEl.className = getFileIconByExtension(currentDocFileName.split('.').pop());
+    }
   } else {
     if (titleEl) titleEl.textContent = 'Đăng Tài Liệu Mới';
     idInput.value = '';
     form.reset();
-    sizeInput.value = '3.5 MB';
     targetInput.value = 'Toàn Đoàn Thiếu Nhi';
+    if (fileUrlInput) fileUrlInput.value = '';
   }
 
   modal.style.display = 'flex';
@@ -7871,13 +8040,18 @@ function handleDocFormSubmit(e) {
   const categorySelect = document.getElementById('docFormCategory');
   const formatSelect = document.getElementById('docFormFormat');
   const targetInput = document.getElementById('docFormTarget');
-  const sizeInput = document.getElementById('docFormSize');
+  const fileUrlInput = document.getElementById('docFormFileUrl');
   const descInput = document.getElementById('docFormDesc');
 
   const title = (titleInput.value || '').trim();
-  if (!title) return;
+  if (!title) {
+    showToast('Vui lòng nhập tên tài liệu!');
+    return;
+  }
 
   const isEdit = !!idInput.value;
+  const fileUrl = fileUrlInput ? fileUrlInput.value.trim() : '';
+  const calculatedSize = currentDocFileSize || 'Đính kèm';
 
   let targetDocItem = null;
   if (isEdit) {
@@ -7887,8 +8061,12 @@ function handleDocFormSubmit(e) {
       doc.category = categorySelect.value;
       doc.format = formatSelect.value;
       doc.target = targetInput.value.trim() || 'Toàn Đoàn';
-      doc.size = sizeInput.value.trim() || '3.5 MB';
+      if (currentDocFileSize) doc.size = currentDocFileSize;
       doc.desc = descInput.value.trim();
+      doc.content = descInput.value.trim();
+      if (currentDocFileData) doc.fileData = currentDocFileData;
+      if (currentDocFileName) doc.fileName = currentDocFileName;
+      if (fileUrl) doc.fileUrl = fileUrl;
       targetDocItem = doc;
     }
   } else {
@@ -7899,11 +8077,14 @@ function handleDocFormSubmit(e) {
       category: categorySelect.value,
       format: formatSelect.value,
       target: targetInput.value.trim() || 'Toàn Đoàn',
-      size: sizeInput.value.trim() || '3.5 MB',
-      author: 'Ban Giáo Lý Tân Mỹ',
+      size: calculatedSize,
+      author: (currentUser && currentUser.name) ? currentUser.name : 'Ban Giáo Lý Tân Mỹ',
       downloads: 1,
       desc: descInput.value.trim(),
-      content: descInput.value.trim()
+      content: descInput.value.trim(),
+      fileData: currentDocFileData || null,
+      fileName: currentDocFileName || '',
+      fileUrl: fileUrl
     };
     docsDatabase.unshift(targetDocItem);
   }
@@ -7916,7 +8097,7 @@ function handleDocFormSubmit(e) {
     });
   }
   document.getElementById('docEditModal').style.display = 'none';
-  showToast(isEdit ? 'Đã cập nhật tài liệu thành công!' : 'Đã đăng tài liệu mới!');
+  showToast(isEdit ? 'Đã cập nhật tài liệu thành công!' : 'Đã đăng tài liệu và đính kèm file thành công!');
 }
 
 function downloadDoc(docId) {
@@ -7928,7 +8109,38 @@ function downloadDoc(docId) {
   if (typeof API !== 'undefined') {
     API.recordDocDownload(docId);
   }
-  showToast(`Đang tải về "${doc.title}"...`);
+
+  showToast(`Đang tải về tài liệu: "${doc.title}"...`);
+
+  // 1. Nếu có file đính kèm thực tế dạng Base64/Data URL
+  if (doc.fileData) {
+    const a = document.createElement('a');
+    a.href = doc.fileData;
+    a.download = doc.fileName || `${doc.title}.${(doc.format || 'pdf').toLowerCase()}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    return;
+  }
+
+  // 2. Nếu có đường dẫn file online (Google Drive, Web URL)
+  if (doc.fileUrl && doc.fileUrl.startsWith('http')) {
+    window.open(doc.fileUrl, '_blank');
+    return;
+  }
+
+  // 3. Fallback: Tạo và tải về file tài liệu văn bản chuẩn
+  const textContent = `======================================================================\nTÀI LIỆU GIÁO LÝ - ĐOÀN THIẾU NHI THÁNH THỂ GIÁO XỨ TÂN MỸ\n======================================================================\n\nTÊN TÀI LIỆU: ${doc.title}\nDANH MỤC: ${doc.category}\nĐỊNH DẠNG: ${doc.format}\nĐỐI TƯỢNG: ${doc.target}\nDUNG LƯỢNG: ${doc.size}\nNGUỒN / TÁC GIẢ: ${doc.author || 'Ban Giáo Lý Tân Mỹ'}\n\n----------------------------------------------------------------------\nMÔ TẢ TÓM TẮT:\n${doc.desc || ''}\n\n----------------------------------------------------------------------\nNỘI DUNG CHI TIẾT:\n${doc.content || doc.desc || 'Nội dung tài liệu học tập Giáo lý Giáo xứ Tân Mỹ.'}\n\n======================================================================\nBan Giáo Lý & Đoàn TNTT Giáo Xứ Tân Mỹ`;
+  
+  const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${doc.title.replace(/[/\\?%*:|"<>]/g, '_')}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 async function deleteDoc(docId) {

@@ -1900,14 +1900,38 @@
             </select>
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Khối lớp / Đối tượng áp dụng</label>
-            <input type="text" id="docFormTarget" placeholder="Ví dụ: Khối Khai Tâm / Toàn Đoàn / GLV">
+        <div class="form-group">
+          <label>Khối lớp / Đối tượng áp dụng</label>
+          <input type="text" id="docFormTarget" placeholder="Ví dụ: Khối Khai Tâm / Toàn Đoàn / GLV">
+        </div>
+
+        <div class="form-group">
+          <label><i class="fa-solid fa-paperclip" style="color: #8b5cf6;"></i> Đính kèm file tài liệu (PDF, Word, Excel, PowerPoint, MP3...)</label>
+          <div class="doc-upload-dropzone" id="docDropzone">
+            <input type="file" id="docFileInput" style="display: none;" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.mp3,.mp4,.zip,.rar,.txt,.png,.jpg,.jpeg">
+            <div class="doc-upload-content" id="docUploadEmptyState">
+              <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2rem; color: #8b5cf6; margin-bottom: 0.4rem;"></i>
+              <p style="font-size: 0.9rem; font-weight: 700; color: #334155; margin-bottom: 0.2rem;">
+                Nhấp vào đây để chọn file từ máy tính
+              </p>
+              <span style="font-size: 0.78rem; color: #64748b;">Hỗ trợ: PDF, Word (DOC/DOCX), Excel (XLSX), MP3, PowerPoint, Zip... (Tự động tính dung lượng)</span>
+            </div>
+            <div class="doc-upload-selected" id="docUploadSelectedState" style="display: none;">
+              <div class="selected-file-info">
+                <i class="fa-solid fa-file-pdf" id="selectedFileIcon" style="font-size: 1.8rem; color: #8b5cf6;"></i>
+                <div style="flex: 1; min-width: 0;">
+                  <div class="selected-file-name" id="selectedFileName" style="font-weight: 700; font-size: 0.88rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+                  <div class="selected-file-size" id="selectedFileSize" style="font-size: 0.78rem; color: #059669; font-weight: 700; margin-top: 2px;"></div>
+                </div>
+                <button type="button" class="btn-remove-selected-file" id="btnRemoveSelectedDoc" title="Gỡ file đính kèm"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label>Dung lượng ước tính</label>
-            <input type="text" id="docFormSize" placeholder="Ví dụ: 4.5 MB">
+          <div style="margin-top: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 0.78rem; color: #64748b; font-weight: 600; white-space: nowrap;"><i class="fa-solid fa-link"></i> Hoặc liên kết trực tuyến:</span>
+              <input type="url" id="docFormFileUrl" placeholder="https://drive.google.com/... hoặc link tải trực tiếp" style="flex: 1; font-size: 0.82rem; padding: 0.4rem 0.65rem; border: 1px solid #cbd5e1; border-radius: 6px;">
+            </div>
           </div>
         </div>
         <div class="form-group">

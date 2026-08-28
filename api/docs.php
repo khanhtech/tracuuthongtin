@@ -11,7 +11,7 @@ switch ($method) {
     case 'GET':
         if (isset($_GET['id'])) {
             $id = trim($_GET['id']);
-            $stmt = $pdo->prepare("SELECT doc_id as id, title, category, format, target, size, author, downloads, `desc`, content, file_url as fileUrl FROM documents WHERE doc_id = ? OR id = ? LIMIT 1");
+            $stmt = $pdo->prepare("SELECT doc_id as id, title, category, format, target, size, author, downloads, `desc`, content, file_url as fileUrl, file_name as fileName, file_data as fileData FROM documents WHERE doc_id = ? OR id = ? LIMIT 1");
             $stmt->execute([$id, $id]);
             $item = $stmt->fetch();
             if ($item) {
@@ -20,7 +20,7 @@ switch ($method) {
                 jsonResponse(false, "Không tìm thấy tài liệu", null, 404);
             }
         } else {
-            $stmt = $pdo->query("SELECT doc_id as id, title, category, format, target, size, author, downloads, `desc`, content, file_url as fileUrl FROM documents ORDER BY id ASC");
+            $stmt = $pdo->query("SELECT doc_id as id, title, category, format, target, size, author, downloads, `desc`, content, file_url as fileUrl, file_name as fileName, file_data as fileData FROM documents ORDER BY id ASC");
             $list = $stmt->fetchAll();
             jsonResponse(true, "Lấy danh sách tài liệu thành công", $list);
         }
@@ -44,14 +44,28 @@ switch ($method) {
         $category = trim($data['category'] ?? 'Giáo Trình');
         $format = trim($data['format'] ?? 'PDF');
         $target = trim($data['target'] ?? 'Toàn Đoàn');
-        $size = trim($data['size'] ?? '3.5 MB');
+        $size = trim($data['size'] ?? 'Đính kèm');
         $author = trim($data['author'] ?? 'Ban Giáo Lý Tân Mỹ');
         $desc = trim($data['desc'] ?? '');
         $content = trim($data['content'] ?? '');
+        $fileUrl = trim($data['fileUrl'] ?? ($data['file_url'] ?? ''));
+        $fileName = trim($data['fileName'] ?? ($data['file_name'] ?? ''));
+        $fileData = $data['fileData'] ?? ($data['file_data'] ?? null);
+
+        // Đảm bảo các cột file_url, file_name, file_data tồn tại
+        try {
+            $pdo->exec("ALTER TABLE `documents` ADD COLUMN `file_url` VARCHAR(500) DEFAULT NULL");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `documents` ADD COLUMN `file_name` VARCHAR(255) DEFAULT NULL");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `documents` ADD COLUMN `file_data` LONGTEXT DEFAULT NULL");
+        } catch (Exception $e) {}
 
         $stmt = $pdo->prepare("
-            INSERT INTO documents (doc_id, title, category, format, target, size, author, downloads, `desc`, content, created_at, updated_at) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, NOW(), NOW())
+            INSERT INTO documents (doc_id, title, category, format, target, size, author, downloads, `desc`, content, file_url, file_name, file_data, created_at, updated_at) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, NOW(), NOW())
             ON DUPLICATE KEY UPDATE 
                 title = VALUES(title), 
                 category = VALUES(category), 
@@ -60,9 +74,12 @@ switch ($method) {
                 size = VALUES(size), 
                 `desc` = VALUES(`desc`), 
                 content = VALUES(content), 
+                file_url = VALUES(file_url),
+                file_name = VALUES(file_name),
+                file_data = VALUES(file_data),
                 updated_at = NOW()
         ");
-        $stmt->execute([$id, $title, $category, $format, $target, $size, $author, $desc, $content]);
+        $stmt->execute([$id, $title, $category, $format, $target, $size, $author, $desc, $content, $fileUrl, $fileName, $fileData]);
 
         jsonResponse(true, "Đã lưu tài liệu thành công", ['id' => $id]);
         break;
@@ -87,12 +104,23 @@ switch ($method) {
         $category = trim($data['category'] ?? 'Giáo Trình');
         $format = trim($data['format'] ?? 'PDF');
         $target = trim($data['target'] ?? 'Toàn Đoàn');
-        $size = trim($data['size'] ?? '3.5 MB');
+        $size = trim($data['size'] ?? 'Đính kèm');
         $desc = trim($data['desc'] ?? '');
         $content = trim($data['content'] ?? '');
+        $fileUrl = trim($data['fileUrl'] ?? ($data['file_url'] ?? ''));
+        $fileName = trim($data['fileName'] ?? ($data['file_name'] ?? ''));
+        $fileData = $data['fileData'] ?? ($data['file_data'] ?? null);
 
-        $stmt = $pdo->prepare("UPDATE documents SET title = ?, category = ?, format = ?, target = ?, size = ?, `desc` = ?, content = ?, updated_at = NOW() WHERE doc_id = ?");
-        $stmt->execute([$title, $category, $format, $target, $size, $desc, $content, $id]);
+        $stmt = $pdo->prepare("
+            UPDATE documents 
+            SET title = ?, category = ?, format = ?, target = ?, size = ?, `desc` = ?, content = ?, 
+                file_url = COALESCE(NULLIF(?, ''), file_url),
+                file_name = COALESCE(NULLIF(?, ''), file_name),
+                file_data = COALESCE(NULLIF(?, ''), file_data),
+                updated_at = NOW() 
+            WHERE doc_id = ?
+        ");
+        $stmt->execute([$title, $category, $format, $target, $size, $desc, $content, $fileUrl, $fileName, $fileData, $id]);
 
         jsonResponse(true, "Đã cập nhật tài liệu thành công");
         break;
