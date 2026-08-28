@@ -6705,37 +6705,122 @@ input[readonly].input-locked-code {
 
 /* Flatpickr Datepicker Custom Catholic Theme */
 .flatpickr-calendar {
-  border-radius: 16px !important;
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
-  border: 1px solid #fee2e2 !important;
+  width: 320px !important;
+  border-radius: 18px !important;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+  border: 1.5px solid #fecaca !important;
   font-family: inherit !important;
   overflow: hidden !important;
   z-index: 99999999 !important;
+  background: #ffffff !important;
 }
 
 .flatpickr-months {
   background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%) !important;
-  padding: 0.4rem 0 !important;
+  padding: 0.65rem 0.5rem !important;
   border-radius: 16px 16px 0 0 !important;
+  position: relative !important;
 }
 
-.flatpickr-months .flatpickr-month,
-.flatpickr-current-month .cur-month,
-.flatpickr-current-month input.cur-year,
+.flatpickr-current-month {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  padding: 0.15rem 0 !important;
+  font-size: 1.05rem !important;
+  position: static !important;
+  width: 100% !important;
+  left: 0 !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-radius: 8px !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  padding: 0.35rem 0.6rem !important;
+  cursor: pointer !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months:hover {
+  background: rgba(255, 255, 255, 0.35) !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months option {
+  background: #7f1d1d !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+.flatpickr-current-month .numInputWrapper {
+  width: 82px !important;
+  background: rgba(255, 255, 255, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.flatpickr-current-month .numInputWrapper:hover {
+  background: rgba(255, 255, 255, 0.35) !important;
+}
+
+.flatpickr-current-month input.cur-year {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  font-size: 1.05rem !important;
+  padding: 0.3rem 0.4rem !important;
+  text-align: center !important;
+}
+
+.flatpickr-current-month .numInputWrapper span {
+  border-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+.flatpickr-current-month .numInputWrapper span:hover {
+  background: rgba(255, 255, 255, 0.4) !important;
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowUp:after {
+  border-bottom-color: #ffffff !important;
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowDown:after {
+  border-top-color: #ffffff !important;
+}
+
 .flatpickr-months .flatpickr-prev-month,
 .flatpickr-months .flatpickr-next-month {
   color: #ffffff !important;
   fill: #ffffff !important;
-  font-weight: 700 !important;
+  padding: 0.65rem 0.75rem !important;
+}
+
+.flatpickr-months .flatpickr-prev-month:hover svg,
+.flatpickr-months .flatpickr-next-month:hover svg {
+  fill: #fef08a !important;
+  transform: scale(1.15);
 }
 
 .flatpickr-weekdays {
   background: #fef2f2 !important;
+  padding: 0.3rem 0 !important;
 }
 
 span.flatpickr-weekday {
   color: #991b1b !important;
-  font-weight: 700 !important;
+  font-weight: 800 !important;
+  font-size: 0.82rem !important;
+}
+
+.flatpickr-day {
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
 }
 
 .flatpickr-day.selected,
@@ -6746,22 +6831,21 @@ span.flatpickr-weekday {
 .flatpickr-day.selected:hover,
 .flatpickr-day.prevMonthDay.selected,
 .flatpickr-day.nextMonthDay.selected {
-  background: #dc2626 !important;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
   border-color: #dc2626 !important;
   color: #ffffff !important;
-  font-weight: 700 !important;
-  border-radius: 8px !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3) !important;
 }
 
 .flatpickr-day:hover {
   background: #fee2e2 !important;
   border-color: #fca5a5 !important;
   color: #991b1b !important;
-  border-radius: 8px !important;
 }
 
 .flatpickr-day.today {
-  border-color: #d97706 !important;
+  border: 1.5px solid #d97706 !important;
   color: #d97706 !important;
   font-weight: 800 !important;
 }

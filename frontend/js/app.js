@@ -1138,8 +1138,7 @@ function generateDefaultStudentsForClass(cls, count = 25) {
       birthDate: birthDate,
       note: i === 1 ? 'Lớp trưởng' : 'Thiếu nhi',
       parentName: parentName,
-      parentPhone: parentPhone,
-      address: `Giáo họ ${['Thánh Tâm', 'Mân Côi', 'Kitô Vua', 'Vô Nhiễm'][(i * 3) % 4]}`,
+      address: `Giáo khu ${(i % 4) + 1}`,
       grades: {
         hk1: { t5: 10, cn: 10, gl: 9.5, oral: baseOral, m15: base15m, p1: base1p, exam: baseExam },
         hk2: { t5: 10, cn: 9.5, gl: 9.5, oral: Math.min(10, baseOral + 0.5), m15: base15m, p1: Math.min(10, base1p + 0.5), exam: Math.min(10, baseExam + 0.5) }
@@ -1308,6 +1307,21 @@ function ensureDefaultStudentsForAllClasses() {
         const normalized = (currentNote === 'Lớp trưởng') ? 'Lớp trưởng' : 'Thiếu nhi';
         if (s.note !== normalized) {
           s.note = normalized;
+          changed = true;
+        }
+
+        const currentAddr = String(s.address || '').trim();
+        const normAddr = removeVietnameseTones(currentAddr).toLowerCase();
+        let normalizedAddr = 'Giáo khu 1';
+        if (normAddr.includes('khu 1') || normAddr.includes('thanh tam')) normalizedAddr = 'Giáo khu 1';
+        else if (normAddr.includes('khu 2') || normAddr.includes('man coi')) normalizedAddr = 'Giáo khu 2';
+        else if (normAddr.includes('khu 3') || normAddr.includes('kito vua')) normalizedAddr = 'Giáo khu 3';
+        else if (normAddr.includes('khu 4') || normAddr.includes('vo nhiem')) normalizedAddr = 'Giáo khu 4';
+        else if (normAddr.includes('khac') || normAddr.includes('ngoai')) normalizedAddr = 'Khác (nằm ngoài giáo xứ)';
+        else if (['Giáo khu 1', 'Giáo khu 2', 'Giáo khu 3', 'Giáo khu 4', 'Khác (nằm ngoài giáo xứ)'].includes(currentAddr)) normalizedAddr = currentAddr;
+
+        if (s.address !== normalizedAddr) {
+          s.address = normalizedAddr;
           changed = true;
         }
       });
@@ -3278,8 +3292,21 @@ function initStudentDatePicker() {
       studentDatePicker = flatpickr(birthInput, {
         dateFormat: "d/m/Y",
         allowInput: true,
-        locale: (typeof flatpickr.l10ns !== 'undefined' && flatpickr.l10ns.vn) ? flatpickr.l10ns.vn : 'default',
-        disableMobile: "true"
+        monthSelectorType: "dropdown",
+        disableMobile: "true",
+        maxDate: "today",
+        minDate: "01/01/2000",
+        locale: (typeof flatpickr.l10ns !== 'undefined' && flatpickr.l10ns.vn) ? flatpickr.l10ns.vn : {
+          firstDayOfWeek: 1,
+          weekdays: {
+            shorthand: ["CN", "T2", "T3", "T4", "T5", "T6", "T7"],
+            longhand: ["Chúa Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"]
+          },
+          months: {
+            shorthand: ["Th1", "Th2", "Th3", "Th4", "Th5", "Th6", "Th7", "Th8", "Th9", "Th10", "Th11", "Th12"],
+            longhand: ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"]
+          }
+        }
       });
     }
   }
@@ -3337,7 +3364,17 @@ function openEditStudentModal(studentId = null, classId = null) {
     }
     if (dom.parentName) dom.parentName.value = s.parentName || s.parent_name || '';
     if (dom.parentPhone) dom.parentPhone.value = s.parentPhone || s.parent_phone || '';
-    if (dom.address) dom.address.value = s.address || '';
+    if (dom.address) {
+      const rawAddr = String(s.address || '').trim();
+      const normAddr = removeVietnameseTones(rawAddr).toLowerCase();
+      if (normAddr.includes('khu 1') || normAddr.includes('thanh tam')) dom.address.value = 'Giáo khu 1';
+      else if (normAddr.includes('khu 2') || normAddr.includes('man coi')) dom.address.value = 'Giáo khu 2';
+      else if (normAddr.includes('khu 3') || normAddr.includes('kito vua')) dom.address.value = 'Giáo khu 3';
+      else if (normAddr.includes('khu 4') || normAddr.includes('vo nhiem')) dom.address.value = 'Giáo khu 4';
+      else if (normAddr.includes('khac') || normAddr.includes('ngoai')) dom.address.value = 'Khác (nằm ngoài giáo xứ)';
+      else if (['Giáo khu 1', 'Giáo khu 2', 'Giáo khu 3', 'Giáo khu 4', 'Khác (nằm ngoài giáo xứ)'].includes(rawAddr)) dom.address.value = rawAddr;
+      else dom.address.value = 'Giáo khu 1';
+    }
   } else {
     // Chế độ Thêm mới thiếu nhi
     if (dom.origId) dom.origId.value = '';
@@ -3360,7 +3397,7 @@ function openEditStudentModal(studentId = null, classId = null) {
     if (dom.note) dom.note.value = 'Thiếu nhi';
     if (dom.parentName) dom.parentName.value = '';
     if (dom.parentPhone) dom.parentPhone.value = '';
-    if (dom.address) dom.address.value = '';
+    if (dom.address) dom.address.value = 'Giáo khu 1';
   }
 
   dom.modal.style.display = 'flex';
