@@ -4770,6 +4770,24 @@ input[readonly].input-locked-code {
   box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
 }
 
+.btn-confirm-ok.warning:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(217, 119, 6, 0.35);
+}
+
+@keyframes shakePasswordInput {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+.password-field-wrapper.error-shake {
+  animation: shakePasswordInput 0.4s ease-in-out;
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25) !important;
+}
+
 /* ==========================================================================
    PHÂN TẦNG Z-INDEX CHUẨN XÁC CHO CÁC LỚP MODAL LỒNG NHAU
    ========================================================================== */

@@ -2118,38 +2118,70 @@ function updateRoleUI() {
 }
 
 function checkAdminPassword() {
-  const enteredPass = (adminPasswordInput.value || '').trim();
+  const enteredPass = (adminPasswordInput ? adminPasswordInput.value : '').trim();
+  const wrapper = adminPasswordInput ? adminPasswordInput.closest('.password-field-wrapper') : null;
+
   if (ADMIN_PASSWORDS.includes(enteredPass.toLowerCase())) {
+    if (wrapper) wrapper.classList.remove('error-shake');
     setRole('admin');
     if (loginModal) loginModal.style.display = 'none';
     showToast('Đăng nhập Quản Trị Viên (Admin) thành công!');
   } else {
-    alert('Mật khẩu Quản Trị Viên không đúng! Vui lòng thử lại.');
-    if (adminPasswordInput) {
-      adminPasswordInput.focus();
-      adminPasswordInput.select();
+    if (wrapper) {
+      wrapper.classList.remove('error-shake');
+      void wrapper.offsetWidth;
+      wrapper.classList.add('error-shake');
     }
+    showCustomAlert({
+      title: 'Mật Khẩu Admin Không Đúng',
+      message: 'Mật khẩu Quản Trị Viên không chính xác! Vui lòng kiểm tra lại.',
+      note: '🔒 Quyền Quản Trị Viên chỉ dành riêng cho Ban Quản Trị Đoàn TNTT Giáo Xứ Tân Mỹ.',
+      confirmText: 'Thử Lại',
+      type: 'danger',
+      iconClass: 'fa-solid fa-shield-halved'
+    }).then(() => {
+      if (adminPasswordInput) {
+        adminPasswordInput.focus();
+        adminPasswordInput.select();
+      }
+    });
   }
 }
 
 function checkGlvPassword() {
   const glvPasswordInput = document.getElementById('glvPasswordInput');
   const enteredPass = (glvPasswordInput ? glvPasswordInput.value : '').trim();
+  const wrapper = glvPasswordInput ? glvPasswordInput.closest('.password-field-wrapper') : null;
+
   if (GLV_PASSWORDS.includes(enteredPass.toLowerCase())) {
+    if (wrapper) wrapper.classList.remove('error-shake');
     setRole('glv');
     if (loginModal) loginModal.style.display = 'none';
     showToast('Đăng nhập vai trò Huynh Trưởng (GLV) thành công!');
   } else {
-    alert('Mật khẩu Huynh Trưởng không đúng! Vui lòng thử lại.');
-    if (glvPasswordInput) {
-      glvPasswordInput.focus();
-      glvPasswordInput.select();
+    if (wrapper) {
+      wrapper.classList.remove('error-shake');
+      void wrapper.offsetWidth;
+      wrapper.classList.add('error-shake');
     }
+    showCustomAlert({
+      title: 'Mật Khẩu Huynh Trưởng Không Đúng',
+      message: 'Mật khẩu Huynh Trưởng - Giáo Lý Viên không chính xác!',
+      note: '🇻🇳 Vui lòng kiểm tra lại mật khẩu nội bộ hoặc liên hệ Ban Quản Trị.',
+      confirmText: 'Thử Lại',
+      type: 'warning',
+      iconClass: 'fa-solid fa-fire'
+    }).then(() => {
+      if (glvPasswordInput) {
+        glvPasswordInput.focus();
+        glvPasswordInput.select();
+      }
+    });
   }
 }
 
 // ==========================================================================
-// HỘP THOẠI XÁC NHẬN TÙY BIẾN ĐẸP MẮT (CUSTOM CONFIRM MODAL)
+// HỘP THOẠI XÁC NHẬN & THÔNG BÁO TÙY BIẾN ĐẸP MẮT (CUSTOM CONFIRM & ALERT MODAL)
 // ==========================================================================
 function showConfirmDialog({
   title = 'Xác Nhận Xóa',
@@ -2181,7 +2213,15 @@ function showConfirmDialog({
 
     if (titleEl) titleEl.textContent = title;
     if (msgEl) msgEl.textContent = message;
-    if (noteEl) noteEl.textContent = note;
+    
+    if (noteEl) {
+      if (note && note.trim() !== '') {
+        noteEl.textContent = note;
+        noteEl.style.display = 'block';
+      } else {
+        noteEl.style.display = 'none';
+      }
+    }
 
     if (itemBadge && itemNameEl) {
       if (itemName) {
@@ -2199,12 +2239,18 @@ function showConfirmDialog({
     }
 
     if (cancelBtn) {
-      cancelBtn.innerHTML = `<i class="fa-solid fa-xmark"></i> ${cancelText}`;
+      if (cancelText && cancelText.trim() !== '') {
+        cancelBtn.style.display = 'inline-flex';
+        cancelBtn.innerHTML = `<i class="fa-solid fa-xmark"></i> ${cancelText}`;
+      } else {
+        cancelBtn.style.display = 'none';
+      }
     }
 
     if (okBtn) {
       okBtn.className = `btn-confirm-ok ${type}`;
-      okBtn.innerHTML = `${type === 'danger' ? '<i class="fa-solid fa-trash-can"></i>' : '<i class="fa-solid fa-check"></i>'} ${confirmText}`;
+      const defaultIcon = (type === 'danger') ? 'fa-solid fa-trash-can' : (type === 'warning' ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-check');
+      okBtn.innerHTML = `<i class="${defaultIcon}"></i> ${confirmText}`;
     }
 
     modal.style.display = 'flex';
@@ -2218,7 +2264,7 @@ function showConfirmDialog({
         modal.style.display = 'none';
       }, 220);
       okBtn.removeEventListener('click', onOk);
-      cancelBtn.removeEventListener('click', onCancel);
+      if (cancelBtn) cancelBtn.removeEventListener('click', onCancel);
       if (backdrop) backdrop.removeEventListener('click', onCancel);
       resolve(result);
     }
@@ -2227,8 +2273,29 @@ function showConfirmDialog({
     function onCancel() { cleanup(false); }
 
     okBtn.addEventListener('click', onOk);
-    cancelBtn.addEventListener('click', onCancel);
+    if (cancelBtn) cancelBtn.addEventListener('click', onCancel);
     if (backdrop) backdrop.addEventListener('click', onCancel);
+  });
+}
+
+function showCustomAlert({
+  title = 'Thông Báo Xác Thực',
+  message = 'Mật khẩu không chính xác! Vui lòng thử lại.',
+  itemName = '',
+  note = 'Vui lòng kiểm tra lại phím Caps Lock hoặc liên hệ Ban Quản Trị nếu quên mật khẩu.',
+  confirmText = 'Đã Hiểu / Thử Lại',
+  type = 'warning',
+  iconClass = 'fa-solid fa-triangle-exclamation'
+} = {}) {
+  return showConfirmDialog({
+    title,
+    message,
+    itemName,
+    note,
+    confirmText,
+    cancelText: '',
+    type,
+    iconClass
   });
 }
 
@@ -3492,7 +3559,12 @@ function handleClassFormSubmit(e) {
   const note = formClassNote.value.trim();
 
   if (!name) {
-    alert('Vui lòng nhập Tên Lớp Học!');
+    showCustomAlert({
+      title: 'Thiếu Tên Lớp Học',
+      message: 'Vui lòng nhập Tên Lớp Học trước khi lưu!',
+      type: 'warning',
+      iconClass: 'fa-solid fa-school'
+    });
     return;
   }
 
@@ -4839,7 +4911,12 @@ function setupEventListeners() {
       if (!file) return;
 
       if (!file.type.startsWith('image/')) {
-        alert('Vui lòng chọn file hình ảnh (JPG, PNG)!');
+        showCustomAlert({
+          title: 'Định Dạng Không Hỗ Trợ',
+          message: 'Vui lòng chọn file hình ảnh hợp lệ (JPG, PNG, WEBP)!',
+          type: 'warning',
+          iconClass: 'fa-solid fa-image'
+        });
         return;
       }
 
@@ -5594,7 +5671,12 @@ function closeEditModal() {
 
 function saveGlvForm() {
   if (currentUserRole === 'guest') {
-    alert('Tài khoản Khách chỉ có quyền xem dữ liệu, không thể lưu thay đổi!');
+    showCustomAlert({
+      title: 'Không Thể Lưu',
+      message: 'Tài khoản Khách chỉ có quyền xem dữ liệu, không thể lưu thay đổi!',
+      type: 'warning',
+      iconClass: 'fa-solid fa-ban'
+    });
     return;
   }
 
@@ -5611,7 +5693,12 @@ function saveGlvForm() {
   const photo = formPhotoData.value;
 
   if (!firstName) {
-    alert('Vui lòng điền Tên!');
+    showCustomAlert({
+      title: 'Thiếu Tên GLV',
+      message: 'Vui lòng điền đầy đủ Tên của Giáo Lý Viên!',
+      type: 'warning',
+      iconClass: 'fa-solid fa-user-pen'
+    });
     return;
   }
 
@@ -5650,18 +5737,33 @@ function saveGlvForm() {
     }
   } else {
     if (!isAdmin) {
-      alert('Chỉ Quản Trị Viên (Admin) mới có quyền thêm mới Giáo Lý Viên!');
+      showCustomAlert({
+        title: 'Giới Hạn Phân Quyền',
+        message: 'Chỉ Quản Trị Viên (Admin) mới có quyền thêm mới Giáo Lý Viên!',
+        type: 'danger',
+        iconClass: 'fa-solid fa-shield-halved'
+      });
       return;
     }
 
     if (!id) {
-      alert('Vui lòng nhập Mã ID!');
+      showCustomAlert({
+        title: 'Thiếu Mã ID',
+        message: 'Vui lòng nhập Mã ID Giáo Lý Viên!',
+        type: 'warning',
+        iconClass: 'fa-solid fa-id-card'
+      });
       return;
     }
 
     const exists = glvDatabase.some(item => item.id.toUpperCase() === id);
     if (exists) {
-      alert(`Mã ID "${id}" đã tồn tại! Vui lòng chọn mã khác.`);
+      showCustomAlert({
+        title: 'Trùng Mã ID',
+        message: `Mã ID "${id}" đã tồn tại trên hệ thống! Vui lòng chọn mã khác.`,
+        type: 'danger',
+        iconClass: 'fa-solid fa-triangle-exclamation'
+      });
       return;
     }
 
