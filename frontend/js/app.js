@@ -1162,25 +1162,37 @@ function getRoleBadge(role) {
     return {
       text: '👑 Chủ Nhiệm',
       cls: 'role-chunhiem',
-      raw: 'Chủ nhiệm'
+      raw: 'Chủ nhiệm',
+      short: 'CN',
+      icon: 'fa-solid fa-crown',
+      chipHtml: '<span class="teacher-role-tag role-chunhiem" title="Vai trò: Chủ nhiệm"><i class="fa-solid fa-crown"></i> CN</span>'
     };
   } else if (norm.includes('dong hanh') || norm.includes('dung lop') || norm.includes('giang day')) {
     return {
       text: '🤝 Đồng Hành',
       cls: 'role-donghanh',
-      raw: 'Đồng hành'
+      raw: 'Đồng hành',
+      short: 'ĐH',
+      icon: 'fa-solid fa-handshake-angle',
+      chipHtml: '<span class="teacher-role-tag role-donghanh" title="Vai trò: Đồng hành"><i class="fa-solid fa-handshake-angle"></i> ĐH</span>'
     };
   } else if (norm.includes('ho tro') || norm.includes('tro ta') || norm.includes('du truong') || norm.includes('tap su')) {
     return {
       text: '🌱 Hỗ Trợ',
       cls: 'role-hotro',
-      raw: 'Hỗ trợ'
+      raw: 'Hỗ trợ',
+      short: 'HT',
+      icon: 'fa-solid fa-seedling',
+      chipHtml: '<span class="teacher-role-tag role-hotro" title="Vai trò: Hỗ trợ"><i class="fa-solid fa-seedling"></i> HT</span>'
     };
   }
   return {
     text: 'Chưa phân công',
     cls: 'role-unassigned',
-    raw: 'Chưa phân công'
+    raw: 'Chưa phân công',
+    short: '-',
+    icon: 'fa-solid fa-circle-question',
+    chipHtml: '<span class="teacher-role-tag role-unassigned" title="Chưa phân công">-</span>'
   };
 }
 
@@ -2785,12 +2797,12 @@ function renderClassCards(classesList, searchKeyword) {
             ${teachers.length > 0 ? teachers.map(t => {
               const rInfo = getRoleBadge(t.role);
               return `
-              <div class="teacher-chip" data-glv-id="${t.id}" title="Vai trò: ${rInfo.text} - Bấm xem hồ sơ">
+              <div class="teacher-chip" data-glv-id="${t.id}" title="Vai trò: ${rInfo.text} - Bấm để xem hồ sơ">
                 <span class="chip-name-box">
                   <strong class="chip-holy">${t.holyName || ''}</strong>
                   <span class="chip-name">${t.lastName} ${t.firstName}</span>
                 </span>
-                <span class="teacher-role-tag ${rInfo.cls}">${rInfo.raw}</span>
+                ${rInfo.chipHtml}
               </div>
               `;
             }).join('') : '<span style="font-size: 0.78rem; color: #94a3b8; font-style: italic;">Chưa phân công Huynh Trưởng</span>'}
