@@ -2910,6 +2910,7 @@ function renderClassCards(classesList, searchKeyword) {
   if (classNotFoundState) classNotFoundState.style.display = 'none';
 
   const isAdmin = (currentUserRole === 'admin');
+  const canViewTeachers = (currentUserRole === 'admin' || currentUserRole === 'glv');
 
   classesList.forEach(cls => {
     const teachers = getTeachersByClass(cls.teacherIds);
@@ -2941,6 +2942,7 @@ function renderClassCards(classesList, searchKeyword) {
           </div>
         </div>
 
+        ${canViewTeachers ? `
         <div class="class-teachers-section">
           <div class="teachers-header">
             <span><i class="fa-solid fa-fire"></i> Huynh Trưởng / GLV (${teachers.length})</span>
@@ -2960,6 +2962,7 @@ function renderClassCards(classesList, searchKeyword) {
             }).join('') : '<span style="font-size: 0.78rem; color: #94a3b8; font-style: italic;">Chưa phân công Huynh Trưởng</span>'}
           </div>
         </div>
+        ` : ''}
 
         <div class="class-student-info">
           <span><i class="fa-solid fa-children"></i> Sĩ số thiếu nhi:</span>
@@ -3006,11 +3009,6 @@ function renderClassCards(classesList, searchKeyword) {
   });
 }
 
-// ==========================================================================
-// XEM NHANH THẺ GLV (QUICK VIEW MODAL - KHÔNG RỜI KHỎI MODAL LỚP)
-// ==========================================================================
-let currentQuickViewGlvId = null;
-
 function openGlvQuickView(glvId) {
   const glv = glvDatabase.find(g => g.id.toUpperCase() === (glvId || '').toUpperCase());
   if (!glv) return;
@@ -3021,50 +3019,38 @@ function openGlvQuickView(glvId) {
   if (!quickGlvModal || !quickGlvBody) return;
 
   const isMale = (glv.gender === 'Nam');
-  const avatarSrc = getGlvAvatar(glv);
-  const certText = glv.cert ? `Cấp ${glv.cert}` : 'Chưa có chứng chỉ';
+  const roleInfo = getRoleBadge(glv.role);
+  const statusInfo = getGlvStatusBadge(glv.status || 'Đang dạy học');
+  const certText = glv.cert ? `Cấp ${glv.cert}` : 'Chưa có';
   const blockText = glv.block ? `Khối ${glv.block}` : 'Chưa phân khối';
-  const classText = glv.teachingClass || 'Chưa phân lớp';
 
   quickGlvBody.innerHTML = `
-    <div class="quick-profile-card">
-      <div class="quick-card-emblem">
-        <i class="fa-solid fa-cross"></i>
-        <span>ĐOÀN TNTT GIÁO XỨ TÂN MỸ</span>
+    <div class="quick-profile-header">
+      <img class="quick-profile-avatar" src="${getGlvAvatar(glv)}" alt="avatar">
+      <div class="quick-profile-info">
+        <span class="quick-holy">${glv.holyName || ''}</span>
+        <h3 class="quick-name">${glv.lastName} ${glv.firstName}</h3>
+        <div class="quick-meta-row">
+          <span class="quick-badge id">${glv.id}</span>
+          <span class="quick-badge ${isMale ? 'male' : 'female'}">${isMale ? '♂ Nam' : '♀ Nữ'}</span>
+          <span class="quick-badge cert">${certText}</span>
+        </div>
       </div>
+    </div>
 
-      <img class="quick-card-avatar" src="${avatarSrc}" alt="avatar">
-
-      <div>
-        <span class="quick-card-holy">${glv.holyName || 'GIÁO LÝ VIÊN'}</span>
-        <h3 class="quick-card-name">${glv.lastName} ${glv.firstName}</h3>
-      </div>
-
-      <table class="quick-card-info-table">
+    <div class="quick-details-grid">
+      <table class="quick-info-table">
         <tbody>
           <tr>
-            <td><i class="fa-solid fa-id-card"></i> Mã Định Danh:</td>
-            <td><strong style="color: #b91c1c; font-size: 0.95rem;">${glv.id}</strong></td>
-          </tr>
-          <tr>
-            <td><i class="fa-solid fa-venus-mars"></i> Giới tính:</td>
-            <td>${isMale ? '<span style="color: #1d4ed8; font-weight: 700;"><i class="fa-solid fa-mars"></i> Nam</span>' : '<span style="color: #be185d; font-weight: 700;"><i class="fa-solid fa-venus"></i> Nữ</span>'}</td>
-          </tr>
-          <tr>
-            <td><i class="fa-solid fa-certificate"></i> Chứng chỉ GLV:</td>
-            <td><span style="font-weight: 700; color: #1e293b;">${certText}</span></td>
+            <td><i class="fa-solid fa-chalkboard-user"></i> Lớp phụ trách:</td>
+            <td><strong>${glv.teachingClass || 'Chưa phân công'}</strong></td>
           </tr>
           <tr>
             <td><i class="fa-solid fa-layer-group"></i> Khối phụ trách:</td>
             <td><strong>${blockText}</strong></td>
           </tr>
           <tr>
-            <td><i class="fa-solid fa-school"></i> Lớp giảng dạy:</td>
-            <td><strong style="color: #b91c1c;">${classText}</strong></td>
-          </tr>
-          <tr>
             <td><i class="fa-solid fa-user-tag"></i> Vai trò:</td>
-            <td><span class="badge-role ${(getRoleBadge(glv.role)).cls}" style="font-size: 0.8rem; padding: 0.2rem 0.65rem;">${(getRoleBadge(glv.role)).text}</span></td>
           </tr>
           <tr>
             <td><i class="fa-solid fa-user-check"></i> Trạng thái:</td>
@@ -3182,6 +3168,7 @@ function openClassDetailModal(classId) {
         </div>
       </div>
 
+      ${(currentUserRole === 'admin' || currentUserRole === 'glv') ? `
       <!-- Danh Sách Huynh Trưởng / GLV -->
       <div class="detail-teachers-container">
         <div class="detail-section-title">
@@ -3213,6 +3200,7 @@ function openClassDetailModal(classId) {
           `;
         }).join('') : '<p style="color: #64748b; font-style: italic;">Chưa phân công Huynh Trưởng cho lớp học này.</p>'}
       </div>
+      ` : ''}
 
       <!-- Khối Xem & Quản Lý Danh Sách Thiếu Nhi -->
       <div class="detail-students-container" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 1.25rem; margin-top: 1.25rem;">
