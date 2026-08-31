@@ -2245,6 +2245,21 @@ function populateGlvIdentitySelectors() {
 }
 
 function openAppointmentLetterModal(glvId) {
+  if (currentUserRole === 'guest') {
+    if (appointmentLetterModal) appointmentLetterModal.style.display = 'none';
+    showCustomAlert({
+      title: 'Bổ Nhiệm Thư Được Bảo Mật',
+      message: 'Văn bản Bổ Nhiệm Thư & Trao Sứ Vụ chỉ dành riêng cho Ban Huynh Trưởng & Quản Trị Viên!',
+      note: '🔒 Vui lòng đăng nhập tài khoản Huynh Trưởng để xem văn bản này.',
+      confirmText: 'Đăng Nhập Ngay',
+      type: 'warning',
+      iconClass: 'fa-solid fa-lock'
+    }).then(() => {
+      if (loginModal) loginModal.style.display = 'flex';
+    });
+    return;
+  }
+
   if (!appointmentLetterModal) return;
   
   const targetId = glvId || (glvIdentitySelect ? glvIdentitySelect.value : '') || (currentDisplayedGLV ? currentDisplayedGLV.id : 'GLV03');
@@ -2518,6 +2533,20 @@ function renderSuggestions(list) {
     `;
 
     div.addEventListener('click', () => {
+      if (currentUserRole === 'guest') {
+        if (suggestionsBox) suggestionsBox.style.display = 'none';
+        showCustomAlert({
+          title: 'Thông Tin Được Bảo Mật',
+          message: 'Hồ sơ Huynh Trưởng & Bổ Nhiệm Thư chỉ dành riêng cho Ban Huynh Trưởng và Quản Trị Viên!',
+          note: '🔒 Vui lòng đăng nhập tài khoản Huynh Trưởng để xem chi tiết.',
+          confirmText: 'Đăng Nhập Ngay',
+          type: 'warning',
+          iconClass: 'fa-solid fa-lock'
+        }).then(() => {
+          if (loginModal) loginModal.style.display = 'flex';
+        });
+        return;
+      }
       if (searchInput) searchInput.value = item.id;
       if (clearSearchBtn) clearSearchBtn.style.display = 'flex';
       if (suggestionsBox) suggestionsBox.style.display = 'none';
@@ -2568,6 +2597,20 @@ function executeSearch(query) {
 }
 
 function displayProfileCard(glv) {
+  if (currentUserRole === 'guest') {
+    showCustomAlert({
+      title: 'Thông Tin Được Bảo Mật',
+      message: 'Hồ sơ chi tiết Huynh Trưởng & Bổ Nhiệm Thư chỉ dành riêng cho Ban Huynh Trưởng và Quản Trị Viên!',
+      note: '🔒 Vui lòng đăng nhập tài khoản Huynh Trưởng để tra cứu.',
+      confirmText: 'Đăng Nhập Ngay',
+      type: 'warning',
+      iconClass: 'fa-solid fa-lock'
+    }).then(() => {
+      if (loginModal) loginModal.style.display = 'flex';
+    });
+    return;
+  }
+
   currentDisplayedGLV = glv;
   hideAllStates();
 
@@ -2661,10 +2704,14 @@ function displayMultipleResults(list) {
   
   if (searchInput && searchInput.value && searchInput.value.trim() !== '') {
     if (multiHeaderTitle) multiHeaderTitle.innerHTML = `<i class="fa-solid fa-users"></i> Tìm thấy <span id="matchCount">${list.length}</span> kết quả phù hợp:`;
-    if (multiHeaderDesc) multiHeaderDesc.textContent = 'Bấm vào một Huynh Trưởng để xem Thư Bổ Nhiệm & Chi tiết';
+    if (multiHeaderDesc) multiHeaderDesc.textContent = (currentUserRole === 'guest')
+      ? '🔒 Vui lòng đăng nhập Huynh Trưởng để xem Thư Bổ Nhiệm & Chi tiết'
+      : 'Bấm vào một Huynh Trưởng để xem Thư Bổ Nhiệm & Chi tiết';
   } else {
     if (multiHeaderTitle) multiHeaderTitle.innerHTML = `<i class="fa-solid fa-users-line"></i> Danh Sách Huynh Trưởng - Giáo Lý Viên (${list.length} GLV)`;
-    if (multiHeaderDesc) multiHeaderDesc.textContent = 'Bấm vào thẻ bất kỳ để xem Thư Bổ Nhiệm & Chi tiết phân công';
+    if (multiHeaderDesc) multiHeaderDesc.textContent = (currentUserRole === 'guest')
+      ? '🔒 Vui lòng đăng nhập quyền Huynh Trưởng để tra cứu hồ sơ & Bổ Nhiệm Thư'
+      : 'Bấm vào thẻ bất kỳ để xem Thư Bổ Nhiệm & Chi tiết phân công';
   }
 
   list.forEach(item => {
@@ -2687,6 +2734,19 @@ function displayMultipleResults(list) {
     `;
 
     div.addEventListener('click', () => {
+      if (currentUserRole === 'guest') {
+        showCustomAlert({
+          title: 'Thông Tin Được Bảo Mật',
+          message: 'Hồ sơ Huynh Trưởng và Bổ Nhiệm Thư chỉ dành riêng cho Ban Huynh Trưởng và Quản Trị Viên!',
+          note: '🔒 Vui lòng đăng nhập tài khoản Huynh Trưởng để xem chi tiết.',
+          confirmText: 'Đăng Nhập Ngay',
+          type: 'warning',
+          iconClass: 'fa-solid fa-lock'
+        }).then(() => {
+          if (loginModal) loginModal.style.display = 'flex';
+        });
+        return;
+      }
       searchInput.value = item.id;
       if (clearSearchBtn) clearSearchBtn.style.display = 'block';
       displayProfileCard(item);
@@ -5081,6 +5141,19 @@ function setupEventListeners() {
   // Modal Danh Sách Toàn Bộ GLV
   if (viewAllBtn) {
     viewAllBtn.addEventListener('click', () => {
+      if (currentUserRole === 'guest') {
+        showCustomAlert({
+          title: 'Danh Sách Được Bảo Mật',
+          message: 'Danh sách và thông tin Huynh Trưởng chỉ dành cho Ban Huynh Trưởng và Quản Trị Viên!',
+          note: '🔒 Vui lòng đăng nhập tài khoản Huynh Trưởng để tra cứu.',
+          confirmText: 'Đăng Nhập Ngay',
+          type: 'warning',
+          iconClass: 'fa-solid fa-lock'
+        }).then(() => {
+          if (loginModal) loginModal.style.display = 'flex';
+        });
+        return;
+      }
       allGlvModal.style.display = 'flex';
       if (modalFilterInput) modalFilterInput.value = '';
       if (filterBlock) filterBlock.value = 'all';
