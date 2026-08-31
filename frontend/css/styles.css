@@ -7484,7 +7484,7 @@ span.flatpickr-weekday {
 }
 
 .modal-appointment-letter {
-  max-width: 840px !important;
+  max-width: 920px !important;
   width: 95vw;
   max-height: 90vh;
   display: flex;
@@ -7512,7 +7512,7 @@ span.flatpickr-weekday {
   padding: 10px;
   box-shadow: 0 8px 30px rgba(180, 83, 9, 0.12);
   width: 100%;
-  max-width: 740px;
+  max-width: 860px;
   box-sizing: border-box;
   margin: 0 auto;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
@@ -7521,7 +7521,7 @@ span.flatpickr-weekday {
 .letter-border-inner {
   border: 1.5px solid #d97706;
   border-radius: 10px;
-  padding: 2rem 2.2rem;
+  padding: 2.2rem 2.5rem;
   background: linear-gradient(180deg, #fffdf8 0%, #ffffff 100%);
   position: relative;
   box-sizing: border-box;
@@ -7543,7 +7543,7 @@ span.flatpickr-weekday {
 }
 
 .letter-church-info h4 {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: #78350f;
   margin: 0 0 0.2rem 0;
   font-weight: 700;
@@ -7552,7 +7552,7 @@ span.flatpickr-weekday {
 }
 
 .letter-church-info h3 {
-  font-size: 1.02rem;
+  font-size: 1.05rem;
   color: #991b1b;
   margin: 0.35rem 0 0 0;
   font-weight: 800;
@@ -7569,19 +7569,19 @@ span.flatpickr-weekday {
 }
 
 .letter-emblem-img {
-  width: 76px;
-  height: 76px;
+  width: 78px;
+  height: 78px;
   object-fit: contain;
   filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.15));
 }
 
 .letter-title-section {
   text-align: center;
-  margin: 1.25rem 0 1rem 0;
+  margin: 1.35rem 0 1rem 0;
 }
 
 .letter-main-title {
-  font-size: 1.85rem;
+  font-size: 1.95rem;
   color: #991b1b;
   font-weight: 800;
   letter-spacing: 1.5px;
@@ -7619,7 +7619,7 @@ span.flatpickr-weekday {
 .letter-intro {
   text-align: center;
   font-style: italic;
-  margin: 0.85rem 0;
+  margin: 0.95rem 0;
   color: #475569;
 }
 
@@ -7628,8 +7628,8 @@ span.flatpickr-weekday {
   background: #fff;
   border: 1.5px solid #fde68a;
   border-radius: 12px;
-  padding: 0.85rem 1rem;
-  margin: 0.85rem 0;
+  padding: 0.95rem 1rem;
+  margin: 0.95rem 0;
   box-shadow: 0 2px 8px rgba(180, 83, 9, 0.06);
 }
 
@@ -7641,7 +7641,7 @@ span.flatpickr-weekday {
 }
 
 .recipient-name {
-  font-size: 1.35rem;
+  font-size: 1.4rem;
   color: #0f172a;
   font-weight: 900;
   letter-spacing: 1px;
@@ -7682,36 +7682,41 @@ span.flatpickr-weekday {
 
 .letter-mission-box {
   background: #f8fafc;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px dashed #cbd5e1;
-  padding: 0.85rem 1.1rem;
-  margin: 1rem 0;
+  padding: 1rem 1.4rem;
+  margin: 1.1rem 0;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.6rem 1rem;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 0.75rem 1.5rem;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 680px) {
   .letter-mission-box {
     grid-template-columns: 1fr;
+    gap: 0.6rem;
   }
 }
 
 .mission-row {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.85rem;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  white-space: nowrap;
 }
 
 .mission-row .m-label {
   color: #64748b;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .mission-row .m-val {
   color: #1e293b;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .mission-row .m-val.highlight {
@@ -7725,19 +7730,59 @@ span.flatpickr-weekday {
   color: #475569;
   font-size: 0.86rem;
   line-height: 1.55;
-  margin: 1rem 0;
+  margin: 1.1rem 0;
   padding: 0 1rem;
 }
 
 .letter-date-signature {
-  margin-top: 1.25rem;
+  margin-top: 1.35rem;
 }
 
 .letter-date-line {
   text-align: right;
-  font-size: 0.84rem;
+  font-size: 0.86rem;
   color: #64748b;
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.75rem;
+  padding-right: 0.5rem;
+}
+
+.letter-signature-single-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-left: auto;
+  width: 260px;
+  max-width: 100%;
+  padding-right: 0.5rem;
+}
+
+.letter-signature-single-block .sig-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.letter-signature-single-block .sig-sub {
+  font-size: 0.76rem;
+  color: #64748b;
+  font-style: italic;
+  margin: 0.15rem 0 0 0;
+}
+
+.letter-signature-single-block .sig-space {
+  height: 60px;
+}
+
+.letter-signature-single-block .sig-name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #991b1b;
+  border-top: 1px dashed #cbd5e1;
+  padding-top: 0.4rem;
+  width: 100%;
 }
 
 .letter-signatures-grid {
