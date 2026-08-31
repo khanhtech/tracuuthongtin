@@ -213,6 +213,11 @@ switch ($method) {
         $classId = trim($data['class_id'] ?? ($data['classId'] ?? ''));
         $holyName = trim($data['holyName'] ?? ($data['holy_name'] ?? ''));
         $fullName = trim($data['fullName'] ?? ($data['full_name'] ?? ''));
+        if (empty($fullName) && (!empty($data['lastName']) || !empty($data['firstName']) || !empty($data['last_name']) || !empty($data['first_name']))) {
+            $l = trim($data['lastName'] ?? ($data['last_name'] ?? ''));
+            $f = trim($data['firstName'] ?? ($data['first_name'] ?? ''));
+            $fullName = trim($l . ' ' . $f);
+        }
         $gender = trim($data['gender'] ?? 'Nam');
         $rawNote = trim($data['note'] ?? ($data['role_in_class'] ?? 'Thiếu nhi'));
         $note = ($rawNote === 'Lớp trưởng') ? 'Lớp trưởng' : 'Thiếu nhi';

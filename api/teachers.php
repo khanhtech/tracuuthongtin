@@ -60,6 +60,17 @@ switch ($method) {
         $data = getJsonInput();
         $id = strtoupper(trim($data['id'] ?? ($data['teacher_id'] ?? '')));
         $firstName = trim($data['firstName'] ?? ($data['first_name'] ?? ''));
+        $lastName = trim($data['lastName'] ?? ($data['last_name'] ?? ''));
+        if (empty($firstName) && !empty($data['fullName'])) {
+            $parts = explode(' ', trim($data['fullName']));
+            $firstName = array_pop($parts);
+            if (empty($lastName)) $lastName = implode(' ', $parts);
+        }
+        if (empty($firstName) && !empty($data['name'])) {
+            $parts = explode(' ', trim($data['name']));
+            $firstName = array_pop($parts);
+            if (empty($lastName)) $lastName = implode(' ', $parts);
+        }
 
         if (empty($firstName)) {
             jsonResponse(false, "Tên Giáo Lý Viên không được để trống!", null, 400);

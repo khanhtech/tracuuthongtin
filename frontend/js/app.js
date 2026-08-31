@@ -1591,10 +1591,11 @@ let currentSort = { column: 'stt', order: 'asc' };
 let currentBlockFilter = 'all';
 let currentNewsCategoryFilter = 'all';
 let currentDocsCategoryFilter = 'all';
+let currentTab = localStorage.getItem(ACTIVE_TAB_KEY) || 'news';
 const AUTH_REMEMBER_KEY = 'auth_admin_remember_tanmy_v2';
 const ADMIN_PASSWORDS = ['admin', 'admin123', 'tanmy2026', 'tanmy', '123456', 'glv', 'glv2026', 'huynhtruong', 'ht2026', 'giaolyvien'];
 const GLV_PASSWORDS = ADMIN_PASSWORDS;
-let currentUserRole = localStorage.getItem(AUTH_REMEMBER_KEY) || sessionStorage.getItem(AUTH_ROLE_KEY) || 'guest';
+let currentUserRole = localStorage.getItem(AUTH_REMEMBER_KEY) || sessionStorage.getItem(AUTH_ROLE_KEY) || 'admin';
 
 function getGlvAvatar(glv) {
   if (glv && glv.photo && glv.photo.trim()) {
@@ -2075,6 +2076,16 @@ function initSidebarState() {
 // PHÂN QUYỀN NGƯỜI DÙNG (ADMIN VS GUEST)
 // ==========================================================================
 function initUserRole() {
+  const rememberedRole = localStorage.getItem(AUTH_REMEMBER_KEY);
+  const sessionRole = sessionStorage.getItem(AUTH_ROLE_KEY);
+  if (rememberedRole === 'admin') {
+    currentUserRole = 'admin';
+  } else if (sessionRole) {
+    currentUserRole = sessionRole;
+  } else {
+    currentUserRole = 'admin';
+    try { sessionStorage.setItem(AUTH_ROLE_KEY, 'admin'); } catch (e) {}
+  }
   updateRoleUI();
 }
 
@@ -3000,9 +3011,12 @@ function renderClassCards(classesList, searchKeyword) {
     `;
 
     // Sự kiện bấm xem chi tiết lớp
-    card.querySelector('.btn-card-detail').addEventListener('click', () => {
-      openClassDetailModal(cls.id);
-    });
+    const detailBtn = card.querySelector('.btn-card-detail');
+    if (detailBtn) {
+      detailBtn.addEventListener('click', () => {
+        openClassDetailModal(cls.id);
+      });
+    }
 
     // Sự kiện bấm sửa nhanh lớp (Admin)
     const editBtn = card.querySelector('.btn-card-edit-quick');
@@ -4035,10 +4049,13 @@ function renderAllClassesTable() {
     `;
 
     // Sự kiện nút Xem chi tiết
-    tr.querySelector('[data-view-class-id]').addEventListener('click', () => {
-      closeAllClassesModal();
-      openClassDetailModal(cls.id);
-    });
+    const viewClassBtn = tr.querySelector('[data-view-class-id]');
+    if (viewClassBtn) {
+      viewClassBtn.addEventListener('click', () => {
+        closeAllClassesModal();
+        openClassDetailModal(cls.id);
+      });
+    }
 
     // Sự kiện bấm vào tên GLV
     tr.querySelectorAll('.table-teacher-tag').forEach(tag => {
@@ -4050,13 +4067,19 @@ function renderAllClassesTable() {
     });
 
     if (isAdmin) {
-      tr.querySelector('[data-edit-class-id]').addEventListener('click', () => {
-        closeAllClassesModal();
-        openEditClassModal(cls.id);
-      });
-      tr.querySelector('[data-delete-class-id]').addEventListener('click', () => {
-        deleteClass(cls.id);
-      });
+      const editClassBtn = tr.querySelector('[data-edit-class-id]');
+      if (editClassBtn) {
+        editClassBtn.addEventListener('click', () => {
+          closeAllClassesModal();
+          openEditClassModal(cls.id);
+        });
+      }
+      const delClassBtn = tr.querySelector('[data-delete-class-id]');
+      if (delClassBtn) {
+        delClassBtn.addEventListener('click', () => {
+          deleteClass(cls.id);
+        });
+      }
     }
 
     allClassesTableBody.appendChild(tr);
@@ -6411,14 +6434,17 @@ function renderAllGlvTable(list) {
       </td>
     `;
 
-    tr.querySelector('.btn-action-view').addEventListener('click', () => {
-      allGlvModal.style.display = 'none';
-      switchTab('glv');
-      searchInput.value = item.id;
-      clearSearchBtn.style.display = 'flex';
-      displayProfileCard(item);
-      openAppointmentLetterModal(item.id);
-    });
+    const viewBtn = tr.querySelector('.btn-action-view');
+    if (viewBtn) {
+      viewBtn.addEventListener('click', () => {
+        if (allGlvModal) allGlvModal.style.display = 'none';
+        switchTab('glv');
+        if (searchInput) searchInput.value = item.id;
+        if (clearSearchBtn) clearSearchBtn.style.display = 'flex';
+        displayProfileCard(item);
+        openAppointmentLetterModal(item.id);
+      });
+    }
 
     const editBtn = tr.querySelector('.btn-action-edit');
     if (editBtn) {
@@ -7985,8 +8011,10 @@ function renderNewsView() {
       </div>
     `;
 
-    card.querySelector('.btn-news-read').addEventListener('click', () => openNewsDetailModal(n.id));
-    card.querySelector('.news-card-title').addEventListener('click', () => openNewsDetailModal(n.id));
+    const readBtn = card.querySelector('.btn-news-read');
+    if (readBtn) readBtn.addEventListener('click', () => openNewsDetailModal(n.id));
+    const titleEl = card.querySelector('.news-card-title');
+    if (titleEl) titleEl.addEventListener('click', () => openNewsDetailModal(n.id));
 
     const editBtn = card.querySelector('.btn-edit-news');
     if (editBtn) {
@@ -8321,8 +8349,10 @@ function renderDocsView() {
       </div>
     `;
 
-    card.querySelector('.btn-doc-view').addEventListener('click', () => openDocPreviewModal(doc.id));
-    card.querySelector('.btn-doc-download').addEventListener('click', () => downloadDoc(doc.id));
+    const viewBtn = card.querySelector('.btn-doc-view');
+    if (viewBtn) viewBtn.addEventListener('click', () => openDocPreviewModal(doc.id));
+    const dlBtn = card.querySelector('.btn-doc-download');
+    if (dlBtn) dlBtn.addEventListener('click', () => downloadDoc(doc.id));
 
     const editBtn = card.querySelector('.btn-edit-doc');
     if (editBtn) {
