@@ -2522,6 +2522,7 @@ function renderSuggestions(list) {
       if (clearSearchBtn) clearSearchBtn.style.display = 'flex';
       if (suggestionsBox) suggestionsBox.style.display = 'none';
       displayProfileCard(item);
+      openAppointmentLetterModal(item.id);
     });
 
     suggestionsBox.appendChild(div);
@@ -2660,10 +2661,10 @@ function displayMultipleResults(list) {
   
   if (searchInput && searchInput.value && searchInput.value.trim() !== '') {
     if (multiHeaderTitle) multiHeaderTitle.innerHTML = `<i class="fa-solid fa-users"></i> Tìm thấy <span id="matchCount">${list.length}</span> kết quả phù hợp:`;
-    if (multiHeaderDesc) multiHeaderDesc.textContent = 'Nhấp vào một Giáo Lý Viên để xem thẻ chi tiết';
+    if (multiHeaderDesc) multiHeaderDesc.textContent = 'Bấm vào một Huynh Trưởng để xem Thư Bổ Nhiệm & Chi tiết';
   } else {
-    if (multiHeaderTitle) multiHeaderTitle.innerHTML = `<i class="fa-solid fa-users-line"></i> Danh Sách Giáo Lý Viên (${list.length} GLV)`;
-    if (multiHeaderDesc) multiHeaderDesc.textContent = 'Dữ liệu được nạp trực tiếp từ Cơ Sở Dữ Liệu MySQL (XAMPP). Bấm vào thẻ để xem chi tiết';
+    if (multiHeaderTitle) multiHeaderTitle.innerHTML = `<i class="fa-solid fa-users-line"></i> Danh Sách Huynh Trưởng - Giáo Lý Viên (${list.length} GLV)`;
+    if (multiHeaderDesc) multiHeaderDesc.textContent = 'Bấm vào thẻ bất kỳ để xem Thư Bổ Nhiệm & Chi tiết phân công';
   }
 
   list.forEach(item => {
@@ -2683,16 +2684,13 @@ function displayMultipleResults(list) {
       </div>
       <div class="mini-holy" style="color: #991b1b; font-weight: 700; font-size: 0.82rem; margin-top: 0.4rem;">${item.holyName || ''}</div>
       <div class="mini-name" style="font-weight: 800; font-size: 1.05rem; color: #0f172a;">${item.lastName} ${item.firstName}</div>
-      <div style="margin-top: 0.4rem; padding-top: 0.35rem; border-top: 1px dashed #e2e8f0; font-size: 0.8rem; color: #475569; display: flex; justify-content: space-between; align-items: center;">
-        <span><i class="fa-solid fa-layer-group" style="color: #b91c1c;"></i> ${item.block ? 'Khối ' + item.block : 'Đoàn TNTT'}</span>
-        <span style="font-weight: 600; color: #0369a1;"><i class="fa-solid fa-chalkboard-user"></i> ${item.teachingClass || 'Chưa phân'}</span>
-      </div>
     `;
 
     div.addEventListener('click', () => {
       searchInput.value = item.id;
       if (clearSearchBtn) clearSearchBtn.style.display = 'block';
       displayProfileCard(item);
+      openAppointmentLetterModal(item.id);
     });
 
     glvGridList.appendChild(div);
