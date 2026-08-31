@@ -1778,6 +1778,8 @@ const formClassName = document.getElementById('formClassName');
 const formClassBlock = document.getElementById('formClassBlock');
 const formClassRoom = document.getElementById('formClassRoom');
 const formClassSchedule = document.getElementById('formClassSchedule');
+const formClassScheduleSelect = document.getElementById('formClassScheduleSelect');
+const formClassScheduleCustom = document.getElementById('formClassScheduleCustom');
 const formClassStudents = document.getElementById('formClassStudents');
 const formClassNote = document.getElementById('formClassNote');
 const teacherSearchFilter = document.getElementById('teacherSearchFilter');
@@ -4018,9 +4020,56 @@ async function deleteStudentFromClass(studentId, classId) {
   }
 }
 
+function setScheduleSelectValue(scheduleText) {
+  if (!formClassScheduleSelect) return;
+  const standardOptions = [
+    'Chúa Nhật: 07:30 - 09:00',
+    'Chúa Nhật: 09:00 - 10:30',
+    'Chúa Nhật: 14:30 - 16:00',
+    'Chúa Nhật: 16:00 - 17:30',
+    'Thứ Bảy: 17:30 - 19:00',
+    'Thứ Bảy: 19:00 - 20:30',
+    'Thứ Năm: 18:00 - 19:30'
+  ];
+
+  const trimmed = (scheduleText || '').trim();
+  let matched = standardOptions.find(opt => opt.toLowerCase() === trimmed.toLowerCase());
+
+  if (!matched && trimmed) {
+    matched = standardOptions.find(opt => {
+      const optNorm = removeVietnameseTones(opt.toLowerCase());
+      const trimNorm = removeVietnameseTones(trimmed.toLowerCase());
+      return optNorm.includes(trimNorm) || trimNorm.includes(optNorm);
+    });
+  }
+
+  if (matched) {
+    formClassScheduleSelect.value = matched;
+    if (formClassScheduleCustom) {
+      formClassScheduleCustom.style.display = 'none';
+      formClassScheduleCustom.value = '';
+    }
+    if (formClassSchedule) formClassSchedule.value = matched;
+  } else if (trimmed) {
+    formClassScheduleSelect.value = 'custom';
+    if (formClassScheduleCustom) {
+      formClassScheduleCustom.style.display = 'block';
+      formClassScheduleCustom.value = trimmed;
+    }
+    if (formClassSchedule) formClassSchedule.value = trimmed;
+  } else {
+    formClassScheduleSelect.value = 'Chúa Nhật: 07:30 - 09:00';
+    if (formClassScheduleCustom) {
+      formClassScheduleCustom.style.display = 'none';
+      formClassScheduleCustom.value = '';
+    }
+    if (formClassSchedule) formClassSchedule.value = 'Chúa Nhật: 07:30 - 09:00';
+  }
+}
+
 function openEditClassModal(classId = null) {
   if (currentUserRole === 'guest') {
-    showToast('Chỉ Quản Trị Viên (Admin) mới có quyền thêm/sửa lớp học!');
+    showToast('Chỉ Quản Trị Viên (Admin) hoặc Huynh Trưởng mới có quyền thêm/sửa lớp học!');
     return;
   }
 
@@ -4034,8 +4083,16 @@ function openEditClassModal(classId = null) {
     formClassName.value = cls.name;
     formClassBlock.value = cls.block;
     formClassRoom.value = cls.room || '';
-    formClassSchedule.value = cls.schedule || '';
-    formClassStudents.value = cls.studentCount || '';
+
+    // Sĩ số: Tự động lấy trực tiếp từ danh mục thiếu nhi của lớp
+    const classStudentsList = (typeof getClassStudents === 'function') ? getClassStudents(cls) : [];
+    const actualStudentCount = classStudentsList.length;
+    formClassStudents.value = actualStudentCount;
+    formClassStudents.readOnly = true;
+
+    // Thời gian học: Tự động chọn đúng khung giờ từ danh mục
+    setScheduleSelectValue(cls.schedule || 'Chúa Nhật: 07:30 - 09:00');
+
     formClassNote.value = cls.note || '';
 
     renderTeacherCheckboxes(cls.teacherIds || []);
@@ -4046,8 +4103,12 @@ function openEditClassModal(classId = null) {
     formClassName.value = '';
     formClassBlock.value = 'Khai Tâm';
     formClassRoom.value = '';
-    formClassSchedule.value = 'Chủ Nhật: 07:30 - 09:00';
-    formClassStudents.value = '30';
+
+    // Sĩ số lớp mới mặc định là 0 (Tự động tăng khi thêm thiếu nhi)
+    formClassStudents.value = '0';
+    formClassStudents.readOnly = true;
+
+    setScheduleSelectValue('Chúa Nhật: 07:30 - 09:00');
     formClassNote.value = '';
 
     renderTeacherCheckboxes([]);
@@ -4092,7 +4153,19 @@ function handleClassFormSubmit(e) {
   const name = formClassName.value.trim();
   const block = formClassBlock.value;
   const room = formClassRoom.value.trim();
-  const schedule = formClassSchedule.value.trim();
+
+  // Lấy thời gian học được chọn
+  let schedule = '';
+  if (formClassScheduleSelect && formClassScheduleSelect.value === 'custom') {
+    schedule = formClassScheduleCustom ? formClassScheduleCustom.value.trim() : '';
+  } else if (formClassScheduleSelect) {
+    schedule = formClassScheduleSelect.value;
+  } else if (formClassSchedule) {
+    schedule = formClassSchedule.value.trim();
+  }
+  if (!schedule) schedule = 'Chúa Nhật: 07:30 - 09:00';
+
+  // Sĩ số lấy trực tiếp từ ô đã tính toán tự động
   const studentCount = parseInt(formClassStudents.value) || 0;
   const note = formClassNote.value.trim();
 
@@ -5651,6 +5724,27 @@ function setupEventListeners() {
   }
   if (classEditForm) {
     classEditForm.addEventListener('submit', handleClassFormSubmit);
+  }
+
+  if (formClassScheduleSelect) {
+    formClassScheduleSelect.addEventListener('change', () => {
+      if (formClassScheduleSelect.value === 'custom') {
+        if (formClassScheduleCustom) {
+          formClassScheduleCustom.style.display = 'block';
+          formClassScheduleCustom.focus();
+          if (formClassSchedule) formClassSchedule.value = formClassScheduleCustom.value.trim() || 'Chúa Nhật: 07:30 - 09:00';
+        }
+      } else {
+        if (formClassScheduleCustom) formClassScheduleCustom.style.display = 'none';
+        if (formClassSchedule) formClassSchedule.value = formClassScheduleSelect.value;
+      }
+    });
+  }
+
+  if (formClassScheduleCustom) {
+    formClassScheduleCustom.addEventListener('input', () => {
+      if (formClassSchedule) formClassSchedule.value = formClassScheduleCustom.value.trim();
+    });
   }
 
   // 5. Sự kiện Xem Nhanh Thẻ GLV
