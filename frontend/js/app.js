@@ -4262,16 +4262,28 @@ function handleClassFormSubmit(e) {
 }
 
 function syncClassesWithGlvDatabase() {
-  // Cập nhật trường teachingClass và block cho các GLV theo danh sách lớp
+  // 1. Tạo bản đồ tra cứu Teacher ID -> Lớp học và Khối lớp từ danh mục Lớp Học
+  const teacherClassMap = {};
   classDatabase.forEach(cls => {
     (cls.teacherIds || []).forEach(tid => {
-      const glv = glvDatabase.find(g => g.id.toUpperCase() === tid.toUpperCase());
-      if (glv) {
-        glv.block = cls.block;
-        glv.teachingClass = cls.name;
+      if (tid) {
+        teacherClassMap[tid.toUpperCase()] = {
+          className: cls.name,
+          block: cls.block
+        };
       }
     });
   });
+
+  // 2. Tự động cập nhật vào toàn bộ hồ sơ trong glvDatabase
+  glvDatabase.forEach(glv => {
+    const idKey = glv.id.toUpperCase();
+    if (teacherClassMap[idKey]) {
+      glv.teachingClass = teacherClassMap[idKey].className;
+      glv.block = teacherClassMap[idKey].block;
+    }
+  });
+
   saveDatabase();
 }
 
@@ -5802,6 +5814,16 @@ function setupEventListeners() {
     });
   });
 
+  // Tự động đồng bộ Khối Lớp khi đổi Lớp Giảng Dạy trong Modal GLV
+  if (formClass) {
+    formClass.addEventListener('change', () => {
+      const selectedOpt = formClass.options[formClass.selectedIndex];
+      if (selectedOpt && selectedOpt.dataset.block && formBlock) {
+        formBlock.value = selectedOpt.dataset.block;
+      }
+    });
+  }
+
   // 5. Sự kiện Xem Nhanh Thẻ GLV
   const quickGlvModal = document.getElementById('glvQuickViewModal');
   const closeQuickGlvModalBtn = document.getElementById('closeQuickGlvModalBtn');
@@ -6324,6 +6346,22 @@ function generateNextGlvId() {
   return `GLV${String(nextNum).padStart(2, '0')}`;
 }
 
+function populateGlvClassSelect(selectedClassName = '') {
+  if (!formClass) return;
+  formClass.innerHTML = '<option value="">-- Chưa Phân Công Lớp --</option>';
+
+  classDatabase.forEach(cls => {
+    const opt = document.createElement('option');
+    opt.value = cls.name;
+    opt.dataset.block = cls.block;
+    opt.textContent = `${cls.name} (Khối ${cls.block})`;
+    if (selectedClassName && (selectedClassName.toLowerCase() === cls.name.toLowerCase() || selectedClassName.toLowerCase() === cls.id.toLowerCase())) {
+      opt.selected = true;
+    }
+    formClass.appendChild(opt);
+  });
+}
+
 function openAddModal() {
   if (currentUserRole !== 'admin') {
     showToast('Chỉ Quản Trị Viên (Admin) mới có quyền thêm mới Huynh Trưởng / GLV!');
@@ -6343,8 +6381,9 @@ function openAddModal() {
   formLastName.value = '';
   formFirstName.value = '';
   formCert.value = '';
+  
+  populateGlvClassSelect('');
   if (formBlock) formBlock.value = '';
-  formClass.value = '';
   if (formRole) formRole.value = 'Đồng hành';
   if (formStatus) formStatus.value = 'Đang dạy học';
   
@@ -6383,8 +6422,18 @@ function openEditModal(glvId) {
   formLastName.value = glv.lastName || '';
   formFirstName.value = glv.firstName || '';
   formCert.value = glv.cert || '';
-  if (formBlock) formBlock.value = glv.block || '';
-  formClass.value = glv.teachingClass || '';
+
+  // 1. Tự động kiểm tra xem GLV này đang được phân công ở lớp nào trong Danh mục Lớp Học
+  const assignedClass = classDatabase.find(c => (c.teacherIds || []).some(tid => tid.toUpperCase() === glv.id.toUpperCase()));
+  if (assignedClass) {
+    glv.teachingClass = assignedClass.name;
+    glv.block = assignedClass.block;
+  }
+
+  // 2. Điền tự động vào select lớp và khối
+  populateGlvClassSelect(glv.teachingClass || '');
+  if (formBlock) formBlock.value = glv.block || (assignedClass ? assignedClass.block : '');
+
   if (formRole) formRole.value = glv.role || 'Đồng hành';
   if (formStatus) formStatus.value = glv.status || 'Đang dạy học';
 
@@ -6515,6 +6564,23 @@ function saveGlvForm() {
       };
 
       saveDatabase();
+
+      // Tự động đồng bộ phân công sang danh mục Lớp Học
+      if (id) {
+        classDatabase.forEach(cls => {
+          if (!cls.teacherIds) cls.teacherIds = [];
+          if (teachingClass && cls.name.toLowerCase() === teachingClass.toLowerCase()) {
+            if (!cls.teacherIds.some(tid => tid.toUpperCase() === id.toUpperCase())) {
+              cls.teacherIds.push(id);
+            }
+          } else {
+            cls.teacherIds = cls.teacherIds.filter(tid => tid.toUpperCase() !== id.toUpperCase());
+          }
+        });
+        saveClassesDatabase();
+        if (currentTab === 'classes') renderClassesView();
+      }
+
       showToast(`Đã cập nhật thông tin ${glvDatabase[index].id} thành công!`);
 
       if (typeof API !== 'undefined' && API.isOnline) {
