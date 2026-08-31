@@ -7464,6 +7464,10 @@ span.flatpickr-weekday {
 /* ==========================================================================
    GIAO DIỆN & ĐỊNH DẠNG: THƯ BỔ NHIỆM HUYNH TRƯỞNG & GIÁO LÝ VIÊN
    ========================================================================== */
+#appointmentLetterModal {
+  z-index: 250000 !important;
+}
+
 .btn-appointment-letter {
   background: linear-gradient(135deg, #991b1b 0%, #b91c1c 100%) !important;
   color: #ffffff !important;

@@ -6295,6 +6295,7 @@ function renderAllGlvTable(list) {
       searchInput.value = item.id;
       clearSearchBtn.style.display = 'flex';
       displayProfileCard(item);
+      openAppointmentLetterModal(item.id);
     });
 
     const editBtn = tr.querySelector('.btn-action-edit');
