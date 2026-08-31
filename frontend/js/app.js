@@ -1685,6 +1685,7 @@ const printBtn = document.getElementById('printBtn');
 const copyBtn = document.getElementById('copyBtn');
 const resetBtn = document.getElementById('resetBtn');
 const editCurrentGlvBtn = document.getElementById('editCurrentGlvBtn');
+const openAppointmentFromCardBtn = document.getElementById('openAppointmentFromCardBtn');
 const viewAllBtn = document.getElementById('viewAllBtn');
 const addNewGlvBtn = document.getElementById('addNewGlvBtn');
 const modalAddGlvBtn = document.getElementById('modalAddGlvBtn');
@@ -1692,6 +1693,24 @@ const exportExcelBtn = document.getElementById('exportExcelBtn');
 const resetDataBtn = document.getElementById('resetDataBtn');
 const toastNotification = document.getElementById('toastNotification');
 const toastMessage = document.getElementById('toastMessage');
+
+// Modal Thư Bổ Nhiệm Huynh Trưởng
+const appointmentLetterModal = document.getElementById('appointmentLetterModal');
+const closeAppointmentLetterModalBtn = document.getElementById('closeAppointmentLetterModalBtn');
+const btnPrintAppointmentLetter = document.getElementById('btnPrintAppointmentLetter');
+const btnCloseLetterBtn = document.getElementById('btnCloseLetterBtn');
+const switchGlvInLetterSelect = document.getElementById('switchGlvInLetterSelect');
+const glvIdentitySelect = document.getElementById('glvIdentitySelect');
+
+const letterHolyName = document.getElementById('letterHolyName');
+const letterFullName = document.getElementById('letterFullName');
+const letterGlvId = document.getElementById('letterGlvId');
+const letterGlvCert = document.getElementById('letterGlvCert');
+const letterGlvRole = document.getElementById('letterGlvRole');
+const letterTeachingClass = document.getElementById('letterTeachingClass');
+const letterBlockName = document.getElementById('letterBlockName');
+const letterSchedule = document.getElementById('letterSchedule');
+const letterRoom = document.getElementById('letterRoom');
 
 // Modal Danh Sách Toàn Bộ GLV
 const allGlvModal = document.getElementById('allGlvModal');
@@ -1823,6 +1842,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateStatsDisplay();
     initClassModule();
     updateStudentStatsDisplay();
+    populateGlvIdentitySelectors();
     setupEventListeners();
     switchTab(currentTab);
     clearSearchAutofills();
@@ -1850,6 +1870,7 @@ async function initApiSync() {
       glvDatabase = dbTeachers;
       saveDatabase();
       updateStatsDisplay();
+      populateGlvIdentitySelectors();
       if (currentTab === 'glv' && !currentDisplayedGLV) {
         showWelcomeState();
       }
@@ -1993,6 +2014,15 @@ function switchTab(tabName) {
   }
 
   updateStudentStatsDisplay();
+
+  // Đồng bộ trạng thái Active trên thanh điều hướng Mobile Bottom Nav
+  document.querySelectorAll('.mobile-nav-item').forEach(item => {
+    if (item.dataset.tab === currentTab) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
 
   // Đóng sidebar trên mobile sau khi chọn tab
   closeMobileSidebar();
@@ -2191,6 +2221,63 @@ function checkAdminPassword() {
   }
 }
 
+function populateGlvIdentitySelectors() {
+  if (!Array.isArray(glvDatabase) || glvDatabase.length === 0) return;
+
+  const sortedGlvs = [...glvDatabase].sort((a, b) => (parseInt(a.stt) || 0) - (parseInt(b.stt) || 0));
+  const optionsHtml = sortedGlvs.map(t => {
+    const holy = t.holyName ? `${t.holyName} ` : '';
+    const name = `${t.lastName} ${t.firstName}`.trim();
+    const cls = t.teachingClass ? ` (${t.teachingClass})` : '';
+    return `<option value="${t.id}">${t.id} - ${holy}${name}${cls}</option>`;
+  }).join('');
+
+  if (glvIdentitySelect) {
+    glvIdentitySelect.innerHTML = optionsHtml;
+    // Mặc định chọn GLV03 (Maria Vũ Thị Thùy Dương) hoặc GLV đầu tiên
+    const defaultGlv = glvDatabase.find(t => t.id === 'GLV03') || glvDatabase[0];
+    if (defaultGlv) glvIdentitySelect.value = defaultGlv.id;
+  }
+
+  if (switchGlvInLetterSelect) {
+    switchGlvInLetterSelect.innerHTML = optionsHtml;
+  }
+}
+
+function openAppointmentLetterModal(glvId) {
+  if (!appointmentLetterModal) return;
+  
+  const targetId = glvId || (glvIdentitySelect ? glvIdentitySelect.value : '') || (currentDisplayedGLV ? currentDisplayedGLV.id : 'GLV03');
+  const glv = glvDatabase.find(t => String(t.id).toUpperCase() === String(targetId).toUpperCase()) || glvDatabase[0];
+  if (!glv) return;
+
+  if (letterHolyName) letterHolyName.textContent = (glv.holyName || '').trim().toUpperCase() || 'GIÁO LÝ VIÊN';
+  if (letterFullName) letterFullName.textContent = `${glv.lastName} ${glv.firstName}`.trim().toUpperCase();
+  if (letterGlvId) letterGlvId.textContent = `Mã GLV: ${glv.id}`;
+  if (letterGlvCert) letterGlvCert.textContent = glv.cert ? `Huynh Trưởng Cấp ${glv.cert}` : 'Huynh Trưởng';
+  
+  const roleName = glv.role || 'Đồng Hành';
+  if (letterGlvRole) letterGlvRole.textContent = `Huynh Trưởng ${roleName}`;
+  
+  const teachingClass = glv.teachingClass || 'Chưa phân công';
+  if (letterTeachingClass) letterTeachingClass.textContent = teachingClass ? `Lớp ${teachingClass}` : 'Chưa phân công';
+  if (letterBlockName) letterBlockName.textContent = glv.block ? `Khối ${glv.block}` : 'Đoàn TNTT Tân Mỹ';
+  
+  const matchedClass = classDatabase.find(c => c.name === glv.teachingClass || (c.teacherIds && c.teacherIds.includes(glv.id)));
+  if (letterSchedule) {
+    letterSchedule.textContent = matchedClass ? matchedClass.schedule : 'Chúa Nhật hàng tuần: 07:30 - 09:00';
+  }
+  if (letterRoom) {
+    letterRoom.textContent = matchedClass ? matchedClass.room : 'Hội Trường / Phòng Giáo Lý';
+  }
+
+  if (switchGlvInLetterSelect) {
+    switchGlvInLetterSelect.value = glv.id;
+  }
+
+  appointmentLetterModal.style.display = 'flex';
+}
+
 function checkGlvPassword() {
   const glvPasswordInput = document.getElementById('glvPasswordInput');
   const enteredPass = (glvPasswordInput ? glvPasswordInput.value : '').trim();
@@ -2200,7 +2287,12 @@ function checkGlvPassword() {
     if (wrapper) wrapper.classList.remove('error-shake');
     setRole('glv');
     if (loginModal) loginModal.style.display = 'none';
-    showToast('Đăng nhập vai trò Huynh Trưởng (GLV) thành công!');
+
+    // Tự động bật Modal Thư Bổ Nhiệm của Huynh Trưởng được chọn
+    const selectedGlvId = (glvIdentitySelect ? glvIdentitySelect.value : '') || (currentDisplayedGLV ? currentDisplayedGLV.id : 'GLV03');
+    openAppointmentLetterModal(selectedGlvId);
+
+    showToast('Đăng nhập thành công! Đang hiển thị Thư Bổ Nhiệm của Huynh Trưởng.');
   } else {
     if (wrapper) {
       wrapper.classList.remove('error-shake');
@@ -2353,34 +2445,43 @@ function updateStatsDisplay() {
 }
 
 function searchGLV(query) {
-  if (!query || query.trim() === '') return [];
+  if (!query || query.trim() === '') return (glvDatabase || []);
   const q = removeVietnameseTones(query.trim().toLowerCase());
   const rawQ = query.trim().toUpperCase();
 
-  return glvDatabase.filter(glv => {
-    // Tìm theo ID
-    if (glv.id.toUpperCase().includes(rawQ)) return true;
+  return (glvDatabase || []).filter(glv => {
+    if (!glv) return false;
+
+    // Tìm theo ID (ví dụ: GLV01, GLV1,...)
+    const glvId = String(glv.id || glv.teacher_id || '').toUpperCase();
+    if (glvId.includes(rawQ)) return true;
     
     // Tìm theo ID dạng số
-    const numPart = glv.id.replace(/\D/g, '');
+    const numPart = glvId.replace(/\D/g, '');
     if (rawQ === numPart || rawQ === String(parseInt(numPart, 10))) return true;
 
     // Tìm theo Tên Thánh
-    const holyNorm = removeVietnameseTones(glv.holyName || '');
+    const holyNorm = removeVietnameseTones(glv.holyName || glv.holy_name || '');
     if (holyNorm.includes(q)) return true;
 
-    // Tìm theo Họ tên
-    const fullNameNorm = removeVietnameseTones(`${glv.lastName} ${glv.firstName}`);
+    // Tìm theo Họ tên đầy đủ
+    const lastName = glv.lastName || glv.last_name || '';
+    const firstName = glv.firstName || glv.first_name || '';
+    const fullNameNorm = removeVietnameseTones(`${lastName} ${firstName}`);
     if (fullNameNorm.includes(q)) return true;
 
-    // Tìm theo Tên
-    const firstNameNorm = removeVietnameseTones(glv.firstName || '');
+    // Tìm theo Tên gọi
+    const firstNameNorm = removeVietnameseTones(firstName);
     if (firstNameNorm.includes(q)) return true;
 
     // Tìm theo Khối / Lớp
     const blockNorm = removeVietnameseTones(glv.block || '');
-    const classNorm = removeVietnameseTones(glv.teachingClass || '');
+    const classNorm = removeVietnameseTones(glv.teachingClass || glv.teaching_class || '');
     if (blockNorm.includes(q) || classNorm.includes(q)) return true;
+
+    // Tìm theo Chức vụ
+    const roleNorm = removeVietnameseTones(glv.role || '');
+    if (roleNorm.includes(q)) return true;
 
     return false;
   });
@@ -2417,9 +2518,9 @@ function renderSuggestions(list) {
     `;
 
     div.addEventListener('click', () => {
-      searchInput.value = item.id;
-      clearSearchBtn.style.display = 'flex';
-      suggestionsBox.style.display = 'none';
+      if (searchInput) searchInput.value = item.id;
+      if (clearSearchBtn) clearSearchBtn.style.display = 'flex';
+      if (suggestionsBox) suggestionsBox.style.display = 'none';
       displayProfileCard(item);
     });
 
@@ -2430,11 +2531,11 @@ function renderSuggestions(list) {
 }
 
 function hideAllStates() {
-  welcomeState.style.display = 'none';
-  loadingState.style.display = 'none';
-  notFoundState.style.display = 'none';
-  resultCard.style.display = 'none';
-  multipleResultsCard.style.display = 'none';
+  if (welcomeState) welcomeState.style.display = 'none';
+  if (loadingState) loadingState.style.display = 'none';
+  if (notFoundState) notFoundState.style.display = 'none';
+  if (resultCard) resultCard.style.display = 'none';
+  if (multipleResultsCard) multipleResultsCard.style.display = 'none';
 }
 
 function showWelcomeState() {
@@ -2443,7 +2544,7 @@ function showWelcomeState() {
   if (glvDatabase && glvDatabase.length > 0) {
     displayMultipleResults(glvDatabase);
   } else {
-    welcomeState.style.display = 'block';
+    if (welcomeState) welcomeState.style.display = 'block';
   }
   updateStatsDisplay();
 }
@@ -2455,21 +2556,14 @@ function executeSearch(query) {
   }
 
   hideAllStates();
-  loadingState.style.display = 'block';
+  const results = searchGLV(query);
 
-  setTimeout(() => {
-    hideAllStates();
-    const results = searchGLV(query);
-
-    if (results.length === 0) {
-      searchedKeyword.textContent = query;
-      notFoundState.style.display = 'block';
-    } else if (results.length === 1) {
-      displayProfileCard(results[0]);
-    } else {
-      displayMultipleResults(results);
-    }
-  }, 120);
+  if (results.length === 0) {
+    if (searchedKeyword) searchedKeyword.textContent = query;
+    if (notFoundState) notFoundState.style.display = 'block';
+  } else {
+    displayMultipleResults(results);
+  }
 }
 
 function displayProfileCard(glv) {
@@ -4656,6 +4750,17 @@ function setupEventListeners() {
     sidebarOverlay.addEventListener('click', closeMobileSidebar);
   }
 
+  // 1.1. Mobile Bottom Navigation Click Events
+  document.querySelectorAll('.mobile-nav-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetTab = btn.getAttribute('data-tab');
+      if (targetTab) {
+        switchTab(targetTab);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+  });
+
   // Tiện ích nhanh trên sidebar
   if (sidebarAddNewsBtn) {
     sidebarAddNewsBtn.addEventListener('click', () => {
@@ -4755,10 +4860,12 @@ function setupEventListeners() {
         debounceTimer = setTimeout(() => {
           const suggs = getSuggestions(val);
           renderSuggestions(suggs);
-        }, 150);
+          executeSearch(val);
+        }, 120);
       } else {
         if (clearSearchBtn) clearSearchBtn.style.display = 'none';
         if (suggestionsBox) suggestionsBox.style.display = 'none';
+        showWelcomeState();
       }
     });
 
@@ -4891,6 +4998,49 @@ function setupEventListeners() {
   });
 
   // Thao tác trên thẻ GLV
+  if (openAppointmentFromCardBtn) {
+    openAppointmentFromCardBtn.addEventListener('click', () => {
+      if (currentDisplayedGLV) {
+        openAppointmentLetterModal(currentDisplayedGLV.id);
+      } else {
+        openAppointmentLetterModal();
+      }
+    });
+  }
+
+  // Thao tác trên Modal Thư Bổ Nhiệm
+  if (btnPrintAppointmentLetter) {
+    btnPrintAppointmentLetter.addEventListener('click', () => {
+      window.print();
+    });
+  }
+
+  if (btnCloseLetterBtn) {
+    btnCloseLetterBtn.addEventListener('click', () => {
+      if (appointmentLetterModal) appointmentLetterModal.style.display = 'none';
+    });
+  }
+
+  if (closeAppointmentLetterModalBtn) {
+    closeAppointmentLetterModalBtn.addEventListener('click', () => {
+      if (appointmentLetterModal) appointmentLetterModal.style.display = 'none';
+    });
+  }
+
+  if (switchGlvInLetterSelect) {
+    switchGlvInLetterSelect.addEventListener('change', (e) => {
+      openAppointmentLetterModal(e.target.value);
+    });
+  }
+
+  if (appointmentLetterModal) {
+    appointmentLetterModal.addEventListener('click', (e) => {
+      if (e.target === appointmentLetterModal) {
+        appointmentLetterModal.style.display = 'none';
+      }
+    });
+  }
+
   if (printBtn) {
     printBtn.addEventListener('click', () => {
       window.print();

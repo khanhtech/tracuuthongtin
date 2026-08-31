@@ -113,7 +113,6 @@ body {
   display: flex;
   min-height: 100vh;
   position: relative;
-  z-index: 1;
 }
 
 .app-main-content {
@@ -369,7 +368,7 @@ body {
 /* Suggestions Dropdown */
 .suggestions-dropdown {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 6px);
   left: 0;
   right: 0;
   background: #ffffff;
@@ -378,17 +377,18 @@ body {
   max-height: 320px;
   overflow-y: auto;
   z-index: 99999;
-  box-shadow: 0 20px 35px -5px rgba(153, 27, 27, 0.18), 0 8px 15px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 15px 30px -5px rgba(153, 27, 27, 0.18), 0 8px 15px rgba(0, 0, 0, 0.06);
 }
 
 .suggestion-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.85rem 1.25rem;
+  padding: 0.65rem 1rem;
   cursor: pointer;
   border-bottom: 1px solid #fef2f2;
   transition: background 0.15s ease;
+  gap: 0.75rem;
 }
 
 .suggestion-item:last-child {
@@ -400,27 +400,55 @@ body {
   background: #fef2f2;
 }
 
+.sugg-left,
 .suggestion-left {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.65rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.sugg-avatar-img {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  max-width: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  border: 1.5px solid #fecaca !important;
+  flex-shrink: 0 !important;
+  display: inline-block !important;
 }
 
 .sugg-id {
   background: #fef2f2;
   border: 1px solid var(--primary-red-border);
   color: var(--primary-red-dark);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 800;
-  padding: 0.25rem 0.55rem;
+  padding: 0.2rem 0.45rem;
   border-radius: 6px;
   letter-spacing: 0.02em;
+  flex-shrink: 0;
 }
 
 .sugg-name {
   color: #0f172a;
   font-weight: 700;
-  font-size: 0.98rem;
+  font-size: 0.92rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sugg-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .sugg-holy {
@@ -433,13 +461,14 @@ body {
 }
 
 .sugg-cert {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 700;
   background: #fef3c7;
   color: var(--primary-gold-deep);
-  padding: 0.25rem 0.6rem;
+  padding: 0.2rem 0.55rem;
   border-radius: 6px;
   border: 1px solid var(--primary-gold-border);
+  white-space: nowrap;
 }
 
 /* Quick Tags */
@@ -3202,16 +3231,19 @@ input[readonly].input-locked-code {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(15, 23, 42, 0.5);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 998;
   opacity: 0;
   transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
 .sidebar-overlay.active {
   display: block !important;
   opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 /* Tự động thu gọn và mở toàn bộ trang web trên màn hình Mobile & Tablet */
@@ -3222,20 +3254,29 @@ input[readonly].input-locked-code {
   }
 
   .app-sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 295px;
-    height: 100vh;
-    z-index: 999;
-    transform: translateX(-100%);
-    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.18);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    width: 295px !important;
+    max-width: 85vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    z-index: 1050 !important;
+    transform: translateX(-100%) !important;
+    box-shadow: 6px 0 35px rgba(0, 0, 0, 0.25) !important;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    pointer-events: auto !important;
+    background: #ffffff !important;
   }
 
   .app-sidebar.sidebar-open {
     transform: translateX(0) !important;
+    pointer-events: auto !important;
+  }
+
+  .app-sidebar * {
+    pointer-events: auto;
   }
 
   .sidebar-close-btn {
@@ -4517,8 +4558,9 @@ input[readonly].input-locked-code {
     bottom: 0;
     left: 0;
     height: 100vh;
+    height: 100dvh;
     transform: translateX(-100%);
-    z-index: 1000;
+    z-index: 1050;
   }
 
   .app-sidebar.sidebar-open {
@@ -6923,4 +6965,963 @@ span.flatpickr-weekday {
   background: #dc2626;
   color: #ffffff;
   transform: scale(1.1);
+}
+
+/* ==========================================================================
+   MOBILE-FIRST & SMARTPHONE RESPONSIVE SYSTEM (MAX-WIDTH: 768px & 480px)
+   Tối ưu hóa hoàn hảo cho Điện thoại thông minh (iPhone, Samsung, Xiaomi,...)
+   ========================================================================== */
+
+/* 1. Mobile Bottom Navigation Bar (Thanh điều hướng cố định dưới đáy màn hình) */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+  z-index: 900;
+  padding: 0 0.4rem;
+  padding-bottom: env(safe-area-inset-bottom);
+  justify-content: space-around;
+  align-items: center;
+}
+
+.mobile-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: transparent;
+  border: none;
+  padding: 6px 4px;
+  color: #64748b;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.mobile-nav-item i {
+  font-size: 1.15rem;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.mobile-nav-item span {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.mobile-nav-item:active {
+  transform: scale(0.92);
+}
+
+.mobile-nav-item.active {
+  color: #dc2626;
+}
+
+.mobile-nav-item.active i {
+  color: #dc2626;
+  transform: translateY(-2px);
+}
+
+.mobile-nav-item.active span {
+  color: #7f1d1d;
+  font-weight: 800;
+}
+
+/* 2. Breakpoint Mobile & Tablet (<= 768px) */
+@media (max-width: 768px) {
+  body {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important;
+    overflow-x: hidden;
+  }
+
+  .mobile-bottom-nav {
+    display: flex !important;
+  }
+
+  .desktop-only-bar {
+    display: none !important;
+  }
+
+  /* Mobile Top Bar */
+  .mobile-top-bar {
+    display: flex !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 950 !important;
+    height: 56px !important;
+    padding: 0 1rem !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  .mobile-menu-btn {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 10px !important;
+    background: #fef2f2 !important;
+    border: 1px solid #fecaca !important;
+    color: #dc2626 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.1rem !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+  }
+
+  .mobile-menu-btn:active {
+    transform: scale(0.92);
+    background: #fee2e2 !important;
+  }
+
+  .mobile-brand-title {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.45rem !important;
+    font-size: 0.88rem !important;
+    font-weight: 800 !important;
+    color: #7f1d1d !important;
+    letter-spacing: -0.01em !important;
+  }
+
+  .mobile-brand-title i {
+    color: #f59e0b !important;
+    font-size: 1rem !important;
+  }
+
+  /* Container */
+  .container {
+    padding: 0.85rem 0.65rem 2rem !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden;
+  }
+
+  /* App Headers */
+  .app-header {
+    margin-bottom: 1.25rem !important;
+  }
+
+  .header-title {
+    font-size: clamp(1.2rem, 5.2vw, 1.65rem) !important;
+    line-height: 1.3 !important;
+    margin-bottom: 0.35rem !important;
+  }
+
+  .header-subtitle {
+    font-size: 0.82rem !important;
+    line-height: 1.45 !important;
+    padding: 0 0.25rem !important;
+  }
+
+  /* Search & Filter Cards */
+  .search-section {
+    margin-bottom: 1.25rem !important;
+  }
+
+  .search-card {
+    padding: 0.85rem !important;
+    border-radius: 14px !important;
+  }
+
+  .search-box-wrap {
+    flex-direction: column !important;
+    gap: 0.65rem !important;
+  }
+
+  .search-input-group {
+    width: 100% !important;
+  }
+
+  .search-input-group input,
+  .search-card input,
+  .search-card select {
+    font-size: 16px !important; /* 16px ngăn chặn iOS Safari tự phóng to màn hình khi bấm nhập */
+    min-height: 44px !important;
+  }
+
+  .filter-pills-wrap {
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    padding-bottom: 6px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .filter-pill {
+    padding: 0.4rem 0.75rem !important;
+    font-size: 0.76rem !important;
+  }
+
+  /* Stats Grid */
+  .stats-grid,
+  .class-overview-stats,
+  .glv-stats-summary {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.65rem !important;
+  }
+
+  .stat-card,
+  .overview-stat-box {
+    padding: 0.85rem 0.75rem !important;
+    border-radius: 14px !important;
+  }
+
+  .stat-card-value {
+    font-size: 1.35rem !important;
+  }
+
+  /* News Grid */
+  .news-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .news-card-thumb {
+    height: 180px !important;
+  }
+
+  .news-featured-banner {
+    padding: 1rem !important;
+    border-radius: 14px !important;
+  }
+
+  /* Class Cards Grid */
+  .class-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.85rem !important;
+  }
+
+  .class-card {
+    padding: 1rem 0.85rem !important;
+  }
+
+  /* Teacher Grid & Cards */
+  .teachers-grid,
+  .glv-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.85rem !important;
+  }
+
+  .glv-profile-card {
+    padding: 1.15rem 0.85rem !important;
+    border-radius: 16px !important;
+  }
+
+  .glv-card-layout {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 0.85rem !important;
+  }
+
+  .glv-avatar-wrapper {
+    width: 96px !important;
+    height: 96px !important;
+  }
+
+  .glv-info-details {
+    width: 100% !important;
+  }
+
+  .glv-detail-row {
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  .glv-action-buttons {
+    justify-content: center !important;
+    width: 100% !important;
+  }
+
+  /* Responsive Tables */
+  .table-responsive,
+  .table-responsive-wrapper,
+  .gradebook-table-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 12px !important;
+    border: 1px solid #f1f5f9 !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+    background: #ffffff !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .glv-table,
+  .students-table,
+  .classes-table,
+  .gradebook-table {
+    min-width: 620px !important;
+    font-size: 0.82rem !important;
+  }
+
+  .glv-table th,
+  .glv-table td,
+  .students-table th,
+  .students-table td {
+    padding: 0.6rem 0.5rem !important;
+  }
+
+  /* Modals - Mobile Bottom Sheet Style */
+  .modal-backdrop {
+    padding: 0 !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+  }
+
+  .modal-backdrop-top {
+    align-items: flex-end !important;
+  }
+
+  .modal-content,
+  .modal-large,
+  .modal-form,
+  .modal-auth,
+  .modal-dialog {
+    width: 100% !important;
+    max-width: 100vw !important;
+    max-height: 90vh !important;
+    border-radius: 20px 20px 0 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    animation: modalSheetUp 0.28s cubic-bezier(0.32, 0.72, 0, 1) !important;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  @keyframes modalSheetUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  .modal-header {
+    padding: 0.75rem 1rem 0.65rem !important;
+    position: sticky !important;
+    top: 0 !important;
+    background: #ffffff !important;
+    z-index: 10 !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+  }
+
+  .modal-title {
+    font-size: 0.95rem !important;
+    font-weight: 800 !important;
+    color: #7f1d1d !important;
+  }
+
+  .modal-close-btn {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 50% !important;
+    font-size: 1.1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  .modal-body,
+  .glv-edit-form,
+  .news-modal-body,
+  .doc-modal-body {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 0.85rem !important;
+    max-height: calc(90vh - 130px) !important;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  .form-group-full {
+    grid-column: span 1 !important;
+  }
+
+  .form-group label {
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.3rem !important;
+    color: #334155 !important;
+  }
+
+  .form-control,
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 16px !important;
+    min-height: 44px !important;
+    border-radius: 10px !important;
+    padding: 0.6rem 0.85rem !important;
+    border: 1.5px solid #e2e8f0 !important;
+  }
+
+  .modal-footer,
+  .form-footer {
+    position: sticky !important;
+    bottom: 0 !important;
+    background: #ffffff !important;
+    z-index: 10 !important;
+    padding: 0.75rem 1rem !important;
+    border-top: 1px solid #f1f5f9 !important;
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    gap: 0.5rem !important;
+  }
+
+  .modal-footer .btn,
+  .form-footer .btn,
+  .modal-footer button,
+  .form-footer button {
+    width: 100% !important;
+    min-height: 44px !important;
+    justify-content: center !important;
+    font-size: 0.88rem !important;
+    font-weight: 700 !important;
+    border-radius: 12px !important;
+  }
+
+  /* SweetAlert style Confirmation Modal */
+  .custom-confirm-box {
+    width: 90vw !important;
+    max-width: 90vw !important;
+    border-radius: 18px !important;
+    padding: 1.25rem 1rem !important;
+  }
+
+  .custom-confirm-actions {
+    flex-direction: column-reverse !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+  }
+
+  .custom-confirm-btn {
+    width: 100% !important;
+    min-height: 42px !important;
+    justify-content: center !important;
+  }
+
+  /* Document Items on Mobile */
+  .doc-list-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.65rem !important;
+    padding: 0.85rem !important;
+  }
+
+  .doc-actions-wrap {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 0.5rem !important;
+  }
+}
+
+/* 3. Extra Small Screens (<= 480px) */
+@media (max-width: 480px) {
+  .stats-grid,
+  .class-overview-stats,
+  .glv-stats-summary {
+    grid-template-columns: 1fr !important;
+  }
+
+  .btn-auth-icon-right {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.72rem !important;
+  }
+
+  .auth-role-text {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   GIAO DIỆN & ĐỊNH DẠNG: THƯ BỔ NHIỆM HUYNH TRƯỞNG & GIÁO LÝ VIÊN
+   ========================================================================== */
+.btn-appointment-letter {
+  background: linear-gradient(135deg, #991b1b 0%, #b91c1c 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid #7f1d1d !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 6px rgba(185, 28, 28, 0.25);
+  transition: all 0.2s ease !important;
+}
+
+.btn-appointment-letter:hover {
+  background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%) !important;
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+}
+
+.modal-appointment-letter {
+  max-width: 820px !important;
+  width: 96vw;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+}
+
+.appointment-letter-container {
+  padding: 1.25rem;
+  overflow-y: auto;
+  background: #f1f5f9;
+  display: flex;
+  justify-content: center;
+}
+
+.letter-paper {
+  background: #fffdfa;
+  border: 2px solid #b45309;
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 760px;
+  box-sizing: border-box;
+}
+
+.letter-border-inner {
+  border: 2px double #b45309;
+  border-radius: 8px;
+  padding: 1.5rem 1.8rem;
+  background: linear-gradient(180deg, rgba(254, 243, 199, 0.15) 0%, rgba(255, 255, 255, 0.95) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.letter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  border-bottom: 2px solid #fde68a;
+  padding-bottom: 0.85rem;
+  gap: 0.5rem;
+}
+
+.letter-church-info h4,
+.letter-motto-info h4 {
+  font-size: 0.72rem;
+  color: #78350f;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.letter-church-info h3 {
+  font-size: 0.95rem;
+  color: #991b1b;
+  margin: 0.15rem 0;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.letter-church-info p {
+  font-size: 0.75rem;
+  color: #1e293b;
+  margin: 0;
+  font-weight: 700;
+}
+
+.letter-motto-info .motto-text {
+  font-size: 0.68rem;
+  color: #b45309;
+  margin: 0.2rem 0 0 0;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.letter-emblem-box {
+  flex-shrink: 0;
+}
+
+.letter-emblem-img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(180, 83, 9, 0.25));
+}
+
+.letter-title-section {
+  text-align: center;
+  margin: 1.25rem 0 1rem 0;
+}
+
+.letter-main-title {
+  font-size: 1.75rem;
+  color: #991b1b;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin: 0;
+  font-family: 'Times New Roman', serif, 'Be Vietnam Pro';
+  text-shadow: 1px 1px 0 rgba(254, 243, 199, 0.8);
+}
+
+.letter-sub-title {
+  font-size: 1rem;
+  color: #b45309;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  margin: 0.35rem 0 0 0;
+}
+
+.letter-academic-year {
+  display: inline-block;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 0.25rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid #fde68a;
+  margin-top: 0.5rem;
+}
+
+.letter-body {
+  font-size: 0.92rem;
+  color: #334155;
+  line-height: 1.6;
+}
+
+.letter-intro {
+  text-align: center;
+  font-style: italic;
+  margin: 0.85rem 0;
+  color: #475569;
+}
+
+.letter-recipient-box {
+  text-align: center;
+  background: #fff;
+  border: 1.5px solid #fde68a;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  margin: 0.85rem 0;
+  box-shadow: 0 2px 8px rgba(180, 83, 9, 0.06);
+}
+
+.recipient-holy {
+  font-size: 0.9rem;
+  color: #b91c1c;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.recipient-name {
+  font-size: 1.35rem;
+  color: #0f172a;
+  font-weight: 900;
+  letter-spacing: 1px;
+  margin: 0.15rem 0 0.45rem 0;
+}
+
+.recipient-badges {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.letter-badge {
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 0.2rem 0.65rem;
+  border-radius: 6px;
+}
+
+.letter-badge.id-badge {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.letter-badge.cert-badge {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.letter-badge.role-badge {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.letter-mission-box {
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px dashed #cbd5e1;
+  padding: 0.85rem 1.1rem;
+  margin: 1rem 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem 1rem;
+}
+
+@media (max-width: 600px) {
+  .letter-mission-box {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mission-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.mission-row .m-label {
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
+.mission-row .m-val {
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.mission-row .m-val.highlight {
+  color: #b91c1c;
+  font-weight: 800;
+}
+
+.letter-blessing {
+  text-align: center;
+  font-style: italic;
+  color: #475569;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  margin: 1rem 0;
+  padding: 0 1rem;
+}
+
+.letter-date-signature {
+  margin-top: 1.25rem;
+}
+
+.letter-date-line {
+  text-align: right;
+  font-size: 0.84rem;
+  color: #64748b;
+  margin-bottom: 0.65rem;
+}
+
+.letter-signatures-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  text-align: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.sig-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sig-title {
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.sig-sub {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-style: italic;
+  margin-top: 0.1rem;
+}
+
+.sig-space {
+  height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.sig-seal-mock {
+  border: 2px dashed #dc2626;
+  color: #dc2626;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  font-weight: 800;
+  transform: rotate(-10deg);
+  opacity: 0.85;
+}
+
+.sig-seal-mock i {
+  font-size: 0.75rem;
+  margin-bottom: 2px;
+}
+
+.sig-name {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.appointment-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+}
+
+.select-other-glv-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.select-other-glv-wrapper label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.form-select-glv-letter {
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  border: 1.5px solid #cbd5e1;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1e293b;
+  outline: none;
+  background: #f8fafc;
+  cursor: pointer;
+  max-width: 230px;
+}
+
+.action-buttons-group {
+  display: flex;
+  gap: 0.65rem;
+}
+
+.btn-print-letter {
+  background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%) !important;
+  color: #fff !important;
+  font-weight: 700;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-print-letter:hover {
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%) !important;
+  transform: translateY(-1px);
+}
+
+.btn-close-letter {
+  background: linear-gradient(135deg, #15803d 0%, #16a34a 100%) !important;
+  color: #fff !important;
+  font-weight: 700;
+  padding: 0.55rem 1.1rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-close-letter:hover {
+  background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%) !important;
+  transform: translateY(-1px);
+}
+
+/* Print CSS: Chuyên dụng in Thư Bổ Nhiệm chuẩn A4 */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #appointmentLetterModal,
+  #appointmentLetterModal * {
+    visibility: visible;
+  }
+
+  #appointmentLetterModal {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: #ffffff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    z-index: 999999 !important;
+  }
+
+  .modal-appointment-letter {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+  }
+
+  .modal-header,
+  .modal-footer {
+    display: none !important;
+  }
+
+  .appointment-letter-container {
+    background: #ffffff !important;
+    padding: 0 !important;
+  }
+
+  .letter-paper {
+    border: 2px solid #b45309 !important;
+    box-shadow: none !important;
+    max-width: 100% !important;
+  }
 }

@@ -7,6 +7,31 @@
   <title>Website Quản Trị & Tra Cứu - Đoàn TNTT Giáo xứ Tân Mỹ</title>
   <meta name="description"
     content="Hệ thống tra cứu thông tin Giáo Lý Viên và quản lý Lớp Giáo Lý Đoàn TNTT Giáo xứ Tân Mỹ">
+  <meta name="theme-color" content="#0f2042">
+
+  <!-- Favicon Kinh Thánh & Thánh Giá (Holy Bible) -->
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=4.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png?v=4.0">
+  <link rel="shortcut icon" href="assets/favicon.ico?v=4.0">
+  <link rel="apple-touch-icon" href="assets/favicon.png?v=4.0">
+
+  <!-- OpenGraph / Social Share Preview (Zalo, Facebook, Messenger, Telegram) -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://doantnttgiaoxutanmy.dominico.io.vn/">
+  <meta property="og:title" content="Website Quản Trị & Tra Cứu - Đoàn TNTT Giáo xứ Tân Mỹ">
+  <meta property="og:description" content="Hệ thống tra cứu thông tin Giáo Lý Viên, Lớp Giáo Lý và Đoàn Sinh TNTT Giáo xứ Tân Mỹ">
+  <meta property="og:image" content="https://doantnttgiaoxutanmy.dominico.io.vn/frontend/assets/web_preview.jpg">
+  <meta property="og:image:secure_url" content="https://doantnttgiaoxutanmy.dominico.io.vn/frontend/assets/web_preview.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Website Quản Trị & Tra Cứu - Đoàn TNTT Giáo xứ Tân Mỹ">
+  <meta name="twitter:description" content="Hệ thống tra cứu thông tin Giáo Lý Viên, Lớp Giáo Lý và Đoàn Sinh TNTT Giáo xứ Tân Mỹ">
+  <meta name="twitter:image" content="https://doantnttgiaoxutanmy.dominico.io.vn/frontend/assets/web_preview.jpg">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -14,7 +39,7 @@
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <link rel="stylesheet" href="css/styles.css?v=2.0.6">
+  <link rel="stylesheet" href="css/styles.css?v=2.3.0">
 </head>
 
 <body>
@@ -24,10 +49,10 @@
     <div class="bg-glow bg-glow-2"></div>
   </div>
 
-  <!-- Mobile Overlay Backdrop -->
-  <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
   <div class="app-layout">
+    <!-- Mobile Overlay Backdrop -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <!-- ==========================================================================
          SIDEBAR NAVIGATION (MENU BÊN LỀ TRÁI)
          ========================================================================== -->
@@ -452,6 +477,11 @@
               </div>
 
               <div class="card-footer-actions">
+                <button class="btn-action btn-appointment-letter" id="openAppointmentFromCardBtn"
+                  title="Xem và In Thư Bổ Nhiệm của Huynh Trưởng này">
+                  <i class="fa-solid fa-scroll"></i>
+                  <span>Thư Bổ Nhiệm</span>
+                </button>
                 <button class="btn-action btn-edit-current" id="editCurrentGlvBtn"
                   title="Chỉnh sửa thông tin Giáo Lý Viên này">
                   <i class="fa-solid fa-pen-to-square"></i>
@@ -1695,6 +1725,12 @@
             </ul>
             <form class="admin-login-form" onsubmit="event.preventDefault();" autocomplete="off">
               <input type="text" name="fake_username_glv" style="display:none" autocomplete="username">
+              <div class="form-group-identity" style="margin-bottom: 0.75rem; text-align: left;">
+                <label for="glvIdentitySelect" style="display: block; font-size: 0.78rem; font-weight: 700; color: #dc2626; margin-bottom: 0.35rem;">
+                  <i class="fa-solid fa-user-tag"></i> Chọn Danh Tính Huynh Trưởng Của Bạn:
+                </label>
+                <select id="glvIdentitySelect" class="role-identity-select" style="width: 100%; padding: 0.6rem 0.8rem; border-radius: 8px; border: 1.5px solid #fecaca; background: #fff; font-size: 0.85rem; font-weight: 600; color: #1e293b; outline: none; cursor: pointer;"></select>
+              </div>
               <div class="password-field-wrapper">
                 <i class="fa-solid fa-lock" style="color: #dc2626;"></i>
                 <input type="password" id="glvPasswordInput" placeholder="Mật khẩu Huynh Trưởng..." autocomplete="current-password">
@@ -1729,6 +1765,129 @@
               <i class="fa-solid fa-arrow-right-to-bracket"></i> Dùng Quyền Khách (Guest)
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: THƯ BỔ NHIỆM HUYNH TRƯỞNG & GIÁO LÝ VIÊN
+       ========================================================================== -->
+  <div class="modal-backdrop modal-backdrop-top" id="appointmentLetterModal" style="display: none;">
+    <div class="modal-content modal-appointment-letter">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-scroll" style="color: #dc2626;"></i>
+          <span>Thư Bổ Nhiệm Huynh Trưởng - Niên Khóa 2026 - 2027</span>
+        </div>
+        <button class="modal-close-btn" id="closeAppointmentLetterModalBtn" title="Đóng thư"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="appointment-letter-container" id="appointmentLetterPrintArea">
+        <div class="letter-paper">
+          <div class="letter-border-inner">
+            <!-- Header Giao Xu & Doan The -->
+            <div class="letter-header">
+              <div class="letter-church-info">
+                <h4>GIÁO PHẬN PHÚ CƯỜNG</h4>
+                <h3>GIÁO XỨ TÂN MỸ</h3>
+                <p>ĐOÀN TNTT KITÔ VUA</p>
+              </div>
+              <div class="letter-emblem-box">
+                <img src="assets/bible.png" alt="TNTT" class="letter-emblem-img" onerror="this.src='../bible.png'">
+              </div>
+              <div class="letter-motto-info">
+                <h4>TỔNG LIÊN ĐOÀN TNTT VN</h4>
+                <p class="motto-text">HY SINH • CẦU NGUYỆN<br>RƯỚC LỄ • LÀM TÔNG ĐỒ</p>
+              </div>
+            </div>
+
+            <div class="letter-title-section">
+              <h1 class="letter-main-title">THƯ BỔ NHIỆM</h1>
+              <h2 class="letter-sub-title">HUYNH TRƯỞNG - GIÁO LÝ VIÊN PHỤ TRÁCH ĐỨNG LỚP</h2>
+              <div class="letter-academic-year">Niên Khóa Giáo Lý 2026 - 2027</div>
+            </div>
+
+            <div class="letter-body">
+              <p class="letter-intro">
+                Ban Tuyên Úy và Ban Quản Trị Đoàn Thiếu Nhi Thánh Thể Kitô Vua - Giáo xứ Tân Mỹ,<br>
+                Trân trọng công bố quyết định phân công tác vụ Giáo dục Đức tin & Huấn luyện Đoàn sinh cho:
+              </p>
+
+              <div class="letter-recipient-box">
+                <div class="recipient-holy" id="letterHolyName">MARIA</div>
+                <div class="recipient-name" id="letterFullName">VŨ THỊ THÙY DƯƠNG</div>
+                <div class="recipient-badges">
+                  <span class="letter-badge id-badge" id="letterGlvId">Mã GLV: GLV03</span>
+                  <span class="letter-badge cert-badge" id="letterGlvCert">Cấp 3</span>
+                  <span class="letter-badge role-badge" id="letterGlvRole">Huynh Trưởng Đồng Hành</span>
+                </div>
+              </div>
+
+              <div class="letter-mission-box">
+                <div class="mission-row">
+                  <span class="m-label"><i class="fa-solid fa-chalkboard-user"></i> Nhiệm vụ trao phó:</span>
+                  <strong class="m-val highlight" id="letterTeachingClass">Lớp Bao Đồng 2</strong>
+                </div>
+                <div class="mission-row">
+                  <span class="m-label"><i class="fa-solid fa-layer-group"></i> Thuộc ngành/khối:</span>
+                  <strong class="m-val" id="letterBlockName">Khối Bao Đồng</strong>
+                </div>
+                <div class="mission-row">
+                  <span class="m-label"><i class="fa-regular fa-clock"></i> Thời gian sinh hoạt:</span>
+                  <span class="m-val" id="letterSchedule">Chúa Nhật hàng tuần: 07:30 - 09:00</span>
+                </div>
+                <div class="mission-row">
+                  <span class="m-label"><i class="fa-solid fa-location-dot"></i> Địa điểm phòng học:</span>
+                  <span class="m-val" id="letterRoom">Hội Trường B</span>
+                </div>
+              </div>
+
+              <p class="letter-blessing">
+                "Nguyện xin Chúa Giêsu Thánh Thể - Huynh Trưởng Tối Cao chúc lành và tuôn đổ tràn đầy Thần Khí trên Anh/Chị, để Anh/Chị luôn nhiệt tâm, kiên trung và hăng say thi hành sứ vụ tông đồ gieo mầm Lời Chúa giữa các em Thiếu Nhi."
+              </p>
+
+              <div class="letter-date-signature">
+                <div class="letter-date-line">
+                  <em>Tân Mỹ, ngày 24 tháng 08 năm 2026</em>
+                </div>
+                <div class="letter-signatures-grid">
+                  <div class="sig-col">
+                    <span class="sig-title">BAN ĐIỀU HÀNH XỨ ĐOÀN</span>
+                    <span class="sig-sub">(Ký & ghi rõ họ tên)</span>
+                    <div class="sig-space"></div>
+                    <span class="sig-name">Xứ Đoàn Trưởng</span>
+                  </div>
+                  <div class="sig-col stamp-col">
+                    <span class="sig-title">CHA TUYÊN ÚY XỨ ĐOÀN</span>
+                    <span class="sig-sub">(Đã chuẩn nhận & chúc lành)</span>
+                    <div class="sig-space">
+                      <div class="sig-seal-mock">
+                        <i class="fa-solid fa-cross"></i>
+                        <span>GIÁO XỨ TÂN MỸ</span>
+                      </div>
+                    </div>
+                    <span class="sig-name">Linh Mục Tuyên Úy</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer appointment-footer">
+        <div class="select-other-glv-wrapper">
+          <label for="switchGlvInLetterSelect"><i class="fa-solid fa-arrows-rotate"></i> Xem Thư Của GLV Khác:</label>
+          <select id="switchGlvInLetterSelect" class="form-select-glv-letter"></select>
+        </div>
+        <div class="action-buttons-group">
+          <button type="button" class="btn-tool btn-print-letter" id="btnPrintAppointmentLetter">
+            <i class="fa-solid fa-print"></i> In Thư Bổ Nhiệm
+          </button>
+          <button type="button" class="btn-tool btn-close-letter" id="btnCloseLetterBtn">
+            <i class="fa-solid fa-check"></i> Vào Hệ Thống
+          </button>
         </div>
       </div>
     </div>
@@ -1970,6 +2129,30 @@
     </div>
   </div>
 
+  <!-- Mobile Bottom Navigation Bar (Dành riêng cho Điện thoại di động) -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <button class="mobile-nav-item active" data-tab="news" id="mobileNavNews" title="Bảng tin">
+      <i class="fa-solid fa-bullhorn"></i>
+      <span>Bảng Tin</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="glv" id="mobileNavGlv" title="Giáo Lý Viên">
+      <i class="fa-solid fa-fire"></i>
+      <span>Giáo Lý Viên</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="classes" id="mobileNavClasses" title="Lớp học">
+      <i class="fa-solid fa-chalkboard-user"></i>
+      <span>Lớp Học</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="students" id="mobileNavStudents" title="Thiếu nhi">
+      <i class="fa-solid fa-graduation-cap"></i>
+      <span>Thiếu Nhi</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="docs" id="mobileNavDocs" title="Tài liệu">
+      <i class="fa-solid fa-book-bible"></i>
+      <span>Tài Liệu</span>
+    </button>
+  </nav>
+
   <!-- Toast Notification -->
   <div id="toastNotification" class="toast">
     <i class="fa-solid fa-circle-check"></i>
@@ -1981,8 +2164,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
-  <script src="js/api.js?v=2.0.6"></script>
-  <script src="js/app.js?v=2.0.6"></script>
+  <script src="js/api.js?v=2.3.0"></script>
+  <script src="js/app.js?v=2.3.0"></script>
 </body>
 
 </html>
