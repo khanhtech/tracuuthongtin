@@ -2188,6 +2188,15 @@ function updateRoleUI() {
   if (currentTab === 'docs') {
     renderDocsView();
   }
+
+  // Sổ Điểm & Chuyên Cần (Chỉ Admin & Huynh Trưởng mới được sửa điểm / lưu điểm / đồng bộ điểm danh)
+  if (btnSaveGradebook) btnSaveGradebook.style.display = isGuest ? 'none' : 'inline-flex';
+  if (btnImportGradebookExcel) btnImportGradebookExcel.style.display = isGuest ? 'none' : 'inline-flex';
+  const attendanceActionGroup = document.getElementById('attendanceActionGroup');
+  if (attendanceActionGroup) attendanceActionGroup.style.display = isGuest ? 'none' : 'flex';
+  if (classGradebookModal && classGradebookModal.style.display !== 'none') {
+    renderGradebookTable();
+  }
 }
 
 function checkAdminPassword() {
@@ -5717,6 +5726,48 @@ function setupEventListeners() {
     });
   }
 
+  // Sự kiện Điểm Danh & Chuyên Cần
+  const btnOpenAttendanceModal = document.getElementById('btnOpenAttendanceModal');
+  if (btnOpenAttendanceModal) {
+    btnOpenAttendanceModal.addEventListener('click', () => {
+      openClassAttendanceModal(currentGradebookClassId, currentGradebookSemester);
+    });
+  }
+
+  const attendanceSemesterSelect = document.getElementById('attendanceSemesterSelect');
+  if (attendanceSemesterSelect) {
+    attendanceSemesterSelect.addEventListener('change', (e) => {
+      currentAttendanceSemester = e.target.value;
+      renderAttendanceTable();
+    });
+  }
+
+  const attendanceSessionTypeSelect = document.getElementById('attendanceSessionTypeSelect');
+  if (attendanceSessionTypeSelect) {
+    attendanceSessionTypeSelect.addEventListener('change', (e) => {
+      currentAttendanceSessionType = e.target.value;
+      renderAttendanceTable();
+    });
+  }
+
+  const attendanceDatePicker = document.getElementById('attendanceDatePicker');
+  if (attendanceDatePicker) {
+    attendanceDatePicker.addEventListener('change', (e) => {
+      currentAttendanceDate = e.target.value;
+      renderAttendanceTable();
+    });
+  }
+
+  const btnMarkAllPresent = document.getElementById('btnMarkAllPresent');
+  if (btnMarkAllPresent) {
+    btnMarkAllPresent.addEventListener('click', markAllStudentsPresent);
+  }
+
+  const btnSyncAttendanceToGradebook = document.getElementById('btnSyncAttendanceToGradebook');
+  if (btnSyncAttendanceToGradebook) {
+    btnSyncAttendanceToGradebook.addEventListener('click', syncAttendanceToGradebook);
+  }
+
   // 10. Sự kiện Phân hệ Thông Báo & Tin Tức
   const newsSearchInput = document.getElementById('newsSearchInput');
   const newsClearSearchBtn = document.getElementById('newsClearSearchBtn');
@@ -6856,6 +6907,9 @@ function renderGradebookTable() {
       const attAvg2 = calcAttendanceAvg(g.hk2?.t5, g.hk2?.cn, g.hk2?.gl);
       const subjAvg2 = calcSubjectAvg(g.hk2?.oral, g.hk2?.m15, g.hk2?.p1, g.hk2?.exam);
 
+      const isGuest = (currentUserRole === 'guest');
+      const roAttr = isGuest ? 'readonly disabled style="background:#f8fafc; cursor:not-allowed; opacity:0.85; border-color:#e2e8f0;"' : '';
+
       if (sem === 'hk1' || sem === 'hk2') {
         const curAttAvg = (sem === 'hk1') ? attAvg1 : attAvg2;
         const curSubjAvg = (sem === 'hk1') ? subjAvg1 : subjAvg2;
@@ -6885,13 +6939,13 @@ function renderGradebookTable() {
             
             <!-- Chuyên cần inputs (T5: 30%, CN: 30%, GL: 40%) -->
             <td style="text-align: center;">
-              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="t5" value="${gSem.t5 ?? ''}" oninput="handleGradeInputChange('${s.id}', '${sem}', 't5', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 't5', this.value)">
+              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="t5" value="${gSem.t5 ?? ''}" ${roAttr} oninput="handleGradeInputChange('${s.id}', '${sem}', 't5', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 't5', this.value)">
             </td>
             <td style="text-align: center;">
-              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="cn" value="${gSem.cn ?? ''}" oninput="handleGradeInputChange('${s.id}', '${sem}', 'cn', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 'cn', this.value)">
+              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="cn" value="${gSem.cn ?? ''}" ${roAttr} oninput="handleGradeInputChange('${s.id}', '${sem}', 'cn', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 'cn', this.value)">
             </td>
             <td style="text-align: center;">
-              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="gl" value="${gSem.gl ?? ''}" oninput="handleGradeInputChange('${s.id}', '${sem}', 'gl', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 'gl', this.value)">
+              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="gl" value="${gSem.gl ?? ''}" ${roAttr} oninput="handleGradeInputChange('${s.id}', '${sem}', 'gl', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 'gl', this.value)">
             </td>
             <td style="text-align: center;">
               <span class="grade-avg-badge grade-avg-att cell-att-avg">${curAttAvg !== null ? curAttAvg.toFixed(1) : '--'}</span>
@@ -6899,16 +6953,16 @@ function renderGradebookTable() {
 
             <!-- Kiểm tra môn giáo lý inputs (Miệng:1, 15p:1, 1 Tiết:2, Thi HK:3 / 7) -->
             <td style="text-align: center;">
-              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="oral" value="${gSem.oral ?? ''}" oninput="handleGradeInputChange('${s.id}', '${sem}', 'oral', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 'oral', this.value)">
+              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="oral" value="${gSem.oral ?? ''}" ${roAttr} oninput="handleGradeInputChange('${s.id}', '${sem}', 'oral', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 'oral', this.value)">
             </td>
             <td style="text-align: center;">
-              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="m15" value="${gSem.m15 ?? ''}" oninput="handleGradeInputChange('${s.id}', '${sem}', 'm15', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 'm15', this.value)">
+              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="m15" value="${gSem.m15 ?? ''}" ${roAttr} oninput="handleGradeInputChange('${s.id}', '${sem}', 'm15', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 'm15', this.value)">
             </td>
             <td style="text-align: center;">
-              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="p1" value="${gSem.p1 ?? ''}" oninput="handleGradeInputChange('${s.id}', '${sem}', 'p1', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 'p1', this.value)">
+              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="p1" value="${gSem.p1 ?? ''}" ${roAttr} oninput="handleGradeInputChange('${s.id}', '${sem}', 'p1', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 'p1', this.value)">
             </td>
             <td style="text-align: center;">
-              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="exam" value="${gSem.exam ?? ''}" oninput="handleGradeInputChange('${s.id}', '${sem}', 'exam', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 'exam', this.value)">
+              <input type="number" step="0.5" min="0" max="10" class="grade-input" data-sem="${sem}" data-field="exam" value="${gSem.exam ?? ''}" ${roAttr} oninput="handleGradeInputChange('${s.id}', '${sem}', 'exam', this.value)" onchange="handleGradeInputChange('${s.id}', '${sem}', 'exam', this.value)">
             </td>
             <td style="text-align: center;">
               <span class="grade-avg-badge grade-avg-subject cell-subj-avg">${curSubjAvg !== null ? curSubjAvg.toFixed(1) : '--'}</span>
@@ -7005,6 +7059,11 @@ function renderGradebookTable() {
 }
 
 function handleGradeInputChange(studentId, sem, field, value) {
+  if (currentUserRole === 'guest') {
+    showToast('Tài khoản Khách không có quyền chỉnh sửa điểm số!');
+    return;
+  }
+
   const cls = classDatabase.find(c => c.id === currentGradebookClassId);
   if (!cls) return;
 
@@ -7058,6 +7117,11 @@ function handleGradeInputChange(studentId, sem, field, value) {
 }
 
 async function saveClassGradebook() {
+  if (currentUserRole === 'guest') {
+    showToast('Tài khoản Khách chỉ có quyền xem và in bảng điểm.');
+    return;
+  }
+
   const cls = classDatabase.find(c => c.id === currentGradebookClassId);
   if (!cls) return;
 
@@ -7245,6 +7309,11 @@ function exportGradebookToExcel() {
 }
 
 function importGradebookFromExcel(file) {
+  if (currentUserRole === 'guest') {
+    showToast('Tài khoản Khách chỉ có quyền xem và in bảng điểm.');
+    return;
+  }
+
   if (!file || typeof XLSX === 'undefined') return;
 
   const reader = new FileReader();
@@ -7322,6 +7391,280 @@ function importGradebookFromExcel(file) {
     }
   };
   reader.readAsArrayBuffer(file);
+}
+
+// ==========================================================================
+// PHÂN HỆ ĐIỂM DANH & QUY ĐỔI ĐIỂM CHUYÊN CẦN
+// (LỄ THỨ 5, LỄ CHÚA NHẬT, HỌC GIÁO LÝ)
+// ==========================================================================
+let currentAttendanceClassId = null;
+let currentAttendanceSemester = 'hk1';
+let currentAttendanceSessionType = 't5'; // 't5' | 'cn' | 'gl'
+let currentAttendanceDate = new Date().toISOString().split('T')[0];
+
+function getStudentAttendance(student) {
+  if (!student.attendance) {
+    student.attendance = {
+      hk1: { t5_attended: 16, t5_total: 16, cn_attended: 16, cn_total: 16, gl_attended: 16, gl_total: 16, history: {} },
+      hk2: { t5_attended: 16, t5_total: 16, cn_attended: 16, cn_total: 16, gl_attended: 16, gl_total: 16, history: {} }
+    };
+    // Đồng bộ nếu học sinh đã có điểm chuyên cần sẵn
+    const g = getStudentGrades(student);
+    if (g.hk1) {
+      if (g.hk1.t5 !== undefined && g.hk1.t5 !== null && g.hk1.t5 !== '') {
+        student.attendance.hk1.t5_attended = Math.max(0, Math.min(16, Math.round((parseFloat(g.hk1.t5) / 10) * 16)));
+      }
+      if (g.hk1.cn !== undefined && g.hk1.cn !== null && g.hk1.cn !== '') {
+        student.attendance.hk1.cn_attended = Math.max(0, Math.min(16, Math.round((parseFloat(g.hk1.cn) / 10) * 16)));
+      }
+      if (g.hk1.gl !== undefined && g.hk1.gl !== null && g.hk1.gl !== '') {
+        student.attendance.hk1.gl_attended = Math.max(0, Math.min(16, Math.round((parseFloat(g.hk1.gl) / 10) * 16)));
+      }
+    }
+    if (g.hk2) {
+      if (g.hk2.t5 !== undefined && g.hk2.t5 !== null && g.hk2.t5 !== '') {
+        student.attendance.hk2.t5_attended = Math.max(0, Math.min(16, Math.round((parseFloat(g.hk2.t5) / 10) * 16)));
+      }
+      if (g.hk2.cn !== undefined && g.hk2.cn !== null && g.hk2.cn !== '') {
+        student.attendance.hk2.cn_attended = Math.max(0, Math.min(16, Math.round((parseFloat(g.hk2.cn) / 10) * 16)));
+      }
+      if (g.hk2.gl !== undefined && g.hk2.gl !== null && g.hk2.gl !== '') {
+        student.attendance.hk2.gl_attended = Math.max(0, Math.min(16, Math.round((parseFloat(g.hk2.gl) / 10) * 16)));
+      }
+    }
+  }
+  return student.attendance;
+}
+
+function openClassAttendanceModal(classId, semester = 'hk1') {
+  currentAttendanceClassId = classId || currentGradebookClassId || (classDatabase.length > 0 ? classDatabase[0].id : null);
+  if (!currentAttendanceClassId) {
+    showToast('Chưa chọn lớp học!');
+    return;
+  }
+  const cls = classDatabase.find(c => c.id === currentAttendanceClassId);
+  if (!cls) return;
+
+  currentAttendanceSemester = semester || currentGradebookSemester || 'hk1';
+  if (currentAttendanceSemester === 'final') currentAttendanceSemester = 'hk1';
+
+  const modal = document.getElementById('classAttendanceModal');
+  const title = document.getElementById('attendanceClassTitle');
+  const semSelect = document.getElementById('attendanceSemesterSelect');
+  const typeSelect = document.getElementById('attendanceSessionTypeSelect');
+  const datePicker = document.getElementById('attendanceDatePicker');
+
+  if (title) title.textContent = `Lớp ${cls.name}`;
+  if (semSelect) semSelect.value = currentAttendanceSemester;
+  if (typeSelect) typeSelect.value = currentAttendanceSessionType || 't5';
+  
+  if (datePicker) {
+    if (!datePicker.value) {
+      datePicker.value = new Date().toISOString().split('T')[0];
+    }
+    currentAttendanceDate = datePicker.value;
+  }
+
+  // Khóa thao tác nếu là guest
+  const isGuest = (currentUserRole === 'guest');
+  const actionGroup = document.getElementById('attendanceActionGroup');
+  if (actionGroup) actionGroup.style.display = isGuest ? 'none' : 'flex';
+
+  renderAttendanceTable();
+
+  if (modal) modal.style.display = 'flex';
+}
+
+function renderAttendanceTable() {
+  const tbody = document.getElementById('attendanceTableBody');
+  const colTodayTitle = document.getElementById('colAttendanceTodayTitle');
+  if (!tbody) return;
+
+  const cls = classDatabase.find(c => c.id === currentAttendanceClassId);
+  if (!cls) return;
+
+  const students = getClassStudents(cls);
+  const sem = currentAttendanceSemester;
+  const sessionType = currentAttendanceSessionType;
+  const date = currentAttendanceDate;
+  const isGuest = (currentUserRole === 'guest');
+
+  const sessionLabel = sessionType === 't5' ? 'Lễ T5' : (sessionType === 'cn' ? 'Lễ CN' : 'Học GL');
+  if (colTodayTitle) {
+    colTodayTitle.innerHTML = `<i class="fa-solid fa-user-check"></i> ${sessionLabel} (${date.slice(5)})`;
+  }
+
+  if (students.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 2rem; color: #94a3b8;">Lớp này chưa có danh sách thiếu nhi.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = students.map((s, idx) => {
+    const att = getStudentAttendance(s);
+    const semAtt = att[sem] || { t5_attended: 16, t5_total: 16, cn_attended: 16, cn_total: 16, gl_attended: 16, gl_total: 16, history: {} };
+    if (!semAtt.history) semAtt.history = {};
+
+    const historyKey = `${date}_${sessionType}`;
+    const todayStatus = semAtt.history[historyKey] || 'present'; // 'present' | 'excused' | 'absent'
+
+    // Điểm quy đổi = (buổi có mặt / 16) * 10
+    const scoreT5 = Math.max(0, Math.min(10, Math.round(((semAtt.t5_attended || 0) / Math.max(1, semAtt.t5_total || 16)) * 10 * 10) / 10));
+    const scoreCN = Math.max(0, Math.min(10, Math.round(((semAtt.cn_attended || 0) / Math.max(1, semAtt.cn_total || 16)) * 10 * 10) / 10));
+    const scoreGL = Math.max(0, Math.min(10, Math.round(((semAtt.gl_attended || 0) / Math.max(1, semAtt.gl_total || 16)) * 10 * 10) / 10));
+    const scoreAvgCC = Math.round((scoreT5 * 0.3 + scoreCN * 0.3 + scoreGL * 0.4) * 10) / 10;
+
+    let statusBtnHtml = '';
+    if (todayStatus === 'present') {
+      statusBtnHtml = `<button type="button" class="btn-att-status btn-status-present" ${isGuest ? 'disabled style="cursor:default;"' : `onclick="toggleStudentAttendanceStatus('${s.id}')"`} title="Đang có mặt - Bấm để chuyển vắng"><i class="fa-solid fa-check"></i> Có Mặt</button>`;
+    } else if (todayStatus === 'excused') {
+      statusBtnHtml = `<button type="button" class="btn-att-status btn-status-excused" ${isGuest ? 'disabled style="cursor:default;"' : `onclick="toggleStudentAttendanceStatus('${s.id}')"`} title="Vắng có phép - Bấm để chuyển vắng K.phép"><i class="fa-solid fa-file-pen"></i> Vắng Phép</button>`;
+    } else {
+      statusBtnHtml = `<button type="button" class="btn-att-status btn-status-absent" ${isGuest ? 'disabled style="cursor:default;"' : `onclick="toggleStudentAttendanceStatus('${s.id}')"`} title="Vắng không phép - Bấm để chuyển có mặt"><i class="fa-solid fa-xmark"></i> Vắng</button>`;
+    }
+
+    return `
+      <tr data-student-id="${s.id}">
+        <td style="text-align: center; color: #64748b; font-weight: 700;">${idx + 1}</td>
+        <td style="font-weight: 700; color: #0284c7;">${s.id}</td>
+        <td style="font-weight: 700; color: #b45309;">${s.holyName || ''}</td>
+        <td style="font-weight: 700; color: #0f172a;">${s.fullName}</td>
+        <td style="text-align: center;">
+          ${statusBtnHtml}
+        </td>
+        <td style="text-align: center;">
+          ${isGuest ? `<span style="font-weight: 700; color: #0369a1;">${semAtt.t5_attended}/16</span>` : `
+          <input type="number" min="0" max="16" value="${semAtt.t5_attended ?? 16}" style="width: 52px; text-align: center; font-weight: 700; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px;" onchange="updateAttendanceCounts('${s.id}', 't5', this.value)">
+          <span style="font-size: 0.75rem; color: #64748b;">/16</span>
+          `}
+          <div style="font-size: 0.72rem; color: #16a34a; font-weight: 700;">(${scoreT5.toFixed(1)}đ)</div>
+        </td>
+        <td style="text-align: center;">
+          ${isGuest ? `<span style="font-weight: 700; color: #0369a1;">${semAtt.cn_attended}/16</span>` : `
+          <input type="number" min="0" max="16" value="${semAtt.cn_attended ?? 16}" style="width: 52px; text-align: center; font-weight: 700; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px;" onchange="updateAttendanceCounts('${s.id}', 'cn', this.value)">
+          <span style="font-size: 0.75rem; color: #64748b;">/16</span>
+          `}
+          <div style="font-size: 0.72rem; color: #16a34a; font-weight: 700;">(${scoreCN.toFixed(1)}đ)</div>
+        </td>
+        <td style="text-align: center;">
+          ${isGuest ? `<span style="font-weight: 700; color: #0369a1;">${semAtt.gl_attended}/16</span>` : `
+          <input type="number" min="0" max="16" value="${semAtt.gl_attended ?? 16}" style="width: 52px; text-align: center; font-weight: 700; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px;" onchange="updateAttendanceCounts('${s.id}', 'gl', this.value)">
+          <span style="font-size: 0.75rem; color: #64748b;">/16</span>
+          `}
+          <div style="font-size: 0.72rem; color: #16a34a; font-weight: 700;">(${scoreGL.toFixed(1)}đ)</div>
+        </td>
+        <td style="text-align: center; font-weight: 900; color: #15803d; background: #f0fdf4; font-size: 0.95rem;">
+          ${scoreAvgCC.toFixed(1)}
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function toggleStudentAttendanceStatus(studentId) {
+  if (currentUserRole === 'guest') return;
+  const cls = classDatabase.find(c => c.id === currentAttendanceClassId);
+  if (!cls) return;
+
+  const students = getClassStudents(cls);
+  const student = students.find(s => s.id === studentId);
+  if (!student) return;
+
+  const att = getStudentAttendance(student);
+  const sem = currentAttendanceSemester;
+  const semAtt = att[sem];
+  if (!semAtt.history) semAtt.history = {};
+
+  const historyKey = `${currentAttendanceDate}_${currentAttendanceSessionType}`;
+  const cur = semAtt.history[historyKey] || 'present';
+  const typeKey = `${currentAttendanceSessionType}_attended`;
+
+  if (cur === 'present') {
+    semAtt.history[historyKey] = 'excused';
+  } else if (cur === 'excused') {
+    semAtt.history[historyKey] = 'absent';
+    semAtt[typeKey] = Math.max(0, (semAtt[typeKey] || 16) - 1);
+  } else {
+    semAtt.history[historyKey] = 'present';
+    semAtt[typeKey] = Math.min(16, (semAtt[typeKey] || 0) + 1);
+  }
+
+  renderAttendanceTable();
+}
+
+function updateAttendanceCounts(studentId, sessionType, newCount) {
+  if (currentUserRole === 'guest') return;
+  const cls = classDatabase.find(c => c.id === currentAttendanceClassId);
+  if (!cls) return;
+  const students = getClassStudents(cls);
+  const student = students.find(s => s.id === studentId);
+  if (!student) return;
+
+  const att = getStudentAttendance(student);
+  const sem = currentAttendanceSemester;
+  const semAtt = att[sem];
+  const count = Math.max(0, Math.min(16, parseInt(newCount, 10) || 0));
+  semAtt[`${sessionType}_attended`] = count;
+
+  renderAttendanceTable();
+}
+
+function markAllStudentsPresent() {
+  if (currentUserRole === 'guest') {
+    showToast('Tài khoản Khách không có quyền điểm danh!');
+    return;
+  }
+  const cls = classDatabase.find(c => c.id === currentAttendanceClassId);
+  if (!cls) return;
+  const students = getClassStudents(cls);
+  const sem = currentAttendanceSemester;
+  const sessionType = currentAttendanceSessionType;
+  const date = currentAttendanceDate;
+  const historyKey = `${date}_${sessionType}`;
+  const typeKey = `${sessionType}_attended`;
+
+  students.forEach(s => {
+    const att = getStudentAttendance(s);
+    const semAtt = att[sem];
+    if (!semAtt.history) semAtt.history = {};
+    if (semAtt.history[historyKey] === 'absent') {
+      semAtt[typeKey] = Math.min(16, (semAtt[typeKey] || 0) + 1);
+    }
+    semAtt.history[historyKey] = 'present';
+  });
+
+  renderAttendanceTable();
+  showToast('Đã điểm danh tất cả thiếu nhi Có Mặt!');
+}
+
+function syncAttendanceToGradebook() {
+  if (currentUserRole === 'guest') {
+    showToast('Tài khoản Khách không có quyền sửa điểm!');
+    return;
+  }
+  const cls = classDatabase.find(c => c.id === currentAttendanceClassId);
+  if (!cls) return;
+  const students = getClassStudents(cls);
+  const sem = currentAttendanceSemester;
+
+  students.forEach(s => {
+    const att = getStudentAttendance(s);
+    const semAtt = att[sem];
+    const scoreT5 = Math.max(0, Math.min(10, Math.round(((semAtt.t5_attended || 0) / Math.max(1, semAtt.t5_total || 16)) * 10 * 10) / 10));
+    const scoreCN = Math.max(0, Math.min(10, Math.round(((semAtt.cn_attended || 0) / Math.max(1, semAtt.cn_total || 16)) * 10 * 10) / 10));
+    const scoreGL = Math.max(0, Math.min(10, Math.round(((semAtt.gl_attended || 0) / Math.max(1, semAtt.gl_total || 16)) * 10 * 10) / 10));
+
+    const g = getStudentGrades(s);
+    if (!g[sem]) g[sem] = {};
+    g[sem].t5 = scoreT5;
+    g[sem].cn = scoreCN;
+    g[sem].gl = scoreGL;
+  });
+
+  saveClassesDatabase();
+  renderGradebookTable();
+  showToast(`⚡ Đã tự động quy đổi điểm chuyên cần (${sem.toUpperCase()}) và cập nhật vào Sổ Điểm!`);
+  const modal = document.getElementById('classAttendanceModal');
+  if (modal) modal.style.display = 'none';
 }
 
 function printStudentReportCard() {
