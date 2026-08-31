@@ -6456,6 +6456,7 @@ function setFormInputsLockState(isLocked) {
   if (saveBtn) saveBtn.style.display = isLocked ? 'none' : 'inline-flex';
 
   const isAdmin = (currentUserRole === 'admin');
+  const lockAdminFields = isLocked || !isAdmin;
 
   if (formId) {
     formId.disabled = false;
@@ -6471,22 +6472,20 @@ function setFormInputsLockState(isLocked) {
     formCert.classList.toggle('input-locked', isLocked);
   }
   if (formBlock) {
-    formBlock.disabled = isLocked;
-    formBlock.classList.toggle('input-locked', isLocked);
+    formBlock.disabled = lockAdminFields;
+    formBlock.classList.toggle('input-locked', lockAdminFields);
   }
   if (formClass) {
-    formClass.disabled = isLocked;
-    formClass.classList.toggle('input-locked', isLocked);
+    formClass.disabled = lockAdminFields;
+    formClass.classList.toggle('input-locked', lockAdminFields);
   }
   if (formRole) {
-    const lockRole = isLocked || !isAdmin;
-    formRole.disabled = lockRole;
-    formRole.classList.toggle('input-locked', lockRole);
+    formRole.disabled = lockAdminFields;
+    formRole.classList.toggle('input-locked', lockAdminFields);
   }
   if (formStatus) {
-    const lockStatus = isLocked || !isAdmin;
-    formStatus.disabled = lockStatus;
-    formStatus.classList.toggle('input-locked', lockStatus);
+    formStatus.disabled = lockAdminFields;
+    formStatus.classList.toggle('input-locked', lockAdminFields);
   }
   if (formHolyName) {
     formHolyName.disabled = isLocked;
@@ -6544,7 +6543,9 @@ function saveGlvForm() {
   if (originalId) {
     const index = glvDatabase.findIndex(item => item.id.toUpperCase() === originalId.toUpperCase());
     if (index !== -1) {
-      // Nếu không phải Admin, bảo lưu Vai trò và Trạng thái ban đầu
+      // Nếu không phải Admin, bảo lưu Khối Lớp, Lớp Giảng Dạy, Vai Trò và Trạng Thái ban đầu
+      const block = isAdmin ? (formBlock ? formBlock.value.trim() : (glvDatabase[index].block || '')) : (glvDatabase[index].block || '');
+      const teachingClass = isAdmin ? (formClass ? formClass.value.trim() : (glvDatabase[index].teachingClass || '')) : (glvDatabase[index].teachingClass || '');
       const role = isAdmin ? (formRole ? formRole.value.trim() : (glvDatabase[index].role || 'Đồng hành')) : (glvDatabase[index].role || 'Đồng hành');
       const status = isAdmin ? (formStatus ? formStatus.value.trim() : (glvDatabase[index].status || 'Đang dạy học')) : (glvDatabase[index].status || 'Đang dạy học');
 
@@ -6565,8 +6566,8 @@ function saveGlvForm() {
 
       saveDatabase();
 
-      // Tự động đồng bộ phân công sang danh mục Lớp Học
-      if (id) {
+      // Tự động đồng bộ phân công sang danh mục Lớp Học (chỉ khi Admin thay đổi)
+      if (isAdmin && id) {
         classDatabase.forEach(cls => {
           if (!cls.teacherIds) cls.teacherIds = [];
           if (teachingClass && cls.name.toLowerCase() === teachingClass.toLowerCase()) {
