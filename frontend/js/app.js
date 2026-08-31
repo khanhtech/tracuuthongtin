@@ -1591,10 +1591,10 @@ let currentSort = { column: 'stt', order: 'asc' };
 let currentBlockFilter = 'all';
 let currentNewsCategoryFilter = 'all';
 let currentDocsCategoryFilter = 'all';
-let currentTab = localStorage.getItem(ACTIVE_TAB_KEY) || 'news';
-let currentUserRole = sessionStorage.getItem(AUTH_ROLE_KEY) || 'guest';
-const ADMIN_PASSWORDS = ['admin', 'admin123', 'tanmy2026', 'tanmy'];
-const GLV_PASSWORDS = ['glv', 'glv2026', 'huynhtruong', 'ht2026', 'giaolyvien', 'tanmy'];
+const AUTH_REMEMBER_KEY = 'auth_admin_remember_tanmy_v2';
+const ADMIN_PASSWORDS = ['admin', 'admin123', 'tanmy2026', 'tanmy', '123456', 'glv', 'glv2026', 'huynhtruong', 'ht2026', 'giaolyvien'];
+const GLV_PASSWORDS = ADMIN_PASSWORDS;
+let currentUserRole = localStorage.getItem(AUTH_REMEMBER_KEY) || sessionStorage.getItem(AUTH_ROLE_KEY) || 'guest';
 
 function getGlvAvatar(glv) {
   if (glv && glv.photo && glv.photo.trim()) {
@@ -2201,13 +2201,21 @@ function updateRoleUI() {
 
 function checkAdminPassword() {
   const enteredPass = (adminPasswordInput ? adminPasswordInput.value : '').trim();
-  const wrapper = adminPasswordInput ? adminPasswordInput.closest('.password-field-wrapper') : null;
+  const wrapper = document.getElementById('loginPwWrapper') || (adminPasswordInput ? adminPasswordInput.closest('.password-field-wrapper') : null);
+  const rememberCheck = document.getElementById('rememberLoginCheck');
 
   if (ADMIN_PASSWORDS.includes(enteredPass.toLowerCase())) {
     if (wrapper) wrapper.classList.remove('error-shake');
+    
+    if (rememberCheck && rememberCheck.checked) {
+      localStorage.setItem(AUTH_REMEMBER_KEY, 'admin');
+    } else {
+      localStorage.removeItem(AUTH_REMEMBER_KEY);
+    }
+
     setRole('admin');
     if (loginModal) loginModal.style.display = 'none';
-    showToast('Đăng nhập Quản Trị Viên (Admin) thành công!');
+    showToast('Đăng nhập Quản Trị Viên thành công! Toàn quyền quản lý hệ thống.');
   } else {
     if (wrapper) {
       wrapper.classList.remove('error-shake');
@@ -2215,9 +2223,9 @@ function checkAdminPassword() {
       wrapper.classList.add('error-shake');
     }
     showCustomAlert({
-      title: 'Mật Khẩu Admin Không Đúng',
-      message: 'Mật khẩu Quản Trị Viên không chính xác! Vui lòng kiểm tra lại.',
-      note: '🔒 Quyền Quản Trị Viên chỉ dành riêng cho Ban Quản Trị Đoàn TNTT Giáo Xứ Tân Mỹ.',
+      title: 'Mật Khẩu Không Đúng',
+      message: 'Mật khẩu truy cập Quản Trị không chính xác! Vui lòng thử lại.',
+      note: '🔒 Mật khẩu mặc định: admin hoặc tanmy2026',
       confirmText: 'Thử Lại',
       type: 'danger',
       iconClass: 'fa-solid fa-shield-halved'
@@ -5036,9 +5044,11 @@ function setupEventListeners() {
 
   if (submitGuestLoginBtn) {
     submitGuestLoginBtn.addEventListener('click', () => {
+      localStorage.removeItem(AUTH_REMEMBER_KEY);
+      sessionStorage.removeItem(AUTH_ROLE_KEY);
       setRole('guest');
       if (loginModal) loginModal.style.display = 'none';
-      showToast('Đã chuyển sang vai trò Khách (Guest)!');
+      showToast('Đã chuyển sang chế độ Khách (Chỉ xem)!');
     });
   }
 

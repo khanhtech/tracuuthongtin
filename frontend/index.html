@@ -39,7 +39,7 @@
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <link rel="stylesheet" href="css/styles.css?v=3.2.0">
+  <link rel="stylesheet" href="css/styles.css?v=3.3.0">
 </head>
 
 <body>
@@ -1742,114 +1742,67 @@
   </div>
 
   <!-- ==========================================================================
-       MODAL: ĐĂNG NHẬP / ĐỔI VAI TRÒ (ADMIN / HUYNH TRƯỞNG / KHÁCH)
+  <!-- ==========================================================================
+       MODAL: ĐĂNG NHẬP NHANH 1 TÀI KHOẢN DUY NHẤT (QUẢN TRỊ VIÊN HỆ THỐNG)
        ========================================================================== -->
   <div class="modal-backdrop" id="loginModal" style="display: none;">
-    <div class="modal-content modal-auth">
+    <div class="modal-content modal-auth-single">
       <div class="modal-header">
         <div class="modal-title">
-          <i class="fa-solid fa-user-shield"></i>
-          <span>Đăng Nhập / Phân Quyền Sử Dụng</span>
+          <i class="fa-solid fa-shield-halved" style="color: #dc2626;"></i>
+          <span>Đăng Nhập Quản Trị Hệ Thống</span>
         </div>
-        <button class="modal-close-btn" id="closeLoginModalBtn"><i class="fa-solid fa-xmark"></i></button>
+        <button class="modal-close-btn" id="closeLoginModalBtn" title="Đóng"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <div class="auth-modal-body">
-        <p class="auth-modal-desc">Vui lòng chọn vai trò để sử dụng các tính năng tương ứng:</p>
+      <div class="auth-single-body">
+        <div class="auth-single-brand">
+          <div class="auth-single-logo">
+            <i class="fa-solid fa-cross"></i>
+          </div>
+          <h3 class="auth-single-title">Tài Khoản Quản Trị Hệ Thống</h3>
+          <p class="auth-single-sub">Đoàn Thiếu Nhi Thánh Thể Giáo xứ Tân Mỹ</p>
+        </div>
 
-        <div class="auth-cards-container">
-          <!-- 1. Card Admin -->
-          <div class="auth-role-card admin-card">
-            <div class="role-card-header">
-              <div class="role-icon-box admin-badge-icon">
-                <i class="fa-solid fa-cross"></i>
-              </div>
-              <div>
-                <h3 class="role-title">Quản Trị Viên</h3>
-                <span class="role-sub">Toàn quyền hệ thống</span>
-              </div>
-            </div>
-            <ul class="role-perm-list">
-              <li><i class="fa-solid fa-check"></i> Thêm, Sửa, Xóa hồ sơ GLV & Lớp học</li>
-              <li><i class="fa-solid fa-check"></i> Đăng, Sửa, Xóa bài Thông Báo</li>
-              <li><i class="fa-solid fa-check"></i> Phân công GLV & Quản lý Thiếu Nhi</li>
-              <li><i class="fa-solid fa-check"></i> Khôi phục dữ liệu & Xuất Excel</li>
-            </ul>
-            <form class="admin-login-form" onsubmit="event.preventDefault();" autocomplete="off">
-              <input type="text" name="fake_username_remember" style="display:none" autocomplete="username">
-              <div class="password-field-wrapper">
-                <i class="fa-solid fa-lock" style="color: #d97706;"></i>
-                <input type="password" id="adminPasswordInput" placeholder="Mật khẩu Admin..." autocomplete="current-password">
-                <button type="button" id="togglePasswordBtn" class="btn-toggle-pw" title="Ẩn/Hiện mật khẩu">
-                  <i class="fa-solid fa-eye-slash" id="togglePasswordIcon"></i>
-                </button>
-              </div>
-              <button type="button" class="btn-role-submit btn-submit-admin" id="submitAdminLoginBtn">
-                <i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập Admin
+        <div class="auth-single-benefits">
+          <div class="auth-benefit-item"><i class="fa-solid fa-circle-check"></i> Toàn quyền Quản lý & Sửa hồ sơ Giáo Lý Viên</div>
+          <div class="auth-benefit-item"><i class="fa-solid fa-circle-check"></i> Quản lý Lớp học, Sổ Điểm, Điểm danh & Thiếu Nhi</div>
+          <div class="auth-benefit-item"><i class="fa-solid fa-circle-check"></i> Đăng Bảng Tin & Kho Tài Liệu Giáo Lý</div>
+        </div>
+
+        <form class="auth-single-form" id="quickLoginForm" onsubmit="event.preventDefault();" autocomplete="off">
+          <input type="text" name="fake_username_remember" style="display:none" autocomplete="username" value="admin">
+          
+          <div class="auth-input-group">
+            <label for="adminPasswordInput" class="auth-input-label">
+              <i class="fa-solid fa-key"></i> Mật khẩu truy cập Quản Trị:
+            </label>
+            <div class="password-field-wrapper" id="loginPwWrapper">
+              <i class="fa-solid fa-lock" style="color: #dc2626;"></i>
+              <input type="password" id="adminPasswordInput" placeholder="Nhập mật khẩu (VD: admin hoặc tanmy2026)..." autocomplete="current-password">
+              <button type="button" id="togglePasswordBtn" class="btn-toggle-pw" title="Ẩn/Hiện mật khẩu">
+                <i class="fa-solid fa-eye-slash" id="togglePasswordIcon"></i>
               </button>
-            </form>
+            </div>
           </div>
 
-          <!-- 2. Card Huynh Trưởng / GLV -->
-          <div class="auth-role-card glv-card">
-            <div class="role-card-header">
-              <div class="role-icon-box glv-badge-icon">
-                <i class="fa-solid fa-fire"></i>
-              </div>
-              <div>
-                <h3 class="role-title">Huynh Trưởng</h3>
-                <span class="role-sub">Quản lý lớp & tài liệu</span>
-              </div>
-            </div>
-            <ul class="role-perm-list">
-              <li><i class="fa-solid fa-check"></i> Thêm & Sửa dữ liệu <strong>Thiếu Nhi</strong></li>
-              <li><i class="fa-solid fa-check"></i> Thêm & Sửa hồ sơ <strong>Huynh Trưởng</strong></li>
-              <li><i class="fa-solid fa-check"></i> Đăng tài liệu vào <strong>Kho Tài Liệu</strong></li>
-              <li><i class="fa-solid fa-eye"></i> Chỉ có quyền <strong>Xem Bảng Tin</strong></li>
-            </ul>
-            <form class="admin-login-form" onsubmit="event.preventDefault();" autocomplete="off">
-              <input type="text" name="fake_username_glv" style="display:none" autocomplete="username">
-              <div class="form-group-identity" style="margin-bottom: 0.75rem; text-align: left;">
-                <label for="glvIdentitySelect" style="display: block; font-size: 0.78rem; font-weight: 700; color: #dc2626; margin-bottom: 0.35rem;">
-                  <i class="fa-solid fa-user-tag"></i> Chọn Danh Tính Huynh Trưởng Của Bạn:
-                </label>
-                <select id="glvIdentitySelect" class="role-identity-select" style="width: 100%; padding: 0.6rem 0.8rem; border-radius: 8px; border: 1.5px solid #fecaca; background: #fff; font-size: 0.85rem; font-weight: 600; color: #1e293b; outline: none; cursor: pointer;"></select>
-              </div>
-              <div class="password-field-wrapper">
-                <i class="fa-solid fa-lock" style="color: #dc2626;"></i>
-                <input type="password" id="glvPasswordInput" placeholder="Mật khẩu Huynh Trưởng..." autocomplete="current-password">
-                <button type="button" id="toggleGlvPasswordBtn" class="btn-toggle-pw" title="Ẩn/Hiện mật khẩu">
-                  <i class="fa-solid fa-eye-slash" id="toggleGlvPasswordIcon"></i>
-                </button>
-              </div>
-              <button type="button" class="btn-role-submit btn-submit-glv" id="submitGlvLoginBtn">
-                <i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập Huynh Trưởng
-              </button>
-            </form>
+          <div class="auth-remember-row">
+            <label class="remember-checkbox-label">
+              <input type="checkbox" id="rememberLoginCheck" checked>
+              <span><i class="fa-solid fa-clock-rotate-left"></i> Ghi nhớ đăng nhập (Tự động đăng nhập lần sau)</span>
+            </label>
           </div>
 
-          <!-- 3. Card Khách (Guest) -->
-          <div class="auth-role-card guest-card">
-            <div class="role-card-header">
-              <div class="role-icon-box guest-badge-icon">
-                <i class="fa-solid fa-user"></i>
-              </div>
-              <div>
-                <h3 class="role-title">Khách (Guest)</h3>
-                <span class="role-sub">Chỉ có quyền xem</span>
-              </div>
-            </div>
-            <ul class="role-perm-list">
-              <li><i class="fa-solid fa-eye"></i> Tra cứu danh sách & Thẻ GLV</li>
-              <li><i class="fa-solid fa-eye"></i> Xem danh sách các Lớp Giáo Lý</li>
-              <li><i class="fa-solid fa-eye"></i> Xem danh sách Thiếu Nhi & Bảng Tin</li>
-              <li class="disabled"><i class="fa-solid fa-ban"></i> Không thể Thêm/Sửa/Xóa dữ liệu</li>
-            </ul>
-            <button type="button" class="btn-role-submit btn-submit-guest" id="submitGuestLoginBtn">
-              <i class="fa-solid fa-arrow-right-to-bracket"></i> Dùng Quyền Khách (Guest)
+          <button type="button" class="btn-single-login-submit" id="submitAdminLoginBtn">
+            <i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập Quản Trị Ngay
+          </button>
+
+          <div class="auth-single-footer">
+            <button type="button" class="btn-switch-guest-link" id="submitGuestLoginBtn">
+              <i class="fa-solid fa-user"></i> Tiếp tục xem với tư cách <strong>Khách (Chỉ xem)</strong>
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   </div>
@@ -2231,8 +2184,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
-  <script src="js/api.js?v=3.2.0"></script>
-  <script src="js/app.js?v=3.2.0"></script>
+  <script src="js/api.js?v=3.3.0"></script>
+  <script src="js/app.js?v=3.3.0"></script>
 </body>
 
 </html>
