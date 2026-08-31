@@ -8565,3 +8565,163 @@ span.flatpickr-weekday {
     font-size: 0.8rem !important;
   }
 }
+
+/* ==========================================================================
+   CLASS EDIT MODAL & INTERACTIVE TIME STEPPER
+   ========================================================================== */
+#editClassModal .modal-content {
+  max-width: 680px;
+  width: 95vw;
+}
+
+.class-schedule-card {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1rem 1.15rem;
+  margin: 0.25rem 0;
+}
+
+.schedule-card-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+  margin-bottom: 0.75rem !important;
+  font-weight: 800 !important;
+  color: #1e293b !important;
+  font-size: 0.85rem !important;
+}
+
+.schedule-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.schedule-stepper-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr 1fr;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.schedule-stepper-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.stepper-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.time-stepper-box {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.time-stepper-box:focus-within {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.time-picker-input {
+  flex: 1;
+  border: none !important;
+  outline: none !important;
+  text-align: center;
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: #0f172a;
+  padding: 0.5rem 0.2rem !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  min-height: 38px !important;
+}
+
+.btn-time-step {
+  width: 36px;
+  height: 38px;
+  border: none;
+  background: #f1f5f9;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.btn-time-step:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.btn-time-step:active {
+  background: #fecaca;
+  transform: scale(0.92);
+}
+
+.schedule-quick-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  margin-top: 0.85rem;
+  padding-top: 0.65rem;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.chips-title {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.btn-time-chip {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-time-chip:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #dc2626;
+  transform: translateY(-1px);
+}
+
+.btn-time-chip:active {
+  transform: scale(0.95);
+}
+
+@media (max-width: 640px) {
+  .schedule-stepper-grid {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+}

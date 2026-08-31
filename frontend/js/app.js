@@ -1778,8 +1778,14 @@ const formClassName = document.getElementById('formClassName');
 const formClassBlock = document.getElementById('formClassBlock');
 const formClassRoom = document.getElementById('formClassRoom');
 const formClassSchedule = document.getElementById('formClassSchedule');
-const formClassScheduleSelect = document.getElementById('formClassScheduleSelect');
-const formClassScheduleCustom = document.getElementById('formClassScheduleCustom');
+const formClassDaySelect = document.getElementById('formClassDaySelect');
+const formClassStartTime = document.getElementById('formClassStartTime');
+const formClassEndTime = document.getElementById('formClassEndTime');
+const btnStartTimeUp = document.getElementById('btnStartTimeUp');
+const btnStartTimeDown = document.getElementById('btnStartTimeDown');
+const btnEndTimeUp = document.getElementById('btnEndTimeUp');
+const btnEndTimeDown = document.getElementById('btnEndTimeDown');
+const schedulePreviewText = document.getElementById('schedulePreviewText');
 const formClassStudents = document.getElementById('formClassStudents');
 const formClassNote = document.getElementById('formClassNote');
 const teacherSearchFilter = document.getElementById('teacherSearchFilter');
@@ -4020,51 +4026,64 @@ async function deleteStudentFromClass(studentId, classId) {
   }
 }
 
-function setScheduleSelectValue(scheduleText) {
-  if (!formClassScheduleSelect) return;
-  const standardOptions = [
-    'Chúa Nhật: 07:30 - 09:00',
-    'Chúa Nhật: 09:00 - 10:30',
-    'Chúa Nhật: 14:30 - 16:00',
-    'Chúa Nhật: 16:00 - 17:30',
-    'Thứ Bảy: 17:30 - 19:00',
-    'Thứ Bảy: 19:00 - 20:30',
-    'Thứ Năm: 18:00 - 19:30'
-  ];
+function stepTimeInput(inputElement, deltaMinutes) {
+  if (!inputElement) return;
+  const current = inputElement.value || '07:30';
+  const parts = current.split(':');
+  let h = parseInt(parts[0], 10) || 0;
+  let m = parseInt(parts[1], 10) || 0;
 
-  const trimmed = (scheduleText || '').trim();
-  let matched = standardOptions.find(opt => opt.toLowerCase() === trimmed.toLowerCase());
+  let totalMinutes = h * 60 + m + deltaMinutes;
+  while (totalMinutes < 0) totalMinutes += 24 * 60;
+  totalMinutes = totalMinutes % (24 * 60);
 
-  if (!matched && trimmed) {
-    matched = standardOptions.find(opt => {
-      const optNorm = removeVietnameseTones(opt.toLowerCase());
-      const trimNorm = removeVietnameseTones(trimmed.toLowerCase());
-      return optNorm.includes(trimNorm) || trimNorm.includes(optNorm);
-    });
+  const newH = String(Math.floor(totalMinutes / 60)).padStart(2, '0');
+  const newM = String(totalMinutes % 60).padStart(2, '0');
+  inputElement.value = `${newH}:${newM}`;
+
+  updateClassSchedulePreview();
+}
+
+function updateClassSchedulePreview() {
+  const day = formClassDaySelect ? formClassDaySelect.value : 'Chúa Nhật';
+  const start = formClassStartTime ? formClassStartTime.value : '07:30';
+  const end = formClassEndTime ? formClassEndTime.value : '09:00';
+  const fullSchedule = `${day}: ${start} - ${end}`;
+
+  if (formClassSchedule) formClassSchedule.value = fullSchedule;
+  if (schedulePreviewText) schedulePreviewText.textContent = fullSchedule;
+}
+
+function setScheduleStepperValues(scheduleText) {
+  let day = 'Chúa Nhật';
+  let start = '07:30';
+  let end = '09:00';
+
+  if (scheduleText && typeof scheduleText === 'string') {
+    const raw = scheduleText.trim();
+    if (raw.includes('Thứ Bảy')) day = 'Thứ Bảy';
+    else if (raw.includes('Thứ Năm')) day = 'Thứ Năm';
+    else if (raw.includes('Thứ Hai')) day = 'Thứ Hai';
+    else if (raw.includes('Thứ Ba')) day = 'Thứ Ba';
+    else if (raw.includes('Thứ Tư')) day = 'Thứ Tư';
+    else if (raw.includes('Thứ Sáu')) day = 'Thứ Sáu';
+    else if (raw.includes('Hàng ngày')) day = 'Hàng ngày';
+    else day = 'Chúa Nhật';
+
+    const times = raw.match(/\b\d{1,2}[:h]\d{2}\b/gi);
+    if (times && times.length >= 2) {
+      start = times[0].replace('h', ':').padStart(5, '0');
+      end = times[1].replace('h', ':').padStart(5, '0');
+    } else if (times && times.length === 1) {
+      start = times[0].replace('h', ':').padStart(5, '0');
+    }
   }
 
-  if (matched) {
-    formClassScheduleSelect.value = matched;
-    if (formClassScheduleCustom) {
-      formClassScheduleCustom.style.display = 'none';
-      formClassScheduleCustom.value = '';
-    }
-    if (formClassSchedule) formClassSchedule.value = matched;
-  } else if (trimmed) {
-    formClassScheduleSelect.value = 'custom';
-    if (formClassScheduleCustom) {
-      formClassScheduleCustom.style.display = 'block';
-      formClassScheduleCustom.value = trimmed;
-    }
-    if (formClassSchedule) formClassSchedule.value = trimmed;
-  } else {
-    formClassScheduleSelect.value = 'Chúa Nhật: 07:30 - 09:00';
-    if (formClassScheduleCustom) {
-      formClassScheduleCustom.style.display = 'none';
-      formClassScheduleCustom.value = '';
-    }
-    if (formClassSchedule) formClassSchedule.value = 'Chúa Nhật: 07:30 - 09:00';
-  }
+  if (formClassDaySelect) formClassDaySelect.value = day;
+  if (formClassStartTime) formClassStartTime.value = start;
+  if (formClassEndTime) formClassEndTime.value = end;
+
+  updateClassSchedulePreview();
 }
 
 function openEditClassModal(classId = null) {
@@ -4090,8 +4109,8 @@ function openEditClassModal(classId = null) {
     formClassStudents.value = actualStudentCount;
     formClassStudents.readOnly = true;
 
-    // Thời gian học: Tự động chọn đúng khung giờ từ danh mục
-    setScheduleSelectValue(cls.schedule || 'Chúa Nhật: 07:30 - 09:00');
+    // Thời gian học: Tự động nạp vào stepper controls
+    setScheduleStepperValues(cls.schedule || 'Chúa Nhật: 07:30 - 09:00');
 
     formClassNote.value = cls.note || '';
 
@@ -4108,7 +4127,7 @@ function openEditClassModal(classId = null) {
     formClassStudents.value = '0';
     formClassStudents.readOnly = true;
 
-    setScheduleSelectValue('Chúa Nhật: 07:30 - 09:00');
+    setScheduleStepperValues('Chúa Nhật: 07:30 - 09:00');
     formClassNote.value = '';
 
     renderTeacherCheckboxes([]);
@@ -4154,16 +4173,12 @@ function handleClassFormSubmit(e) {
   const block = formClassBlock.value;
   const room = formClassRoom.value.trim();
 
-  // Lấy thời gian học được chọn
-  let schedule = '';
-  if (formClassScheduleSelect && formClassScheduleSelect.value === 'custom') {
-    schedule = formClassScheduleCustom ? formClassScheduleCustom.value.trim() : '';
-  } else if (formClassScheduleSelect) {
-    schedule = formClassScheduleSelect.value;
-  } else if (formClassSchedule) {
-    schedule = formClassSchedule.value.trim();
-  }
-  if (!schedule) schedule = 'Chúa Nhật: 07:30 - 09:00';
+  // Lấy thời gian học được tạo từ Stepper
+  const day = formClassDaySelect ? formClassDaySelect.value : 'Chúa Nhật';
+  const start = formClassStartTime ? formClassStartTime.value : '07:30';
+  const end = formClassEndTime ? formClassEndTime.value : '09:00';
+  const schedule = `${day}: ${start} - ${end}`;
+  if (formClassSchedule) formClassSchedule.value = schedule;
 
   // Sĩ số lấy trực tiếp từ ô đã tính toán tự động
   const studentCount = parseInt(formClassStudents.value) || 0;
@@ -5726,26 +5741,47 @@ function setupEventListeners() {
     classEditForm.addEventListener('submit', handleClassFormSubmit);
   }
 
-  if (formClassScheduleSelect) {
-    formClassScheduleSelect.addEventListener('change', () => {
-      if (formClassScheduleSelect.value === 'custom') {
-        if (formClassScheduleCustom) {
-          formClassScheduleCustom.style.display = 'block';
-          formClassScheduleCustom.focus();
-          if (formClassSchedule) formClassSchedule.value = formClassScheduleCustom.value.trim() || 'Chúa Nhật: 07:30 - 09:00';
-        }
-      } else {
-        if (formClassScheduleCustom) formClassScheduleCustom.style.display = 'none';
-        if (formClassSchedule) formClassSchedule.value = formClassScheduleSelect.value;
-      }
-    });
+  // Stepper Giờ Bắt Đầu (±15 phút)
+  if (btnStartTimeUp && formClassStartTime) {
+    btnStartTimeUp.addEventListener('click', () => stepTimeInput(formClassStartTime, 15));
+  }
+  if (btnStartTimeDown && formClassStartTime) {
+    btnStartTimeDown.addEventListener('click', () => stepTimeInput(formClassStartTime, -15));
   }
 
-  if (formClassScheduleCustom) {
-    formClassScheduleCustom.addEventListener('input', () => {
-      if (formClassSchedule) formClassSchedule.value = formClassScheduleCustom.value.trim();
-    });
+  // Stepper Giờ Kết Thúc (±15 phút)
+  if (btnEndTimeUp && formClassEndTime) {
+    btnEndTimeUp.addEventListener('click', () => stepTimeInput(formClassEndTime, 15));
   }
+  if (btnEndTimeDown && formClassEndTime) {
+    btnEndTimeDown.addEventListener('click', () => stepTimeInput(formClassEndTime, -15));
+  }
+
+  // Thay đổi Thứ/Ngày hoặc Giờ trực tiếp
+  if (formClassDaySelect) {
+    formClassDaySelect.addEventListener('change', updateClassSchedulePreview);
+  }
+  if (formClassStartTime) {
+    formClassStartTime.addEventListener('input', updateClassSchedulePreview);
+    formClassStartTime.addEventListener('change', updateClassSchedulePreview);
+  }
+  if (formClassEndTime) {
+    formClassEndTime.addEventListener('input', updateClassSchedulePreview);
+    formClassEndTime.addEventListener('change', updateClassSchedulePreview);
+  }
+
+  // Nút bấm chọn nhanh khung giờ chuẩn
+  document.querySelectorAll('.btn-time-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const day = chip.dataset.day || 'Chúa Nhật';
+      const start = chip.dataset.start || '07:30';
+      const end = chip.dataset.end || '09:00';
+      if (formClassDaySelect) formClassDaySelect.value = day;
+      if (formClassStartTime) formClassStartTime.value = start;
+      if (formClassEndTime) formClassEndTime.value = end;
+      updateClassSchedulePreview();
+    });
+  });
 
   // 5. Sự kiện Xem Nhanh Thẻ GLV
   const quickGlvModal = document.getElementById('glvQuickViewModal');

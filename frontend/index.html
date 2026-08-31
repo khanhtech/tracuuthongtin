@@ -39,7 +39,7 @@
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <link rel="stylesheet" href="css/styles.css?v=3.9.0">
+  <link rel="stylesheet" href="css/styles.css?v=4.0.0">
 </head>
 
 <body>
@@ -1207,13 +1207,14 @@
         <input type="hidden" id="editClassOriginalId">
 
         <div class="form-grid">
+          <!-- Hàng 1: Tên Lớp Học & Khối Lớp -->
           <div class="form-group">
-            <label for="formClassName">Tên Lớp Học <span class="req">*</span></label>
+            <label for="formClassName"><i class="fa-solid fa-chalkboard-user"></i> Tên Lớp Học <span class="req">*</span></label>
             <input type="text" id="formClassName" placeholder="Ví dụ: Khai Tâm 1, Rước Lễ 2..." required>
           </div>
 
           <div class="form-group">
-            <label for="formClassBlock">Khối Lớp <span class="req">*</span></label>
+            <label for="formClassBlock"><i class="fa-solid fa-layer-group"></i> Khối Lớp <span class="req">*</span></label>
             <select id="formClassBlock" required>
               <option value="Khai Tâm">Khai Tâm</option>
               <option value="Rước Lễ">Rước Lễ</option>
@@ -1223,26 +1224,10 @@
             </select>
           </div>
 
+          <!-- Hàng 2: Phòng Học & Sĩ Số Thiếu Nhi -->
           <div class="form-group">
-            <label for="formClassRoom">Phòng Học</label>
+            <label for="formClassRoom"><i class="fa-solid fa-location-dot"></i> Phòng Học</label>
             <input type="text" id="formClassRoom" placeholder="Ví dụ: Phòng 101, Hội trường A...">
-          </div>
-
-          <div class="form-group">
-            <label for="formClassScheduleSelect"><i class="fa-regular fa-clock"></i> Thời Gian Học <span class="req">*</span></label>
-            <select id="formClassScheduleSelect" class="form-control">
-              <option value="Chúa Nhật: 07:30 - 09:00">Chúa Nhật: 07:30 - 09:00 (Sáng)</option>
-              <option value="Chúa Nhật: 09:00 - 10:30">Chúa Nhật: 09:00 - 10:30 (Sáng)</option>
-              <option value="Chúa Nhật: 14:30 - 16:00">Chúa Nhật: 14:30 - 16:00 (Chiều)</option>
-              <option value="Chúa Nhật: 16:00 - 17:30">Chúa Nhật: 16:00 - 17:30 (Chiều)</option>
-              <option value="Thứ Bảy: 17:30 - 19:00">Thứ Bảy: 17:30 - 19:00 (Chiều tối)</option>
-              <option value="Thứ Bảy: 19:00 - 20:30">Thứ Bảy: 19:00 - 20:30 (Tối)</option>
-              <option value="Thứ Năm: 18:00 - 19:30">Thứ Năm: 18:00 - 19:30 (Tối)</option>
-              <option value="custom">-- Tự chọn khung giờ khác... --</option>
-            </select>
-            <input type="text" id="formClassScheduleCustom" class="form-control"
-              placeholder="Nhập khung giờ tùy chỉnh (VD: Thứ Bảy 15:00 - 16:30)..." style="display: none; margin-top: 0.45rem;">
-            <input type="hidden" id="formClassSchedule" value="Chúa Nhật: 07:30 - 09:00">
           </div>
 
           <div class="form-group">
@@ -1259,12 +1244,69 @@
             </small>
           </div>
 
-          <div class="form-group">
-            <label for="formClassNote">Ghi Chú Ban Giáo Lý</label>
+          <!-- Hàng 3: Thời Gian Học (Điều chỉnh Ngày & Giờ bằng mũi tên Lên/Xuống) -->
+          <div class="form-group form-group-full class-schedule-card">
+            <label class="schedule-card-header">
+              <span><i class="fa-regular fa-clock"></i> Thời Gian Sinh Hoạt (Điều Chỉnh Bằng Mũi Tên Lên / Xuống)</span>
+              <span class="schedule-live-badge" id="scheduleLiveBadge"><i class="fa-solid fa-calendar-check"></i> <strong id="schedulePreviewText">Chúa Nhật: 07:30 - 09:00</strong></span>
+            </label>
+
+            <div class="schedule-stepper-grid">
+              <!-- Chọn Thứ/Ngày -->
+              <div class="schedule-stepper-col">
+                <span class="stepper-label"><i class="fa-solid fa-calendar-day"></i> Ngày Sinh Hoạt:</span>
+                <select id="formClassDaySelect" class="form-control">
+                  <option value="Chúa Nhật">Chúa Nhật</option>
+                  <option value="Thứ Bảy">Thứ Bảy</option>
+                  <option value="Thứ Năm">Thứ Năm</option>
+                  <option value="Thứ Hai">Thứ Hai</option>
+                  <option value="Thứ Ba">Thứ Ba</option>
+                  <option value="Thứ Tư">Thứ Tư</option>
+                  <option value="Thứ Sáu">Thứ Sáu</option>
+                  <option value="Hàng ngày">Hàng ngày</option>
+                </select>
+              </div>
+
+              <!-- Giờ Bắt Đầu (Stepper Mũi Tên Lên/Xuống) -->
+              <div class="schedule-stepper-col">
+                <span class="stepper-label"><i class="fa-solid fa-hourglass-start"></i> Giờ Bắt Đầu:</span>
+                <div class="time-stepper-box">
+                  <button type="button" class="btn-time-step" id="btnStartTimeDown" title="Giảm 15 phút"><i class="fa-solid fa-chevron-down"></i></button>
+                  <input type="time" id="formClassStartTime" value="07:30" class="form-control time-picker-input">
+                  <button type="button" class="btn-time-step" id="btnStartTimeUp" title="Tăng 15 phút"><i class="fa-solid fa-chevron-up"></i></button>
+                </div>
+              </div>
+
+              <!-- Giờ Kết Thúc (Stepper Mũi Tên Lên/Xuống) -->
+              <div class="schedule-stepper-col">
+                <span class="stepper-label"><i class="fa-solid fa-hourglass-end"></i> Giờ Kết Thúc:</span>
+                <div class="time-stepper-box">
+                  <button type="button" class="btn-time-step" id="btnEndTimeDown" title="Giảm 15 phút"><i class="fa-solid fa-chevron-down"></i></button>
+                  <input type="time" id="formClassEndTime" value="09:00" class="form-control time-picker-input">
+                  <button type="button" class="btn-time-step" id="btnEndTimeUp" title="Tăng 15 phút"><i class="fa-solid fa-chevron-up"></i></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nút chọn nhanh khung giờ chuẩn -->
+            <div class="schedule-quick-chips">
+              <span class="chips-title"><i class="fa-solid fa-bolt"></i> Chọn nhanh:</span>
+              <button type="button" class="btn-time-chip" data-day="Chúa Nhật" data-start="07:30" data-end="09:00">CN Sáng (07:30 - 09:00)</button>
+              <button type="button" class="btn-time-chip" data-day="Chúa Nhật" data-start="09:00" data-end="10:30">CN Sáng (09:00 - 10:30)</button>
+              <button type="button" class="btn-time-chip" data-day="Chúa Nhật" data-start="14:30" data-end="16:00">CN Chiều (14:30 - 16:00)</button>
+              <button type="button" class="btn-time-chip" data-day="Thứ Bảy" data-start="17:30" data-end="19:00">T7 Chiều (17:30 - 19:00)</button>
+            </div>
+
+            <input type="hidden" id="formClassSchedule" value="Chúa Nhật: 07:30 - 09:00">
+          </div>
+
+          <!-- Hàng 4: Ghi Chú Ban Giáo Lý -->
+          <div class="form-group form-group-full">
+            <label for="formClassNote"><i class="fa-regular fa-note-sticky"></i> Ghi Chú Ban Giáo Lý</label>
             <input type="text" id="formClassNote" placeholder="Ví dụ: Lớp chuẩn bị Xưng tội Rước lễ lần đầu...">
           </div>
 
-          <!-- Phân công Giáo lý viên -->
+          <!-- Hàng 5: Phân công Giáo lý viên -->
           <div class="form-group form-group-full">
             <label><i class="fa-solid fa-users"></i> Phân Công Giáo Lý Viên / Huynh Trưởng Phụ Trách</label>
             <div class="teacher-select-container">
@@ -2231,8 +2273,8 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-  <script src="js/api.js?v=3.9.0"></script>
-  <script src="js/app.js?v=3.9.0"></script>
+  <script src="js/api.js?v=4.0.0"></script>
+  <script src="js/app.js?v=4.0.0"></script>
 </body>
 
 </html>
