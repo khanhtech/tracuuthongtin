@@ -3192,14 +3192,31 @@ function renderClassesView() {
 }
 
 function formatScheduleShort(scheduleStr) {
-  if (!scheduleStr) return 'CN';
+  if (!scheduleStr) return 'CN: 07h30 - 09h00';
   let s = scheduleStr.trim();
-  s = s.replace(/Chủ\s*Nhật\s*:\s*/gi, '').replace(/Chủ\s*Nhật/gi, 'CN');
-  s = s.replace(/Thứ\s*Bảy\s*:\s*/gi, '').replace(/Thứ\s*Bảy/gi, 'T7');
-  s = s.replace(/Thứ\s*(\d)\s*:\s*/gi, 'T$1 ');
-  if (!s.includes('CN') && !s.includes('T7') && !s.includes('T')) {
-    s = `${s} CN`;
+
+  // Rút gọn ngày / thứ
+  s = s.replace(/Chúa\s*Nhật|Chủ\s*Nhật/gi, 'CN');
+  s = s.replace(/Thứ\s*Bảy|Thứ\s*7/gi, 'T7');
+  s = s.replace(/Thứ\s*Năm|Thứ\s*5/gi, 'T5');
+  s = s.replace(/Thứ\s*Hai|Thứ\s*2/gi, 'T2');
+  s = s.replace(/Thứ\s*Ba|Thứ\s*3/gi, 'T3');
+  s = s.replace(/Thứ\s*Tư|Thứ\s*4/gi, 'T4');
+  s = s.replace(/Thứ\s*Sáu|Thứ\s*6/gi, 'T6');
+  s = s.replace(/\s*hàng\s*tuần/gi, '');
+
+  // Định dạng giờ 08:00 / 08:45 sang 08h00 / 08h45
+  s = s.replace(/(\d{1,2})[:h](\d{2})/gi, (match, p1, p2) => {
+    return `${p1.padStart(2, '0')}h${p2}`;
+  });
+
+  // Đảm bảo dấu 2 chấm sau tên thứ (Ví dụ: CN: 08h00 - 10h00)
+  if (/^[A-Z0-9]+$/i.test(s)) return s;
+  s = s.replace(/^([A-Z0-9]+)\s*[:\-\s]\s*/i, '$1: ');
+  if (!s.includes(': ') && /^(CN|T\d)/i.test(s)) {
+    s = s.replace(/^(CN|T\d)\s*/i, '$1: ');
   }
+
   return s.trim();
 }
 
@@ -3258,11 +3275,13 @@ function renderClassCards(classesList, searchKeyword) {
           <div class="teachers-chips-list">
             ${teachers.length > 0 ? teachers.map(t => {
               const rInfo = getRoleBadge(t.role);
+              const holyUpper = (t.holyName || '').trim().toUpperCase();
+              const nameUpper = ((t.lastName || '') + ' ' + (t.firstName || '')).trim().toUpperCase();
               return `
               <div class="teacher-chip" data-glv-id="${t.id}" title="Vai trò: ${rInfo.text} - Bấm để xem hồ sơ">
                 <span class="chip-name-box">
-                  <strong class="chip-holy">${t.holyName || ''}</strong>
-                  <span class="chip-name">${t.lastName} ${t.firstName}</span>
+                  <strong class="chip-holy">${holyUpper}</strong>
+                  <span class="chip-name">${nameUpper}</span>
                 </span>
                 ${rInfo.chipHtml}
               </div>

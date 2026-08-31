@@ -4038,6 +4038,7 @@ input[readonly].input-locked-code {
 }
 
 .teacher-chip .chip-holy {
+  text-transform: uppercase;
   color: var(--primary-gold-dark);
   font-size: 0.74rem;
   font-weight: 800;
@@ -4047,6 +4048,7 @@ input[readonly].input-locked-code {
 }
 
 .teacher-chip .chip-name {
+  text-transform: uppercase;
   white-space: nowrap;
   font-weight: 700;
   font-size: 0.78rem;
