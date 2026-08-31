@@ -175,6 +175,7 @@ const API = {
           room: cls.room,
           schedule: cls.schedule,
           studentCount: cls.studentCount,
+          teachers: cls.teachers || [],
           teacherIds: cls.teacherIds || [],
           note: cls.note
         })

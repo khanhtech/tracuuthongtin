@@ -4223,6 +4223,21 @@ function handleClassFormSubmit(e) {
     // Cập nhật lớp hiện có
     const index = classDatabase.findIndex(c => c.id === originalId);
     if (index !== -1) {
+      const teachersPayload = selectedTeacherIds.map((tId, idx) => {
+        const glv = glvDatabase.find(g => g.id.toUpperCase() === tId.toUpperCase());
+        const existing = (classDatabase[index] && classDatabase[index].teachers)
+          ? classDatabase[index].teachers.find(t => (t.id || '').toUpperCase() === tId.toUpperCase())
+          : null;
+        const role = existing ? existing.role : (glv ? glv.role : (idx === 0 ? 'Chủ nhiệm' : 'Đồng hành'));
+        return {
+          id: tId,
+          role: role || 'Đồng hành',
+          holyName: glv ? glv.holyName : '',
+          lastName: glv ? glv.lastName : '',
+          firstName: glv ? glv.firstName : ''
+        };
+      });
+
       classDatabase[index] = {
         ...classDatabase[index],
         name,
@@ -4230,16 +4245,37 @@ function handleClassFormSubmit(e) {
         room,
         schedule,
         studentCount,
+        teachers: teachersPayload,
         teacherIds: selectedTeacherIds,
         note
       };
       saveClassesDatabase();
       syncClassesWithGlvDatabase();
+
+      // Đồng bộ trực tiếp vào cơ sở dữ liệu MySQL Backend
+      if (typeof API !== 'undefined' && API.isOnline) {
+        API.saveClass(classDatabase[index], false).then(ok => {
+          if (ok) console.log('Đã lưu lớp học vào MySQL thành công:', classDatabase[index].id);
+        }).catch(err => console.warn('Lỗi API saveClass:', err));
+      }
+
       showToast(`Đã cập nhật thông tin lớp ${name}!`);
     }
   } else {
     // Thêm mới lớp
     const newId = `CLASS_${Date.now()}`;
+    const teachersPayload = selectedTeacherIds.map((tId, idx) => {
+      const glv = glvDatabase.find(g => g.id.toUpperCase() === tId.toUpperCase());
+      const role = glv ? glv.role : (idx === 0 ? 'Chủ nhiệm' : 'Đồng hành');
+      return {
+        id: tId,
+        role: role || 'Đồng hành',
+        holyName: glv ? glv.holyName : '',
+        lastName: glv ? glv.lastName : '',
+        firstName: glv ? glv.firstName : ''
+      };
+    });
+
     const newClass = {
       id: newId,
       name,
@@ -4247,12 +4283,21 @@ function handleClassFormSubmit(e) {
       room,
       schedule,
       studentCount,
+      teachers: teachersPayload,
       teacherIds: selectedTeacherIds,
       note
     };
     classDatabase.push(newClass);
     saveClassesDatabase();
     syncClassesWithGlvDatabase();
+
+    // Đồng bộ trực tiếp vào cơ sở dữ liệu MySQL Backend
+    if (typeof API !== 'undefined' && API.isOnline) {
+      API.saveClass(newClass, true).then(ok => {
+        if (ok) console.log('Đã thêm mới lớp học vào MySQL thành công:', newId);
+      }).catch(err => console.warn('Lỗi API saveClass new:', err));
+    }
+
     showToast(`Đã thêm mới lớp học ${name}!`);
   }
 

@@ -139,8 +139,11 @@ switch ($method) {
         } else if (!empty($teacherIds) && is_array($teacherIds)) {
             foreach ($teacherIds as $idx => $tId) {
                 $tId = strtoupper(trim($tId));
-                $trole = ($idx === 0) ? 'Chủ nhiệm' : 'Đồng hành';
                 if (!empty($tId)) {
+                    $rStmt = $pdo->prepare("SELECT role FROM teachers WHERE teacher_id = ? LIMIT 1");
+                    $rStmt->execute([$tId]);
+                    $tDbRole = $rStmt->fetchColumn();
+                    $trole = (!empty($tDbRole) && $tDbRole !== 'Chưa phân công') ? $tDbRole : (($idx === 0) ? 'Chủ nhiệm' : 'Đồng hành');
                     $asStmt->execute([$id, $tId, $trole]);
                 }
             }
@@ -193,8 +196,11 @@ switch ($method) {
             $asStmt = $pdo->prepare("INSERT INTO class_assignments (class_id, teacher_id, role) VALUES (?, ?, ?)");
             foreach ($data['teacherIds'] as $idx => $tId) {
                 $tId = strtoupper(trim($tId));
-                $trole = ($idx === 0) ? 'Chủ nhiệm' : 'Đồng hành';
                 if (!empty($tId)) {
+                    $rStmt = $pdo->prepare("SELECT role FROM teachers WHERE teacher_id = ? LIMIT 1");
+                    $rStmt->execute([$tId]);
+                    $tDbRole = $rStmt->fetchColumn();
+                    $trole = (!empty($tDbRole) && $tDbRole !== 'Chưa phân công') ? $tDbRole : (($idx === 0) ? 'Chủ nhiệm' : 'Đồng hành');
                     $asStmt->execute([$id, $tId, $trole]);
                 }
             }
