@@ -2288,11 +2288,11 @@ function checkGlvPassword() {
     setRole('glv');
     if (loginModal) loginModal.style.display = 'none';
 
-    // Tự động bật Modal Thư Bổ Nhiệm của Huynh Trưởng được chọn
+    // Tự động bật Modal Bổ Nhiệm Thư của Huynh Trưởng được chọn
     const selectedGlvId = (glvIdentitySelect ? glvIdentitySelect.value : '') || (currentDisplayedGLV ? currentDisplayedGLV.id : 'GLV03');
     openAppointmentLetterModal(selectedGlvId);
 
-    showToast('Đăng nhập thành công! Đang hiển thị Thư Bổ Nhiệm của Huynh Trưởng.');
+    showToast('Đăng nhập thành công! Đang hiển thị Bổ Nhiệm Thư và Trao Sứ Vụ.');
   } else {
     if (wrapper) {
       wrapper.classList.remove('error-shake');
