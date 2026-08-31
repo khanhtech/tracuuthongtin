@@ -2389,74 +2389,110 @@ function openAppointmentLetterModal(glvId) {
 }
 
 // ==========================================================================
-// HIỆU ỨNG PHÁO HOA CHÚC MỪNG (CELEBRATION FIREWORKS)
+// HIỆU ỨNG PHÁO HOA CHÚC MỪNG NỔI TRƯỚC MODAL (FOREGROUND FIREWORKS)
 // ==========================================================================
+let letterConfettiInstance = null;
+
+function getLetterConfettiInstance() {
+  let canvas = document.getElementById('letterFireworksCanvas');
+  if (!canvas) {
+    canvas = document.createElement('canvas');
+    canvas.id = 'letterFireworksCanvas';
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100vw';
+    canvas.style.height = '100vh';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '9999999'; // Cực cao để nổi 100% lên trước modal!
+    document.body.appendChild(canvas);
+  }
+
+  if (typeof confetti === 'function') {
+    if (typeof confetti.create === 'function') {
+      if (!letterConfettiInstance) {
+        letterConfettiInstance = confetti.create(canvas, { resize: true, useWorker: true });
+      }
+      return letterConfettiInstance;
+    }
+    return confetti;
+  }
+  return null;
+}
+
 function triggerCelebrationFireworks() {
   try {
-    if (typeof confetti === 'function') {
-      // Đợt 1: Bắn pháo hoa từ 2 bên góc dưới bay vào giữa
-      confetti({
-        particleCount: 75,
+    const fire = getLetterConfettiInstance();
+    if (fire) {
+      // Đợt 1: Bắn pháo hoa từ 2 bên góc dưới bay nổi lên trước modal
+      fire({
+        particleCount: 80,
         angle: 60,
-        spread: 65,
-        origin: { x: 0.02, y: 0.8 },
+        spread: 70,
+        origin: { x: 0.02, y: 0.82 },
         colors: ['#ffd700', '#ff4d4f', '#ff9c6e', '#52c41a', '#1890ff', '#f5222d'],
-        zIndex: 99999
+        zIndex: 9999999,
+        disableForReducedMotion: true
       });
-      confetti({
-        particleCount: 75,
+      fire({
+        particleCount: 80,
         angle: 120,
-        spread: 65,
-        origin: { x: 0.98, y: 0.8 },
+        spread: 70,
+        origin: { x: 0.98, y: 0.82 },
         colors: ['#ffd700', '#ff4d4f', '#ff9c6e', '#52c41a', '#1890ff', '#f5222d'],
-        zIndex: 99999
+        zIndex: 9999999,
+        disableForReducedMotion: true
       });
 
-      // Đợt 2: Pháo hoa bùng nổ trung tâm (sau 220ms)
+      // Đợt 2: Pháo hoa bùng nổ trung tâm (sau 200ms)
       setTimeout(() => {
-        confetti({
-          particleCount: 100,
-          spread: 110,
-          origin: { x: 0.5, y: 0.38 },
+        fire({
+          particleCount: 110,
+          spread: 120,
+          origin: { x: 0.5, y: 0.36 },
           colors: ['#ffd700', '#faad14', '#ff7a45', '#ff4d4f', '#ffffff', '#fa8c16'],
-          zIndex: 99999
+          zIndex: 9999999,
+          disableForReducedMotion: true
         });
-      }, 220);
+      }, 200);
 
-      // Đợt 3: Mưa sao lấp lánh kim tuyến vàng & đỏ (sau 550ms)
+      // Đợt 3: Mưa sao lấp lánh kim tuyến vàng & đỏ (sau 500ms)
       setTimeout(() => {
-        confetti({
-          particleCount: 65,
+        fire({
+          particleCount: 70,
           angle: 60,
-          spread: 80,
-          origin: { x: 0.12, y: 0.65 },
+          spread: 85,
+          origin: { x: 0.1, y: 0.65 },
           colors: ['#ffd700', '#fff1b8', '#ff4d4f', '#ff7a45'],
           shapes: ['star', 'circle'],
-          scalar: 1.25,
-          zIndex: 99999
+          scalar: 1.3,
+          zIndex: 9999999,
+          disableForReducedMotion: true
         });
-        confetti({
-          particleCount: 65,
+        fire({
+          particleCount: 70,
           angle: 120,
-          spread: 80,
-          origin: { x: 0.88, y: 0.65 },
+          spread: 85,
+          origin: { x: 0.9, y: 0.65 },
           colors: ['#ffd700', '#fff1b8', '#ff4d4f', '#ff7a45'],
           shapes: ['star', 'circle'],
-          scalar: 1.25,
-          zIndex: 99999
+          scalar: 1.3,
+          zIndex: 9999999,
+          disableForReducedMotion: true
         });
-      }, 550);
+      }, 500);
 
-      // Đợt 4: Màn pháo hoa chúc mừng hoành tráng (sau 950ms)
+      // Đợt 4: Màn pháo hoa chúc mừng hoành tráng (sau 900ms)
       setTimeout(() => {
-        confetti({
-          particleCount: 120,
-          spread: 130,
-          origin: { x: 0.5, y: 0.42 },
+        fire({
+          particleCount: 130,
+          spread: 140,
+          origin: { x: 0.5, y: 0.4 },
           colors: ['#ffd700', '#faad14', '#ff4d4f', '#f5222d', '#722ed1', '#13c2c2', '#eb2f96'],
-          zIndex: 99999
+          zIndex: 9999999,
+          disableForReducedMotion: true
         });
-      }, 950);
+      }, 900);
     } else {
       runFallbackCanvasFireworks();
     }
@@ -2468,18 +2504,18 @@ function triggerCelebrationFireworks() {
 
 function runFallbackCanvasFireworks() {
   try {
-    const existingCanvas = document.getElementById('celebrationCanvasFireworks');
+    const existingCanvas = document.getElementById('letterFireworksCanvas');
     if (existingCanvas) existingCanvas.remove();
 
     const canvas = document.createElement('canvas');
-    canvas.id = 'celebrationCanvasFireworks';
+    canvas.id = 'letterFireworksCanvas';
     canvas.style.position = 'fixed';
     canvas.style.top = '0';
     canvas.style.left = '0';
     canvas.style.width = '100vw';
     canvas.style.height = '100vh';
     canvas.style.pointerEvents = 'none';
-    canvas.style.zIndex = '99999';
+    canvas.style.zIndex = '9999999'; // Nổi lên trước modal
     document.body.appendChild(canvas);
 
     const ctx = canvas.getContext('2d');
@@ -2488,32 +2524,32 @@ function runFallbackCanvasFireworks() {
     canvas.width = window.innerWidth || 1200;
     canvas.height = window.innerHeight || 800;
 
-    const colors = ['#ffd700', '#ff4d4f', '#ff9c6e', '#52c41a', '#1890ff', '#faad14', '#f5222d', '#722ed1'];
+    const colors = ['#ffd700', '#ff4d4f', '#ff9c6e', '#52c41a', '#1890ff', '#faad14', '#f5222d', '#722ed1', '#ffffff'];
     const particles = [];
 
     function createBurst(cx, cy, count) {
       for (let i = 0; i < count; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 8 + 3;
+        const speed = Math.random() * 9 + 4;
         particles.push({
           x: cx,
           y: cy,
           vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed - 2,
-          radius: Math.random() * 4 + 2,
+          vy: Math.sin(angle) * speed - 2.5,
+          radius: Math.random() * 4.5 + 2.5,
           color: colors[Math.floor(Math.random() * colors.length)],
           alpha: 1,
           decay: Math.random() * 0.015 + 0.012,
-          gravity: 0.18
+          gravity: 0.2
         });
       }
     }
 
-    createBurst(canvas.width * 0.2, canvas.height * 0.4, 60);
-    createBurst(canvas.width * 0.8, canvas.height * 0.4, 60);
-    setTimeout(() => createBurst(canvas.width * 0.5, canvas.height * 0.35, 90), 250);
-    setTimeout(() => createBurst(canvas.width * 0.35, canvas.height * 0.45, 50), 600);
-    setTimeout(() => createBurst(canvas.width * 0.65, canvas.height * 0.45, 50), 600);
+    createBurst(canvas.width * 0.2, canvas.height * 0.4, 70);
+    createBurst(canvas.width * 0.8, canvas.height * 0.4, 70);
+    setTimeout(() => createBurst(canvas.width * 0.5, canvas.height * 0.35, 100), 220);
+    setTimeout(() => createBurst(canvas.width * 0.35, canvas.height * 0.45, 60), 550);
+    setTimeout(() => createBurst(canvas.width * 0.65, canvas.height * 0.45, 60), 550);
 
     let animationId;
     function animate() {
@@ -2548,10 +2584,10 @@ function runFallbackCanvasFireworks() {
 
     animate();
     setTimeout(() => {
-      if (document.getElementById('celebrationCanvasFireworks')) {
+      if (document.getElementById('letterFireworksCanvas')) {
         canvas.remove();
       }
-    }, 4000);
+    }, 4500);
   } catch (e) {
     console.warn('Fallback fireworks error:', e);
   }
