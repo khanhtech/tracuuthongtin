@@ -12,19 +12,26 @@ switch ($method) {
         if (isset($_GET['id'])) {
             $id = trim($_GET['id']);
             $stmt = $pdo->prepare("
-                SELECT t.*, 
+                SELECT t.teacher_id as id,
+                       t.stt,
+                       t.holy_name as holyName,
+                       t.last_name as lastName,
+                       t.first_name as firstName,
+                       t.gender,
+                       t.cert,
                        COALESCE(t.status, 'Đang dạy học') as status,
-                       COALESCE(GROUP_CONCAT(DISTINCT c.class_name SEPARATOR ', '), '') as teaching_class,
                        COALESCE(GROUP_CONCAT(DISTINCT c.block SEPARATOR ', '), '') as block,
-                       COALESCE(GROUP_CONCAT(DISTINCT ca.role SEPARATOR ', '), 'Chưa phân công') as role
+                       COALESCE(GROUP_CONCAT(DISTINCT c.class_name SEPARATOR ', '), '') as teachingClass,
+                       COALESCE(NULLIF(GROUP_CONCAT(DISTINCT ca.role SEPARATOR ', '), 'Chưa phân công'), NULLIF(t.role, 'Chưa phân công'), (SELECT role FROM class_assignments WHERE teacher_id = t.teacher_id LIMIT 1), t.role, 'Chưa phân công') as role,
+                       t.photo_url as photo
                 FROM teachers t
                 LEFT JOIN class_assignments ca ON t.teacher_id = ca.teacher_id
                 LEFT JOIN classes c ON ca.class_id = c.class_id
-                WHERE t.teacher_id = ? OR t.stt = ?
+                WHERE t.teacher_id = ?
                 GROUP BY t.teacher_id
                 LIMIT 1
             ");
-            $stmt->execute([$id, $id]);
+            $stmt->execute([$id]);
             $teacher = $stmt->fetch();
             if ($teacher) {
                 jsonResponse(true, "Tìm thấy Giáo Lý Viên", $teacher);
@@ -43,7 +50,7 @@ switch ($method) {
                        COALESCE(t.status, 'Đang dạy học') as status,
                        COALESCE(GROUP_CONCAT(DISTINCT c.block SEPARATOR ', '), '') as block,
                        COALESCE(GROUP_CONCAT(DISTINCT c.class_name SEPARATOR ', '), '') as teachingClass,
-                       COALESCE(GROUP_CONCAT(DISTINCT ca.role SEPARATOR ', '), 'Chưa phân công') as role,
+                       COALESCE(NULLIF(GROUP_CONCAT(DISTINCT ca.role SEPARATOR ', '), 'Chưa phân công'), NULLIF(t.role, 'Chưa phân công'), t.role, 'Chưa phân công') as role,
                        t.photo_url as photo
                 FROM teachers t
                 LEFT JOIN class_assignments ca ON t.teacher_id = ca.teacher_id
@@ -101,19 +108,36 @@ switch ($method) {
         $lastName = trim($data['lastName'] ?? ($data['last_name'] ?? ''));
         $gender = trim($data['gender'] ?? 'Nữ');
         $cert = trim($data['cert'] ?? '');
+        $role = trim($data['role'] ?? 'Chưa phân công');
         $photo = trim($data['photo'] ?? ($data['photo_url'] ?? ''));
         $status = trim($data['status'] ?? 'Đang dạy học');
+        $teachingClass = trim($data['teachingClass'] ?? ($data['teaching_class'] ?? ''));
 
         $stmt = $pdo->prepare("
-            INSERT INTO teachers (teacher_id, stt, holy_name, last_name, first_name, gender, cert, photo_url, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO teachers (teacher_id, stt, holy_name, last_name, first_name, gender, cert, role, photo_url, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
-        $stmt->execute([$id, $stt, $holyName, $lastName, $firstName, $gender, $cert, $photo, $status]);
+        $stmt->execute([$id, $stt, $holyName, $lastName, $firstName, $gender, $cert, $role, $photo, $status]);
+
+        // Cập nhật phân công lớp trong class_assignments nếu có
+        if (!empty($teachingClass)) {
+            $cStmt = $pdo->prepare("
+                SELECT class_id FROM classes 
+                WHERE class_name = ? OR class_id = ? OR ? LIKE CONCAT('%', class_name, '%') OR class_name LIKE CONCAT('%', ?, '%')
+                LIMIT 1
+            ");
+            $cStmt->execute([$teachingClass, $teachingClass, $teachingClass, $teachingClass]);
+            $classId = $cStmt->fetchColumn();
+            if ($classId) {
+                $asStmt = $pdo->prepare("INSERT INTO class_assignments (class_id, teacher_id, role) VALUES (?, ?, ?)");
+                $asStmt->execute([$classId, $id, $role]);
+            }
+        }
 
         jsonResponse(true, "Thêm mới Giáo Lý Viên {$id} thành công!", [
             "id" => $id, "stt" => $stt, "holyName" => $holyName, "lastName" => $lastName,
-            "firstName" => $firstName, "gender" => $gender, "cert" => $cert, "photo" => $photo,
-            "status" => $status
+            "firstName" => $firstName, "gender" => $gender, "cert" => $cert, "role" => $role,
+            "photo" => $photo, "status" => $status, "teachingClass" => $teachingClass
         ], 201);
         break;
 
@@ -137,15 +161,40 @@ switch ($method) {
         $firstName = isset($data['firstName']) ? trim($data['firstName']) : $existing['first_name'];
         $gender = isset($data['gender']) ? trim($data['gender']) : $existing['gender'];
         $cert = isset($data['cert']) ? trim($data['cert']) : $existing['cert'];
+        $role = isset($data['role']) ? trim($data['role']) : ($existing['role'] ?? 'Chưa phân công');
         $photo = isset($data['photo']) ? trim($data['photo']) : $existing['photo_url'];
         $status = isset($data['status']) ? trim($data['status']) : ($existing['status'] ?? 'Đang dạy học');
+        $teachingClass = isset($data['teachingClass']) ? trim($data['teachingClass']) : (isset($data['teaching_class']) ? trim($data['teaching_class']) : null);
 
         $upStmt = $pdo->prepare("
             UPDATE teachers 
-            SET holy_name = ?, last_name = ?, first_name = ?, gender = ?, cert = ?, photo_url = ?, status = ?
+            SET holy_name = ?, last_name = ?, first_name = ?, gender = ?, cert = ?, role = ?, photo_url = ?, status = ?
             WHERE teacher_id = ?
         ");
-        $upStmt->execute([$holyName, $lastName, $firstName, $gender, $cert, $photo, $status, $id]);
+        $upStmt->execute([$holyName, $lastName, $firstName, $gender, $cert, $role, $photo, $status, $id]);
+
+        // Cập nhật phân công lớp và vai trò trong class_assignments
+        if ($teachingClass !== null) {
+            // Xóa phân công cũ của teacher này
+            $pdo->prepare("DELETE FROM class_assignments WHERE teacher_id = ?")->execute([$id]);
+
+            if (!empty($teachingClass)) {
+                $cStmt = $pdo->prepare("
+                    SELECT class_id FROM classes 
+                    WHERE class_name = ? OR class_id = ? OR ? LIKE CONCAT('%', class_name, '%') OR class_name LIKE CONCAT('%', ?, '%')
+                    LIMIT 1
+                ");
+                $cStmt->execute([$teachingClass, $teachingClass, $teachingClass, $teachingClass]);
+                $classId = $cStmt->fetchColumn();
+                if ($classId) {
+                    $asStmt = $pdo->prepare("INSERT INTO class_assignments (class_id, teacher_id, role) VALUES (?, ?, ?)");
+                    $asStmt->execute([$classId, $id, $role]);
+                }
+            }
+        } else {
+            // Nếu chỉ cập nhật role mà không đổi lớp, cập nhật role cho class_assignments hiện có
+            $pdo->prepare("UPDATE class_assignments SET role = ? WHERE teacher_id = ?")->execute([$role, $id]);
+        }
 
         jsonResponse(true, "Cập nhật thông tin Giáo Lý Viên {$id} thành công!");
         break;
