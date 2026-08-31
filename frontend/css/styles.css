@@ -1274,6 +1274,50 @@ body {
   background: #ffffff;
 }
 
+.auth-tab-switcher {
+  display: flex;
+  background: #f1f5f9;
+  padding: 0.3rem;
+  border-radius: 12px;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+}
+
+.auth-tab-btn {
+  flex: 1;
+  padding: 0.65rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-weight: 700;
+  font-size: 0.88rem;
+  border-radius: 9px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.auth-tab-btn:hover {
+  color: #1e293b;
+}
+
+.auth-tab-btn.active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.auth-tab-btn[data-target-role="admin"].active {
+  color: #dc2626;
+}
+
+.auth-tab-btn[data-target-role="glv"].active {
+  color: #ea580c;
+}
+
 .auth-single-brand {
   text-align: center;
   margin-bottom: 1.2rem;
@@ -1291,6 +1335,16 @@ body {
   align-items: center;
   justify-content: center;
   box-shadow: 0 8px 20px rgba(220, 38, 38, 0.35);
+}
+
+.auth-single-logo.admin {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #991b1b 100%);
+  box-shadow: 0 8px 20px rgba(220, 38, 38, 0.35);
+}
+
+.auth-single-logo.glv {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
+  box-shadow: 0 8px 20px rgba(234, 88, 12, 0.35);
 }
 
 .auth-single-title {
@@ -1312,6 +1366,32 @@ body {
   border-radius: 12px;
   padding: 0.75rem 0.9rem;
   margin-bottom: 1.15rem;
+}
+
+.auth-single-benefits.glv-benefits {
+  background: #fff7ed;
+  border-color: #ffedd5;
+}
+
+.auth-benefit-item.alert-no-del {
+  color: #b45309;
+  font-size: 0.78rem;
+  border-top: 1px dashed #fed7aa;
+  padding-top: 0.35rem;
+  margin-top: 0.2rem;
+}
+
+.auth-benefit-item.alert-no-del i {
+  color: #f59e0b;
+}
+
+.btn-single-login-submit.glv-theme {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
+  box-shadow: 0 6px 18px rgba(234, 88, 12, 0.3);
+}
+
+.btn-single-login-submit.glv-theme:hover {
+  box-shadow: 0 8px 24px rgba(234, 88, 12, 0.42);
 }
 
 .auth-benefit-item {

@@ -1593,8 +1593,8 @@ let currentNewsCategoryFilter = 'all';
 let currentDocsCategoryFilter = 'all';
 let currentTab = localStorage.getItem(ACTIVE_TAB_KEY) || 'news';
 const AUTH_REMEMBER_KEY = 'auth_admin_remember_tanmy_v2';
-const ADMIN_PASSWORDS = ['admin', 'admin123', 'tanmy2026', 'tanmy', '123456', 'glv', 'glv2026', 'huynhtruong', 'ht2026', 'giaolyvien'];
-const GLV_PASSWORDS = ADMIN_PASSWORDS;
+const ADMIN_PASSWORDS = ['admin', 'admin123', 'tanmy2026', 'tanmy'];
+const GLV_PASSWORDS = ['glv', 'glv2026', 'huynhtruong', 'ht2026', 'ht', 'giaolyvien', '123456'];
 let currentUserRole = localStorage.getItem(AUTH_REMEMBER_KEY) || sessionStorage.getItem(AUTH_ROLE_KEY) || 'admin';
 
 function getGlvAvatar(glv) {
@@ -2107,8 +2107,8 @@ function updateRoleUI() {
   const canManageStudents = (isAdmin || isGlv);
   const canManageGlv = (isAdmin || isGlv);
   const canAddDocs = (isAdmin || isGlv);
-  const canManageNews = isAdmin;
-  const canManageClasses = isAdmin;
+  const canManageNews = (isAdmin || isGlv);
+  const canManageClasses = (isAdmin || isGlv);
 
   // Top Bar Auth Button
   if (authSwitchBtn) {
@@ -2145,7 +2145,7 @@ function updateRoleUI() {
   const sidebarAddClassBtn = document.getElementById('sidebarAddClassBtn');
   const modalToolbarAddClassBtn = document.getElementById('modalToolbarAddClassBtn');
 
-  // Bảng Tin (Chỉ Admin)
+  // Bảng Tin (Admin + Huynh Trưởng)
   if (btnAddNews) btnAddNews.style.display = canManageNews ? 'inline-flex' : 'none';
   if (sidebarAddNewsBtn) sidebarAddNewsBtn.style.display = canManageNews ? 'flex' : 'none';
 
@@ -2160,7 +2160,7 @@ function updateRoleUI() {
   if (editCurrentGlvBtn) editCurrentGlvBtn.style.display = canManageGlv ? 'inline-flex' : 'none';
   if (resetDataBtn) resetDataBtn.style.display = isAdmin ? 'inline-flex' : 'none';
 
-  // Lớp Học (Chỉ Admin)
+  // Lớp Học (Admin + Huynh Trưởng)
   if (addClassBtn) addClassBtn.style.display = canManageClasses ? 'inline-flex' : 'none';
   if (sidebarAddClassBtn) sidebarAddClassBtn.style.display = canManageClasses ? 'flex' : 'none';
   if (modalToolbarAddClassBtn) modalToolbarAddClassBtn.style.display = canManageClasses ? 'inline-flex' : 'none';
@@ -2200,7 +2200,7 @@ function updateRoleUI() {
     renderDocsView();
   }
 
-  // Sổ Điểm & Chuyên Cần (Chỉ Admin & Huynh Trưởng mới được sửa điểm / lưu điểm / đồng bộ điểm danh)
+  // Sổ Điểm & Chuyên Cần (Admin & Huynh Trưởng đều được sửa điểm / lưu điểm / đồng bộ điểm danh)
   if (btnSaveGradebook) btnSaveGradebook.style.display = isGuest ? 'none' : 'inline-flex';
   if (btnImportGradebookExcel) btnImportGradebookExcel.style.display = isGuest ? 'none' : 'inline-flex';
   const attendanceActionGroup = document.getElementById('attendanceActionGroup');
@@ -2210,12 +2210,58 @@ function updateRoleUI() {
   }
 }
 
+function switchAuthModalTab(role) {
+  const tabAdmin = document.getElementById('authTabAdmin');
+  const tabGlv = document.getElementById('authTabGlv');
+  const brandAdmin = document.getElementById('authBrandAdmin');
+  const brandGlv = document.getElementById('authBrandGlv');
+  const benefitsAdmin = document.getElementById('authBenefitsAdmin');
+  const benefitsGlv = document.getElementById('authBenefitsGlv');
+  const inputLabel = document.getElementById('authInputLabel');
+  const submitBtn = document.getElementById('submitAdminLoginBtn');
+  const submitBtnText = document.getElementById('submitLoginBtnText');
+  const pwInput = document.getElementById('adminPasswordInput');
+  const pwIcon = document.getElementById('loginPwIcon');
+
+  if (role === 'glv') {
+    if (tabAdmin) tabAdmin.classList.remove('active');
+    if (tabGlv) tabGlv.classList.add('active');
+    if (brandAdmin) brandAdmin.style.display = 'none';
+    if (brandGlv) brandGlv.style.display = 'block';
+    if (benefitsAdmin) benefitsAdmin.style.display = 'none';
+    if (benefitsGlv) benefitsGlv.style.display = 'block';
+    if (inputLabel) inputLabel.innerHTML = '<i class="fa-solid fa-key"></i> Mật khẩu truy cập Huynh Trưởng:';
+    if (pwInput) {
+      pwInput.placeholder = 'Nhập mật khẩu (VD: glv hoặc ht2026)...';
+      pwInput.focus();
+    }
+    if (pwIcon) pwIcon.style.color = '#ea580c';
+    if (submitBtn) submitBtn.classList.add('glv-theme');
+    if (submitBtnText) submitBtnText.textContent = 'Đăng Nhập Huynh Trưởng Ngay';
+  } else {
+    if (tabAdmin) tabAdmin.classList.add('active');
+    if (tabGlv) tabGlv.classList.remove('active');
+    if (brandAdmin) brandAdmin.style.display = 'block';
+    if (brandGlv) brandGlv.style.display = 'none';
+    if (benefitsAdmin) benefitsAdmin.style.display = 'block';
+    if (benefitsGlv) benefitsGlv.style.display = 'none';
+    if (inputLabel) inputLabel.innerHTML = '<i class="fa-solid fa-key"></i> Mật khẩu truy cập Quản Trị:';
+    if (pwInput) {
+      pwInput.placeholder = 'Nhập mật khẩu (VD: admin hoặc tanmy2026)...';
+      pwInput.focus();
+    }
+    if (pwIcon) pwIcon.style.color = '#dc2626';
+    if (submitBtn) submitBtn.classList.remove('glv-theme');
+    if (submitBtnText) submitBtnText.textContent = 'Đăng Nhập Quản Trị Ngay';
+  }
+}
+
 function checkAdminPassword() {
-  const enteredPass = (adminPasswordInput ? adminPasswordInput.value : '').trim();
+  const enteredPass = (adminPasswordInput ? adminPasswordInput.value : '').trim().toLowerCase();
   const wrapper = document.getElementById('loginPwWrapper') || (adminPasswordInput ? adminPasswordInput.closest('.password-field-wrapper') : null);
   const rememberCheck = document.getElementById('rememberLoginCheck');
 
-  if (ADMIN_PASSWORDS.includes(enteredPass.toLowerCase())) {
+  if (ADMIN_PASSWORDS.includes(enteredPass)) {
     if (wrapper) wrapper.classList.remove('error-shake');
     
     if (rememberCheck && rememberCheck.checked) {
@@ -2226,27 +2272,47 @@ function checkAdminPassword() {
 
     setRole('admin');
     if (loginModal) loginModal.style.display = 'none';
-    showToast('Đăng nhập Quản Trị Viên thành công! Toàn quyền quản lý hệ thống.');
-  } else {
-    if (wrapper) {
-      wrapper.classList.remove('error-shake');
-      void wrapper.offsetWidth;
-      wrapper.classList.add('error-shake');
-    }
-    showCustomAlert({
-      title: 'Mật Khẩu Không Đúng',
-      message: 'Mật khẩu truy cập Quản Trị không chính xác! Vui lòng thử lại.',
-      note: '🔒 Mật khẩu mặc định: admin hoặc tanmy2026',
-      confirmText: 'Thử Lại',
-      type: 'danger',
-      iconClass: 'fa-solid fa-shield-halved'
-    }).then(() => {
-      if (adminPasswordInput) {
-        adminPasswordInput.focus();
-        adminPasswordInput.select();
-      }
-    });
+    showToast('Đăng nhập Quản Trị Viên (Admin) thành công! Toàn quyền hệ thống & Quyền Xóa.');
+    return;
   }
+
+  if (GLV_PASSWORDS.includes(enteredPass)) {
+    if (wrapper) wrapper.classList.remove('error-shake');
+    
+    if (rememberCheck && rememberCheck.checked) {
+      localStorage.setItem(AUTH_REMEMBER_KEY, 'glv');
+    } else {
+      localStorage.removeItem(AUTH_REMEMBER_KEY);
+    }
+
+    setRole('glv');
+    if (loginModal) loginModal.style.display = 'none';
+    showToast('Đăng nhập Huynh Trưởng thành công! Full quyền Thêm & Sửa dữ liệu.');
+    return;
+  }
+
+  if (wrapper) {
+    wrapper.classList.remove('error-shake');
+    void wrapper.offsetWidth;
+    wrapper.classList.add('error-shake');
+  }
+  showCustomAlert({
+    title: 'Mật Khẩu Không Đúng',
+    message: 'Mật khẩu đăng nhập không chính xác! Vui lòng kiểm tra lại.',
+    note: '🔒 Mật khẩu Admin: admin hoặc tanmy2026 | Mật khẩu Huynh Trưởng: glv hoặc ht2026',
+    confirmText: 'Thử Lại',
+    type: 'danger',
+    iconClass: 'fa-solid fa-shield-halved'
+  }).then(() => {
+    if (adminPasswordInput) {
+      adminPasswordInput.focus();
+      adminPasswordInput.select();
+    }
+  });
+}
+
+function checkGlvPassword() {
+  checkAdminPassword();
 }
 
 function populateGlvIdentitySelectors() {
@@ -5013,6 +5079,15 @@ function setupEventListeners() {
     });
   }
 
+  const authTabAdmin = document.getElementById('authTabAdmin');
+  const authTabGlv = document.getElementById('authTabGlv');
+  if (authTabAdmin) {
+    authTabAdmin.addEventListener('click', () => switchAuthModalTab('admin'));
+  }
+  if (authTabGlv) {
+    authTabGlv.addEventListener('click', () => switchAuthModalTab('glv'));
+  }
+
   if (submitAdminLoginBtn) {
     submitAdminLoginBtn.addEventListener('click', checkAdminPassword);
   }
@@ -5032,35 +5107,6 @@ function setupEventListeners() {
       adminPasswordInput.type = isPassword ? 'text' : 'password';
       if (togglePasswordIcon) {
         togglePasswordIcon.className = isPassword ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
-      }
-    });
-  }
-
-  // Sự kiện đăng nhập Huynh Trưởng
-  const submitGlvLoginBtn = document.getElementById('submitGlvLoginBtn');
-  const glvPasswordInput = document.getElementById('glvPasswordInput');
-  const toggleGlvPasswordBtn = document.getElementById('toggleGlvPasswordBtn');
-  const toggleGlvPasswordIcon = document.getElementById('toggleGlvPasswordIcon');
-
-  if (submitGlvLoginBtn) {
-    submitGlvLoginBtn.addEventListener('click', checkGlvPassword);
-  }
-
-  if (glvPasswordInput) {
-    glvPasswordInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        checkGlvPassword();
-      }
-    });
-  }
-
-  if (toggleGlvPasswordBtn && glvPasswordInput) {
-    toggleGlvPasswordBtn.addEventListener('click', () => {
-      const isPassword = (glvPasswordInput.type === 'password');
-      glvPasswordInput.type = isPassword ? 'text' : 'password';
-      if (toggleGlvPasswordIcon) {
-        toggleGlvPasswordIcon.className = isPassword ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
       }
     });
   }

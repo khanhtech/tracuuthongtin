@@ -39,7 +39,7 @@
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <link rel="stylesheet" href="css/styles.css?v=3.4.0">
+  <link rel="stylesheet" href="css/styles.css?v=3.5.0">
 </head>
 
 <body>
@@ -1743,42 +1743,67 @@
 
   <!-- ==========================================================================
   <!-- ==========================================================================
-       MODAL: ĐĂNG NHẬP NHANH 1 TÀI KHOẢN DUY NHẤT (QUẢN TRỊ VIÊN HỆ THỐNG)
+       MODAL: ĐĂNG NHẬP PHÂN QUYỀN (ADMIN TOÀN QUYỀN / HUYNH TRƯỞNG FULL QUYỀN TRỪ XÓA)
        ========================================================================== -->
   <div class="modal-backdrop" id="loginModal" style="display: none;">
     <div class="modal-content modal-auth-single">
       <div class="modal-header">
         <div class="modal-title">
-          <i class="fa-solid fa-shield-halved" style="color: #dc2626;"></i>
-          <span>Đăng Nhập Quản Trị Hệ Thống</span>
+          <i class="fa-solid fa-user-shield" style="color: #dc2626;"></i>
+          <span>Đăng Nhập Hệ Thống</span>
         </div>
         <button class="modal-close-btn" id="closeLoginModalBtn" title="Đóng"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <div class="auth-single-body">
-        <div class="auth-single-brand">
-          <div class="auth-single-logo">
-            <i class="fa-solid fa-cross"></i>
-          </div>
-          <h3 class="auth-single-title">Tài Khoản Quản Trị Hệ Thống</h3>
-          <p class="auth-single-sub">Đoàn Thiếu Nhi Thánh Thể Giáo xứ Tân Mỹ</p>
+        <!-- Role Tabs Switcher -->
+        <div class="auth-tab-switcher">
+          <button type="button" class="auth-tab-btn active" id="authTabAdmin" data-target-role="admin">
+            <i class="fa-solid fa-cross"></i> Quản Trị Viên
+          </button>
+          <button type="button" class="auth-tab-btn" id="authTabGlv" data-target-role="glv">
+            <i class="fa-solid fa-fire"></i> Huynh Trưởng
+          </button>
         </div>
 
-        <div class="auth-single-benefits">
-          <div class="auth-benefit-item"><i class="fa-solid fa-circle-check"></i> Toàn quyền Quản lý & Sửa hồ sơ Giáo Lý Viên</div>
-          <div class="auth-benefit-item"><i class="fa-solid fa-circle-check"></i> Quản lý Lớp học, Sổ Điểm, Điểm danh & Thiếu Nhi</div>
-          <div class="auth-benefit-item"><i class="fa-solid fa-circle-check"></i> Đăng Bảng Tin & Kho Tài Liệu Giáo Lý</div>
+        <div class="auth-single-brand" id="authBrandAdmin">
+          <div class="auth-single-logo admin">
+            <i class="fa-solid fa-cross"></i>
+          </div>
+          <h3 class="auth-single-title">Tài Khoản Quản Trị Viên (Admin)</h3>
+          <p class="auth-single-sub">Toàn quyền hệ thống & Quyền Xóa dữ liệu</p>
+        </div>
+
+        <div class="auth-single-brand" id="authBrandGlv" style="display: none;">
+          <div class="auth-single-logo glv">
+            <i class="fa-solid fa-fire"></i>
+          </div>
+          <h3 class="auth-single-title">Tài Khoản Huynh Trưởng (GLV)</h3>
+          <p class="auth-single-sub">Full quyền Thêm & Sửa dữ liệu (Không có quyền Xóa)</p>
+        </div>
+
+        <div class="auth-single-benefits" id="authBenefitsAdmin">
+          <div class="auth-benefit-item"><i class="fa-solid fa-circle-check"></i> Thêm, Sửa & <strong>Xóa</strong> hồ sơ Giáo Lý Viên, Lớp học</div>
+          <div class="auth-benefit-item"><i class="fa-solid fa-circle-check"></i> Toàn quyền Quản lý Thiếu Nhi, Sổ Điểm & Chuyên Cần</div>
+          <div class="auth-benefit-item"><i class="fa-solid fa-circle-check"></i> Đăng, Sửa, Xóa Bảng Tin & Kho Tài Liệu Giáo Lý</div>
+        </div>
+
+        <div class="auth-single-benefits glv-benefits" id="authBenefitsGlv" style="display: none;">
+          <div class="auth-benefit-item"><i class="fa-solid fa-circle-check"></i> <strong>Thêm & Sửa</strong> Thiếu Nhi, Nhập Excel danh sách lớp</div>
+          <div class="auth-benefit-item"><i class="fa-solid fa-circle-check"></i> <strong>Chấm Điểm & Điểm Danh</strong> Sổ Điểm Chuyên Cần</div>
+          <div class="auth-benefit-item"><i class="fa-solid fa-circle-check"></i> <strong>Thêm & Sửa</strong> Lớp học, Giáo Lý Viên, Bảng Tin & Tài Liệu</div>
+          <div class="auth-benefit-item alert-no-del"><i class="fa-solid fa-shield"></i> <em>Bảo vệ an toàn dữ liệu: Không có quyền Xóa</em></div>
         </div>
 
         <form class="auth-single-form" id="quickLoginForm" onsubmit="event.preventDefault();" autocomplete="off">
           <input type="text" name="fake_username_remember" style="display:none" autocomplete="username" value="admin">
           
           <div class="auth-input-group">
-            <label for="adminPasswordInput" class="auth-input-label">
+            <label for="adminPasswordInput" class="auth-input-label" id="authInputLabel">
               <i class="fa-solid fa-key"></i> Mật khẩu truy cập Quản Trị:
             </label>
             <div class="password-field-wrapper" id="loginPwWrapper">
-              <i class="fa-solid fa-lock" style="color: #dc2626;"></i>
+              <i class="fa-solid fa-lock" id="loginPwIcon" style="color: #dc2626;"></i>
               <input type="password" id="adminPasswordInput" placeholder="Nhập mật khẩu (VD: admin hoặc tanmy2026)..." autocomplete="current-password">
               <button type="button" id="togglePasswordBtn" class="btn-toggle-pw" title="Ẩn/Hiện mật khẩu">
                 <i class="fa-solid fa-eye-slash" id="togglePasswordIcon"></i>
@@ -1789,12 +1814,12 @@
           <div class="auth-remember-row">
             <label class="remember-checkbox-label">
               <input type="checkbox" id="rememberLoginCheck" checked>
-              <span><i class="fa-solid fa-clock-rotate-left"></i> Ghi nhớ đăng nhập (Tự động đăng nhập lần sau)</span>
+              <span><i class="fa-solid fa-clock-rotate-left"></i> Ghi nhớ đăng nhập trên thiết bị này</span>
             </label>
           </div>
 
           <button type="button" class="btn-single-login-submit" id="submitAdminLoginBtn">
-            <i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập Quản Trị Ngay
+            <i class="fa-solid fa-right-to-bracket"></i> <span id="submitLoginBtnText">Đăng Nhập Quản Trị Ngay</span>
           </button>
 
           <div class="auth-single-footer">
@@ -2184,8 +2209,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
-  <script src="js/api.js?v=3.4.0"></script>
-  <script src="js/app.js?v=3.4.0"></script>
+  <script src="js/api.js?v=3.5.0"></script>
+  <script src="js/app.js?v=3.5.0"></script>
 </body>
 
 </html>
