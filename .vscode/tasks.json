@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Auto Sync & Open Website",
+      "type": "shell",
+      "command": "cmd /c \"sync_to_xampp.bat --no-pause && start http://localhost/\"",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
+    }
+  ]
+}

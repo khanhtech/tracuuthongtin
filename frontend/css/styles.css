@@ -8290,3 +8290,278 @@ span.flatpickr-weekday {
 .btn-status-absent:hover {
   background: #fecaca;
 }
+
+/* ==========================================================================
+   TỐI ƯU HÓA TOÀN DIỆN CHO THIẾT BỊ DI ĐỘNG (SMARTPHONES & TABLETS)
+   ========================================================================== */
+
+/* 1. Touch & Tap Optimizations */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 2. Mobile Bottom Navigation Bar Enhanced */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  height: calc(62px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+  justify-content: space-around;
+  align-items: center;
+}
+
+.mobile-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 100%;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+.mobile-nav-item i {
+  font-size: 1.15rem;
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mobile-nav-item.active {
+  color: #dc2626;
+}
+
+.mobile-nav-item.active i {
+  color: #dc2626;
+  transform: translateY(-2px) scale(1.15);
+  filter: drop-shadow(0 2px 6px rgba(220, 38, 38, 0.35));
+}
+
+.mobile-nav-item:active {
+  transform: scale(0.9);
+}
+
+/* 3. Mobile Responsive Styles (<= 768px) */
+@media (max-width: 768px) {
+  body {
+    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important;
+    overflow-x: hidden;
+  }
+
+  .mobile-bottom-nav {
+    display: flex !important;
+  }
+
+  /* Appointment Letter Modal Responsive */
+  #appointmentLetterModal .modal-appointment-letter {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+  }
+
+  #appointmentLetterModal .appointment-letter-container {
+    padding: 0.75rem 0.5rem 1rem !important;
+  }
+
+  #appointmentLetterModal .letter-paper {
+    padding: 6px !important;
+    border-radius: 10px !important;
+    border-width: 1.5px !important;
+  }
+
+  #appointmentLetterModal .letter-border-inner {
+    padding: 1.15rem 0.85rem !important;
+    border-radius: 8px !important;
+    border-width: 1px !important;
+  }
+
+  #appointmentLetterModal .letter-header {
+    flex-direction: column-reverse !important;
+    text-align: center !important;
+    gap: 0.5rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+
+  #appointmentLetterModal .letter-church-info {
+    text-align: center !important;
+  }
+
+  #appointmentLetterModal .letter-church-info h4 {
+    font-size: 0.72rem !important;
+  }
+
+  #appointmentLetterModal .letter-church-info h3 {
+    font-size: 0.88rem !important;
+  }
+
+  #appointmentLetterModal .letter-emblem-img {
+    width: 54px !important;
+    height: 54px !important;
+  }
+
+  #appointmentLetterModal .letter-main-title {
+    font-size: clamp(1.2rem, 5.2vw, 1.55rem) !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  #appointmentLetterModal .letter-sub-title {
+    font-size: 0.82rem !important;
+  }
+
+  #appointmentLetterModal .letter-recipient-box {
+    padding: 0.75rem 0.65rem !important;
+  }
+
+  #appointmentLetterModal .recipient-name {
+    font-size: clamp(1.15rem, 4.8vw, 1.45rem) !important;
+  }
+
+  #appointmentLetterModal .letter-mission-box {
+    grid-template-columns: 1fr !important;
+    gap: 0.45rem !important;
+    padding: 0.75rem 0.85rem !important;
+  }
+
+  #appointmentLetterModal .mission-row {
+    white-space: normal !important;
+    flex-wrap: wrap !important;
+    font-size: 0.8rem !important;
+  }
+
+  #appointmentLetterModal .letter-blessing {
+    font-size: 0.78rem !important;
+    padding: 0 0.25rem !important;
+    line-height: 1.5 !important;
+  }
+
+  #appointmentLetterModal .letter-signature-single-block {
+    width: 100% !important;
+    margin: 0.85rem auto 0 auto !important;
+    padding-right: 0 !important;
+  }
+
+  #appointmentLetterModal .appointment-footer {
+    flex-direction: column !important;
+    gap: 0.65rem !important;
+    padding: 0.75rem 0.85rem !important;
+  }
+
+  #appointmentLetterModal .select-other-glv-wrapper {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.5rem !important;
+  }
+
+  #appointmentLetterModal .select-other-glv-wrapper label {
+    font-size: 0.75rem !important;
+  }
+
+  #appointmentLetterModal .form-select-glv-letter {
+    flex: 1 !important;
+    max-width: none !important;
+    font-size: 16px !important;
+    min-height: 40px !important;
+  }
+
+  #appointmentLetterModal .action-buttons-group {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.5rem !important;
+  }
+
+  #appointmentLetterModal .action-buttons-group .btn-tool {
+    width: 100% !important;
+    min-height: 44px !important;
+    justify-content: center !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* Single Auth Modal on Mobile */
+  .modal-auth-single {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    border-radius: 18px !important;
+  }
+
+  .auth-single-body {
+    padding: 1.2rem 1rem !important;
+  }
+
+  .auth-tab-btn {
+    font-size: 0.8rem !important;
+    padding: 0.55rem 0.5rem !important;
+  }
+
+  /* Quick Actions Bar on Mobile */
+  .quick-actions-bar {
+    display: flex !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    padding-bottom: 6px !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 0.5rem !important;
+  }
+
+  .quick-actions-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Search Card on Mobile */
+  .search-card {
+    border-radius: 14px !important;
+    padding: 0.85rem !important;
+  }
+
+  /* Tables Scroll Cue */
+  .table-responsive-wrapper,
+  .gradebook-table-container {
+    border-radius: 12px !important;
+    box-shadow: inset -8px 0 8px -8px rgba(0, 0, 0, 0.12) !important;
+  }
+}
+
+/* 4. Small Phones (<= 480px) */
+@media (max-width: 480px) {
+  .header-title {
+    font-size: 1.25rem !important;
+  }
+
+  .header-subtitle {
+    font-size: 0.76rem !important;
+  }
+
+  .mobile-brand-title span {
+    font-size: 0.8rem !important;
+  }
+
+  .btn-auth-icon-right {
+    font-size: 0.72rem !important;
+    padding: 0.3rem 0.55rem !important;
+  }
+
+  .modal-appointment-letter .recipient-holy {
+    font-size: 0.8rem !important;
+  }
+}
