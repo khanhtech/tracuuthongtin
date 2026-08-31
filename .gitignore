@@ -1,4 +1,4 @@
-.vscode/
-*.log
+node_modules/
+package-lock.json
+*.tmp
 .DS_Store
-Thumbs.db
