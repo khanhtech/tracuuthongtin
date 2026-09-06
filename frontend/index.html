@@ -1187,6 +1187,9 @@
         <button class="btn-tool btn-edit-class-from-detail" id="btnEditClassFromDetail">
           <i class="fa-solid fa-pen-to-square"></i> Chỉnh Sửa Lớp
         </button>
+        <button class="btn-tool btn-danger-soft" id="btnDeleteClassFromDetail" style="display: none;" title="Xóa lớp học này khỏi hệ thống">
+          <i class="fa-solid fa-trash-can"></i> Xóa Lớp
+        </button>
         <button class="btn-cancel" id="closeClassDetailFooterBtn" onclick="document.getElementById('classDetailModal').style.display='none';">Đóng</button>
       </div>
     </div>
@@ -1320,6 +1323,9 @@
         </div>
 
         <div class="form-footer">
+          <button type="button" class="btn-danger-soft" id="btnDeleteClassFromEditModal" style="display: none; margin-right: auto;" title="Xóa vĩnh viễn lớp học này">
+            <i class="fa-solid fa-trash-can"></i> Xóa Lớp Này
+          </button>
           <button type="button" class="btn-cancel" id="cancelEditClassBtn">Hủy Bỏ</button>
           <button type="submit" class="btn-save"><i class="fa-solid fa-floppy-disk"></i> Lưu Lớp Học</button>
         </div>
@@ -2275,8 +2281,8 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-  <script src="js/api.js?v=4.5.0"></script>
-  <script src="js/app.js?v=4.5.0"></script>
+  <script src="js/api.js?v=4.6.0"></script>
+  <script src="js/app.js?v=4.6.0"></script>
 </body>
 
 </html>

@@ -215,13 +215,26 @@ switch ($method) {
             jsonResponse(false, "Thiếu mã lớp học cần xóa!", null, 400);
         }
 
-        $stmt = $pdo->prepare("DELETE FROM classes WHERE class_id = ?");
-        $stmt->execute([$id]);
-        if ($stmt->rowCount() > 0) {
-            jsonResponse(true, "Đã xóa lớp học khỏi hệ thống!");
-        } else {
+        // Tìm chính xác class_id theo ID hoặc tên lớp
+        $findStmt = $pdo->prepare("SELECT class_id FROM classes WHERE class_id = ? OR class_name = ? LIMIT 1");
+        $findStmt->execute([$id, $id]);
+        $targetClassId = $findStmt->fetchColumn();
+
+        if (!$targetClassId) {
             jsonResponse(false, "Không tìm thấy lớp học để xóa!", null, 404);
         }
+
+        // 1. Xóa các phân công giáo lý viên liên quan
+        $pdo->prepare("DELETE FROM class_assignments WHERE class_id = ?")->execute([$targetClassId]);
+
+        // 2. Xóa các liên kết ghi danh và sổ điểm liên quan
+        $pdo->prepare("DELETE FROM enrollments_and_grades WHERE class_id = ?")->execute([$targetClassId]);
+
+        // 3. Xóa lớp học khỏi bảng classes
+        $stmt = $pdo->prepare("DELETE FROM classes WHERE class_id = ?");
+        $stmt->execute([$targetClassId]);
+
+        jsonResponse(true, "Đã xóa lớp học khỏi hệ thống thành công!");
         break;
 
     default:

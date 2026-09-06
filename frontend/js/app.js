@@ -1767,11 +1767,13 @@ const classDetailBody = document.getElementById('classDetailBody');
 const closeClassDetailModalBtn = document.getElementById('closeClassDetailModalBtn');
 const closeClassDetailFooterBtn = document.getElementById('closeClassDetailFooterBtn');
 const btnEditClassFromDetail = document.getElementById('btnEditClassFromDetail');
+const btnDeleteClassFromDetail = document.getElementById('btnDeleteClassFromDetail');
 
 const editClassModal = document.getElementById('editClassModal');
 const editClassModalTitle = document.getElementById('editClassModalTitle');
 const closeEditClassModalBtn = document.getElementById('closeEditClassModalBtn');
 const cancelEditClassBtn = document.getElementById('cancelEditClassBtn');
+const btnDeleteClassFromEditModal = document.getElementById('btnDeleteClassFromEditModal');
 const classEditForm = document.getElementById('classEditForm');
 const editClassOriginalId = document.getElementById('editClassOriginalId');
 const formClassName = document.getElementById('formClassName');
@@ -3305,6 +3307,9 @@ function renderClassCards(classesList, searchKeyword) {
         <button class="btn-card-edit-quick" data-edit-id="${cls.id}" title="Chỉnh sửa thông tin lớp này">
           <i class="fa-solid fa-pen"></i>
         </button>
+        <button class="btn-card-delete-quick" data-delete-id="${cls.id}" title="Xóa lớp học này khỏi hệ thống">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
         ` : ''}
       </div>
     `;
@@ -3323,6 +3328,15 @@ function renderClassCards(classesList, searchKeyword) {
       editBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         openEditClassModal(cls.id);
+      });
+    }
+
+    // Sự kiện bấm xóa nhanh lớp (Admin)
+    const delBtn = card.querySelector('.btn-card-delete-quick');
+    if (delBtn) {
+      delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteClass(cls.id);
       });
     }
 
@@ -3587,9 +3601,15 @@ function openClassDetailModal(classId) {
     });
   }
 
-  // Nút Sửa lớp trong chân modal chi tiết
+  // Nút Sửa & Xóa lớp trong chân modal chi tiết
   if (btnEditClassFromDetail) {
     btnEditClassFromDetail.style.display = (currentUserRole === 'admin') ? 'inline-flex' : 'none';
+  }
+  if (btnDeleteClassFromDetail) {
+    btnDeleteClassFromDetail.style.display = (currentUserRole === 'admin') ? 'inline-flex' : 'none';
+    btnDeleteClassFromDetail.onclick = () => {
+      deleteClass(cls.id);
+    };
   }
 
   classDetailModal.style.display = 'flex';
@@ -4152,6 +4172,18 @@ function openEditClassModal(classId = null) {
     renderTeacherCheckboxes([]);
   }
 
+  // Nút Xóa lớp trong modal Sửa Lớp (Chỉ Admin và chỉ khi đang sửa lớp đã có)
+  if (btnDeleteClassFromEditModal) {
+    if (classId && currentUserRole === 'admin') {
+      btnDeleteClassFromEditModal.style.display = 'inline-flex';
+      btnDeleteClassFromEditModal.onclick = () => {
+        deleteClass(classId);
+      };
+    } else {
+      btnDeleteClassFromEditModal.style.display = 'none';
+    }
+  }
+
   if (classDetailModal) classDetailModal.style.display = 'none';
   editClassModal.style.display = 'flex';
   formClassName.focus();
@@ -4326,6 +4358,16 @@ function syncClassesWithGlvDatabase() {
     if (teacherClassMap[idKey]) {
       glv.teachingClass = teacherClassMap[idKey].className;
       glv.block = teacherClassMap[idKey].block;
+    } else {
+      // Nếu lớp học cũ của GLV này đã bị xóa hoặc không còn tồn tại trong classDatabase
+      const stillExists = classDatabase.some(c => c.name === glv.teachingClass || c.id === glv.teachingClass);
+      if (!stillExists && glv.teachingClass) {
+        glv.teachingClass = '';
+        glv.block = '';
+        if (glv.role !== 'Chưa phân công') {
+          glv.role = 'Chưa phân công';
+        }
+      }
     }
   });
 
@@ -4541,15 +4583,35 @@ async function deleteClass(classId) {
 
   if (!confirmed) return;
 
+  // 1. Cập nhật local class database
   classDatabase = classDatabase.filter(c => c.id !== classId);
   saveClassesDatabase();
+
+  // 2. Đóng các modal nếu đang mở
+  if (typeof classDetailModal !== 'undefined' && classDetailModal) classDetailModal.style.display = 'none';
+  if (typeof editClassModal !== 'undefined' && editClassModal) editClassModal.style.display = 'none';
+
+  // 3. Đồng bộ lại với hồ sơ GLV (gỡ phân công lớp bị xóa)
+  syncClassesWithGlvDatabase();
+
+  // 4. Render lại toàn bộ giao diện
   renderClassesView();
   renderBlockFilterPillCounts();
   renderAllClassesTable();
+  if (typeof renderGlvGrid === 'function') renderGlvGrid();
+
   showToast(`Đã xóa lớp "${cls.name}" thành công!`);
 
-  if (typeof API !== 'undefined' && API.isOnline) {
-    API.deleteClass(cls.id);
+  // 5. Đồng bộ xóa về MySQL Database qua REST API
+  if (typeof API !== 'undefined') {
+    try {
+      const res = await API.deleteClass(cls.id);
+      if (res) {
+        console.log(`Đã xóa lớp ${cls.id} khỏi MySQL Database thành công.`);
+      }
+    } catch (e) {
+      console.warn('Lỗi khi gọi API xóa lớp:', e);
+    }
   }
 }
 
