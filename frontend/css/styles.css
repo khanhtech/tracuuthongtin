@@ -4307,6 +4307,9 @@ input[readonly].input-locked-code {
 }
 
 .detail-section-title i {
+  color: var(--primary-red);
+}
+
 /* ==========================================================================
    DANH SÁCH GIÁO LÝ VIÊN TRONG MODAL CHI TIẾT LỚP
    ========================================================================== */
@@ -4378,10 +4381,15 @@ input[readonly].input-locked-code {
 .teacher-card-avatar {
   width: 48px;
   height: 48px;
+  min-width: 48px;
+  max-width: 48px;
+  min-height: 48px;
+  max-height: 48px;
   border-radius: 12px;
   object-fit: cover;
   border: 2px solid #fee2e2;
   flex-shrink: 0;
+  display: block;
 }
 
 .teacher-card-info {
