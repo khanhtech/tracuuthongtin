@@ -1334,6 +1334,42 @@
   </div>
 
   <!-- ==========================================================================
+       MODAL: THÊM GIÁO LÝ VIÊN ĐỨNG LỚP (ADD TEACHER TO CLASS MODAL)
+       ========================================================================== -->
+  <div class="modal-backdrop modal-backdrop-top" id="addTeacherToClassModal" style="display: none;">
+    <div class="modal-content modal-picker">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-user-plus"></i>
+          <span>Thêm Huynh Trưởng / GLV vào <strong id="pickerClassNameTitle" style="color: #fbbf24;">Lớp Học</strong></span>
+        </div>
+        <button class="modal-close-btn" id="closeAddTeacherModalBtn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="picker-toolbar">
+        <div class="picker-search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="pickerGlvSearchInput" placeholder="Tìm theo tên, tên thánh hoặc mã GLV...">
+        </div>
+        <div class="picker-filter-tabs">
+          <button type="button" class="btn-picker-tab active" data-filter="all">Tất cả (<span id="pickerCountAll">0</span>)</button>
+          <button type="button" class="btn-picker-tab" data-filter="unassigned">Chưa phân công (<span id="pickerCountUnassigned">0</span>)</button>
+          <button type="button" class="btn-picker-tab" data-filter="block">Cùng Khối (<span id="pickerCountBlock">0</span>)</button>
+        </div>
+      </div>
+
+      <div class="picker-glv-list" id="pickerGlvList">
+        <!-- Rendered dynamically from JS -->
+      </div>
+
+      <div class="modal-footer" style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 0.8rem; color: #64748b;"><i class="fa-solid fa-bolt" style="color: #059669;"></i> Thao tác tự động lưu trực tiếp vào CSDL</span>
+        <button type="button" class="btn-cancel" id="closeAddTeacherFooterBtn">Đóng Cửa Sổ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
        MODAL: CỬA SỔ QUẢN LÝ DANH SÁCH THIẾU NHI RIÊNG BIỆT (STUDENT ROSTER MODAL)
        ========================================================================== -->
   <div class="modal-backdrop modal-backdrop-top" id="classStudentsModal" style="display: none;">
@@ -2281,8 +2317,8 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-  <script src="js/api.js?v=4.6.0"></script>
-  <script src="js/app.js?v=4.6.0"></script>
+  <script src="js/api.js?v=4.7.0"></script>
+  <script src="js/app.js?v=4.7.0"></script>
 </body>
 
 </html>

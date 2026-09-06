@@ -3515,34 +3515,71 @@ function openClassDetailModal(classId) {
       ${(currentUserRole === 'admin' || currentUserRole === 'glv') ? `
       <!-- Danh Sách Huynh Trưởng / GLV -->
       <div class="detail-teachers-container">
-        <div class="detail-section-title">
-          <i class="fa-solid fa-users-line"></i>
-          <span>Danh Sách Giáo Lý Viên / Huynh Trưởng Phụ Trách (${teachers.length})</span>
+        <div class="detail-section-title" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-users-line"></i>
+            <span>Danh Sách Giáo Lý Viên / Huynh Trưởng Phụ Trách (${teachers.length})</span>
+          </div>
+          ${(currentUserRole === 'admin') ? `
+          <button type="button" class="btn-quick-add-teacher" id="btnQuickAddTeacherToClass" title="Thêm Huynh Trưởng / GLV vào lớp này">
+            <i class="fa-solid fa-user-plus"></i> + Thêm GLV Đứng Lớp
+          </button>
+          ` : ''}
         </div>
 
         ${teachers.length > 0 ? teachers.map(t => {
           const rInfo = getRoleBadge(t.role);
+          const holyUpper = (t.holyName || '').trim().toUpperCase();
+          const nameUpper = `${t.lastName || ''} ${t.firstName || ''}`.trim().toUpperCase();
           return `
-          <div class="teacher-detail-card">
+          <div class="teacher-detail-card" data-tid="${t.id}">
             <img class="teacher-card-avatar" src="${getGlvAvatar(t)}" alt="avatar">
             <div class="teacher-card-info">
-              <span class="teacher-card-holy">${t.holyName || ''}</span>
-              <span class="teacher-card-name">${t.lastName} ${t.firstName}</span>
+              <span class="teacher-card-holy">${holyUpper}</span>
+              <span class="teacher-card-name">${nameUpper}</span>
               <span class="teacher-card-meta">
                 Mã: <strong>${t.id}</strong> &bull; ${t.gender === 'Nam' ? '♂ Nam' : '♀ Nữ'} &bull; ${t.cert ? 'Chứng chỉ Cấp ' + t.cert : 'Chưa có chứng chỉ'}
               </span>
-              <div style="margin-top: 0.35rem;">
+              <div style="margin-top: 0.35rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                ${(currentUserRole === 'admin') ? `
+                <div class="role-inline-select-wrap">
+                  <i class="fa-solid fa-shield-halved" style="font-size: 0.72rem; color: #b45309;"></i>
+                  <select class="select-teacher-role-inline" data-teacher-id="${t.id}" title="Đổi vai trò phụ trách">
+                    <option value="Chủ nhiệm" ${t.role === 'Chủ nhiệm' ? 'selected' : ''}>👑 Chủ nhiệm</option>
+                    <option value="Đồng hành" ${t.role === 'Đồng hành' ? 'selected' : ''}>🔗 Đồng hành</option>
+                    <option value="Hỗ trợ" ${t.role === 'Hỗ trợ' ? 'selected' : ''}>🌱 Hỗ trợ</option>
+                  </select>
+                </div>
+                ` : `
                 <span class="badge-role ${rInfo.cls}" style="font-size: 0.78rem; padding: 0.15rem 0.6rem;">
                   ${rInfo.text}
                 </span>
+                `}
               </div>
             </div>
-            <button class="btn-view-teacher-glv" data-glv-id="${t.id}" title="Xem thẻ Giáo Lý Viên">
-              <i class="fa-solid fa-id-badge"></i> Xem Thẻ
-            </button>
+            <div class="teacher-detail-actions">
+              <button class="btn-view-teacher-glv" data-glv-id="${t.id}" title="Xem thẻ Giáo Lý Viên">
+                <i class="fa-solid fa-id-badge"></i> Xem Thẻ
+              </button>
+              ${(currentUserRole === 'admin') ? `
+              <button class="btn-remove-teacher-from-class" data-teacher-id="${t.id}" data-teacher-name="${holyUpper} ${nameUpper}" title="Gỡ anh/chị này khỏi lớp học">
+                <i class="fa-solid fa-user-xmark"></i> Gỡ
+              </button>
+              ` : ''}
+            </div>
           </div>
           `;
-        }).join('') : '<p style="color: #64748b; font-style: italic;">Chưa phân công Huynh Trưởng cho lớp học này.</p>'}
+        }).join('') : `
+          <div class="empty-teachers-box">
+            <i class="fa-solid fa-user-slash"></i>
+            <p>Chưa có Huynh Trưởng / Giáo Lý Viên phân công cho lớp học này.</p>
+            ${(currentUserRole === 'admin') ? `
+            <button type="button" class="btn-secondary-add-teacher" id="btnEmptyAddTeacher">
+              <i class="fa-solid fa-user-plus"></i> Phân Công Ngay
+            </button>
+            ` : ''}
+          </div>
+        `}
       </div>
       ` : ''}
 
@@ -3591,6 +3628,39 @@ function openClassDetailModal(classId) {
       });
     }
 
+    // Sự kiện mở modal thêm GLV vào lớp
+    const btnQuickAddTeacher = classDetailBody.querySelector('#btnQuickAddTeacherToClass');
+    if (btnQuickAddTeacher) {
+      btnQuickAddTeacher.addEventListener('click', () => {
+        openAddTeacherToClassModal(cls.id);
+      });
+    }
+    const btnEmptyAddTeacher = classDetailBody.querySelector('#btnEmptyAddTeacher');
+    if (btnEmptyAddTeacher) {
+      btnEmptyAddTeacher.addEventListener('click', () => {
+        openAddTeacherToClassModal(cls.id);
+      });
+    }
+
+    // Sự kiện đổi vai trò trực tiếp trong danh sách GLV
+    classDetailBody.querySelectorAll('.select-teacher-role-inline').forEach(sel => {
+      sel.addEventListener('change', (e) => {
+        const tId = sel.getAttribute('data-teacher-id');
+        const newRole = sel.value;
+        changeTeacherRoleInClass(cls.id, tId, newRole);
+      });
+    });
+
+    // Sự kiện gỡ GLV khỏi lớp
+    classDetailBody.querySelectorAll('.btn-remove-teacher-from-class').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const tId = btn.getAttribute('data-teacher-id');
+        const tName = btn.getAttribute('data-teacher-name');
+        removeTeacherFromClass(cls.id, tId, tName);
+      });
+    });
+
     // Sự kiện nút "Xem Thẻ" của từng GLV trong modal chi tiết lớp -> Mở xem nhanh thẻ GLV trên modal
     classDetailBody.querySelectorAll('.btn-view-teacher-glv').forEach(btn => {
       btn.addEventListener('click', (e) => {
@@ -3613,6 +3683,278 @@ function openClassDetailModal(classId) {
   }
 
   classDetailModal.style.display = 'flex';
+}
+
+// ==========================================================================
+// CÁC HÀM THAO TÁC NHANH VỚI GLV ĐỨNG LỚP (THÊM, GỠ, ĐỔI VAI TRÒ & AUTO SYNC)
+// ==========================================================================
+let currentPickerClassId = null;
+let currentPickerFilter = 'all';
+
+async function changeTeacherRoleInClass(classId, teacherId, newRole) {
+  const cls = classDatabase.find(c => c.id === classId);
+  if (!cls) return;
+
+  if (!cls.teachers) cls.teachers = [];
+  const tEntry = cls.teachers.find(t => (t.id || '').toUpperCase() === (teacherId || '').toUpperCase());
+  if (tEntry) {
+    tEntry.role = newRole;
+  } else {
+    cls.teachers.push({ id: teacherId.toUpperCase(), role: newRole });
+  }
+
+  // Cập nhật trong glvDatabase
+  const glv = glvDatabase.find(g => (g.id || '').toUpperCase() === (teacherId || '').toUpperCase());
+  if (glv) {
+    glv.role = newRole;
+    glv.teachingClass = cls.name;
+    glv.block = cls.block;
+  }
+
+  saveClassesDatabase();
+  saveDatabase();
+
+  // Render lại giao diện
+  renderClassesView();
+  if (typeof renderGlvGrid === 'function') renderGlvGrid();
+
+  const glvName = glv ? `${glv.holyName ? glv.holyName + ' ' : ''}${glv.lastName} ${glv.firstName}`.trim() : teacherId;
+  showToast(`Đã đổi vai trò của ${glvName} thành "${newRole}"!`);
+
+  // Lưu ngay vào MySQL Database
+  if (typeof API !== 'undefined') {
+    API.saveClass(cls, false).catch(err => console.warn('Lỗi lưu CSDL:', err));
+  }
+}
+
+async function removeTeacherFromClass(classId, teacherId, teacherName) {
+  const cls = classDatabase.find(c => c.id === classId);
+  if (!cls) return;
+
+  const confirmed = await showConfirmDialog({
+    title: 'Xác Nhận Gỡ Phụ Trách',
+    message: `Bạn có chắc chắn muốn gỡ Huynh Trưởng / GLV này khỏi lớp học không?`,
+    itemName: `${teacherName || teacherId} ➔ Lớp ${cls.name}`,
+    confirmText: 'Gỡ Khỏi Lớp',
+    type: 'warning',
+    iconClass: 'fa-solid fa-user-xmark'
+  });
+
+  if (!confirmed) return;
+
+  // Gỡ khỏi danh sách lớp
+  cls.teacherIds = (cls.teacherIds || []).filter(tid => (tid || '').toUpperCase() !== (teacherId || '').toUpperCase());
+  if (cls.teachers) {
+    cls.teachers = cls.teachers.filter(t => (t.id || '').toUpperCase() !== (teacherId || '').toUpperCase());
+  }
+
+  // Cập nhật trong glvDatabase nếu không còn dạy lớp nào khác
+  const glv = glvDatabase.find(g => (g.id || '').toUpperCase() === (teacherId || '').toUpperCase());
+  if (glv) {
+    const hasOtherClass = classDatabase.some(c => c.id !== classId && (c.teacherIds || []).some(tid => (tid || '').toUpperCase() === (teacherId || '').toUpperCase()));
+    if (!hasOtherClass) {
+      glv.teachingClass = '';
+      glv.block = '';
+      glv.role = 'Chưa phân công';
+    }
+  }
+
+  saveClassesDatabase();
+  saveDatabase();
+
+  // Làm mới giao diện
+  openClassDetailModal(cls.id);
+  renderClassesView();
+  if (typeof renderGlvGrid === 'function') renderGlvGrid();
+  renderAllClassesTable();
+
+  showToast(`Đã gỡ ${teacherName || teacherId} khỏi lớp "${cls.name}" và lưu CSDL!`);
+
+  // Lưu ngay vào MySQL Database
+  if (typeof API !== 'undefined') {
+    API.saveClass(cls, false).catch(err => console.warn('Lỗi lưu CSDL:', err));
+  }
+}
+
+function openAddTeacherToClassModal(classId) {
+  const cls = classDatabase.find(c => c.id === classId);
+  if (!cls) return;
+
+  currentPickerClassId = classId;
+  currentPickerFilter = 'all';
+
+  const modal = document.getElementById('addTeacherToClassModal');
+  const title = document.getElementById('pickerClassNameTitle');
+  const searchInput = document.getElementById('pickerGlvSearchInput');
+
+  if (title) title.textContent = `Lớp ${cls.name} (${cls.block || ''})`;
+  if (searchInput) searchInput.value = '';
+
+  document.querySelectorAll('.btn-picker-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-filter') === 'all');
+  });
+
+  renderPickerGlvList();
+  if (modal) modal.style.display = 'flex';
+  if (searchInput) searchInput.focus();
+}
+
+function closeAddTeacherToClassModal() {
+  const modal = document.getElementById('addTeacherToClassModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function renderPickerGlvList() {
+  const list = document.getElementById('pickerGlvList');
+  const searchInput = document.getElementById('pickerGlvSearchInput');
+  const countAll = document.getElementById('pickerCountAll');
+  const countUnassigned = document.getElementById('pickerCountUnassigned');
+  const countBlock = document.getElementById('pickerCountBlock');
+
+  if (!list || !currentPickerClassId) return;
+
+  const cls = classDatabase.find(c => c.id === currentPickerClassId);
+  if (!cls) return;
+
+  const query = (searchInput ? searchInput.value.trim().toLowerCase() : '');
+  const qNorm = removeVietnameseTones(query);
+
+  const currentAssignedIds = (cls.teacherIds || []).map(id => (id || '').toUpperCase());
+
+  // Thống kê số lượng
+  const unassignedCount = glvDatabase.filter(g => !g.teachingClass || g.teachingClass === 'Chưa phân công').length;
+  const blockCount = glvDatabase.filter(g => g.block && g.block.toLowerCase() === (cls.block || '').toLowerCase()).length;
+
+  if (countAll) countAll.textContent = glvDatabase.length;
+  if (countUnassigned) countUnassigned.textContent = unassignedCount;
+  if (countBlock) countBlock.textContent = blockCount;
+
+  let filtered = [...glvDatabase];
+
+  if (currentPickerFilter === 'unassigned') {
+    filtered = filtered.filter(g => !g.teachingClass || g.teachingClass === 'Chưa phân công');
+  } else if (currentPickerFilter === 'block') {
+    filtered = filtered.filter(g => g.block && g.block.toLowerCase() === (cls.block || '').toLowerCase());
+  }
+
+  if (query) {
+    filtered = filtered.filter(g => {
+      const nameNorm = removeVietnameseTones(`${g.holyName} ${g.lastName} ${g.firstName}`);
+      const idNorm = g.id.toLowerCase();
+      return nameNorm.includes(qNorm) || idNorm.includes(qNorm);
+    });
+  }
+
+  if (filtered.length === 0) {
+    list.innerHTML = `
+      <div style="text-align: center; padding: 2rem; color: #94a3b8;">
+        <i class="fa-solid fa-user-xmark" style="font-size: 1.8rem; margin-bottom: 0.5rem; display: block; color: #cbd5e1;"></i>
+        Không tìm thấy Giáo Lý Viên phù hợp với tìm kiếm
+      </div>
+    `;
+    return;
+  }
+
+  list.innerHTML = '';
+
+  filtered.forEach(glv => {
+    const idKey = glv.id.toUpperCase();
+    const isAlreadyIn = currentAssignedIds.includes(idKey);
+    const holyUpper = (glv.holyName || '').trim().toUpperCase();
+    const nameUpper = `${glv.lastName || ''} ${glv.firstName || ''}`.trim().toUpperCase();
+
+    const item = document.createElement('div');
+    item.className = `picker-glv-item ${isAlreadyIn ? 'already-in-class' : ''}`;
+    item.innerHTML = `
+      <img class="picker-glv-avatar" src="${getGlvAvatar(glv)}" alt="avatar">
+      <div class="picker-glv-info">
+        <span class="picker-glv-holy">${holyUpper}</span>
+        <span class="picker-glv-name">${nameUpper}</span>
+        <div class="picker-glv-meta">
+          <span>Mã: <strong>${glv.id}</strong></span>
+          <span>&bull;</span>
+          ${glv.teachingClass ? `<span class="picker-glv-status-chip busy"><i class="fa-solid fa-chalkboard"></i> ${glv.teachingClass}</span>` : `<span class="picker-glv-status-chip free"><i class="fa-solid fa-check"></i> Chưa phân công</span>`}
+        </div>
+      </div>
+      <div class="picker-glv-actions">
+        ${!isAlreadyIn ? `
+        <select class="picker-role-select" id="roleSelect_${glv.id}">
+          <option value="Đồng hành">Đồng hành</option>
+          <option value="Chủ nhiệm">Chủ nhiệm</option>
+          <option value="Hỗ trợ">Hỗ trợ</option>
+        </select>
+        <button type="button" class="btn-picker-add" data-add-glv-id="${glv.id}">
+          <i class="fa-solid fa-plus"></i> Thêm
+        </button>
+        ` : `
+        <span class="btn-picker-added">
+          <i class="fa-solid fa-check"></i> Đã Trong Lớp
+        </span>
+        `}
+      </div>
+    `;
+
+    const addBtn = item.querySelector('[data-add-glv-id]');
+    if (addBtn) {
+      addBtn.addEventListener('click', () => {
+        const roleSelect = item.querySelector(`#roleSelect_${glv.id}`);
+        const role = roleSelect ? roleSelect.value : 'Đồng hành';
+        addTeacherToClass(currentPickerClassId, glv.id, role);
+      });
+    }
+
+    list.appendChild(item);
+  });
+}
+
+async function addTeacherToClass(classId, teacherId, role = 'Đồng hành') {
+  const cls = classDatabase.find(c => c.id === classId);
+  const glv = glvDatabase.find(g => (g.id || '').toUpperCase() === (teacherId || '').toUpperCase());
+  if (!cls || !glv) return;
+
+  if (!cls.teacherIds) cls.teacherIds = [];
+  if (!cls.teachers) cls.teachers = [];
+
+  const idKey = teacherId.toUpperCase();
+  if (!cls.teacherIds.includes(idKey)) {
+    cls.teacherIds.push(idKey);
+  }
+
+  const existingT = cls.teachers.find(t => (t.id || '').toUpperCase() === idKey);
+  if (existingT) {
+    existingT.role = role;
+  } else {
+    cls.teachers.push({
+      id: idKey,
+      role: role,
+      holyName: glv.holyName || '',
+      lastName: glv.lastName || '',
+      firstName: glv.firstName || ''
+    });
+  }
+
+  // Cập nhật trong glvDatabase
+  glv.teachingClass = cls.name;
+  glv.block = cls.block;
+  glv.role = role;
+
+  saveClassesDatabase();
+  saveDatabase();
+
+  // Làm mới giao diện
+  renderPickerGlvList();
+  openClassDetailModal(cls.id);
+  renderClassesView();
+  if (typeof renderGlvGrid === 'function') renderGlvGrid();
+  renderAllClassesTable();
+
+  const glvName = `${glv.holyName ? glv.holyName + ' ' : ''}${glv.lastName} ${glv.firstName}`.trim().toUpperCase();
+  showToast(`Đã thêm ${glvName} vào lớp "${cls.name}" (${role})!`);
+
+  // Lưu ngay vào MySQL Database
+  if (typeof API !== 'undefined') {
+    API.saveClass(cls, false).catch(err => console.warn('Lỗi lưu CSDL:', err));
+  }
 }
 
 // ==========================================================================
@@ -5864,6 +6206,35 @@ function setupEventListeners() {
       if (e.target === editClassModal) editClassModal.style.display = 'none';
     });
   }
+
+  // Modal Thêm GLV Vào Lớp (Picker)
+  const addTeacherToClassModal = document.getElementById('addTeacherToClassModal');
+  const closeAddTeacherModalBtn = document.getElementById('closeAddTeacherModalBtn');
+  const closeAddTeacherFooterBtn = document.getElementById('closeAddTeacherFooterBtn');
+  const pickerGlvSearchInput = document.getElementById('pickerGlvSearchInput');
+
+  if (closeAddTeacherModalBtn) {
+    closeAddTeacherModalBtn.addEventListener('click', closeAddTeacherToClassModal);
+  }
+  if (closeAddTeacherFooterBtn) {
+    closeAddTeacherFooterBtn.addEventListener('click', closeAddTeacherToClassModal);
+  }
+  if (addTeacherToClassModal) {
+    addTeacherToClassModal.addEventListener('click', (e) => {
+      if (e.target === addTeacherToClassModal) closeAddTeacherToClassModal();
+    });
+  }
+  if (pickerGlvSearchInput) {
+    pickerGlvSearchInput.addEventListener('input', renderPickerGlvList);
+  }
+  document.querySelectorAll('.btn-picker-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.btn-picker-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentPickerFilter = btn.getAttribute('data-filter') || 'all';
+      renderPickerGlvList();
+    });
+  });
   if (teacherSearchFilter) {
     teacherSearchFilter.addEventListener('input', (e) => {
       const selected = [];
