@@ -3515,14 +3515,14 @@ function openClassDetailModal(classId) {
       ${(currentUserRole === 'admin' || currentUserRole === 'glv') ? `
       <!-- Danh Sách Huynh Trưởng / GLV -->
       <div class="detail-teachers-container">
-        <div class="detail-section-title" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <div class="detail-teachers-header">
+          <div class="detail-teachers-title">
             <i class="fa-solid fa-users-line"></i>
-            <span>Danh Sách Giáo Lý Viên / Huynh Trưởng Phụ Trách (${teachers.length})</span>
+            <span>Huynh Trưởng / GLV Phụ Trách (${teachers.length})</span>
           </div>
           ${(currentUserRole === 'admin') ? `
-          <button type="button" class="btn-quick-add-teacher" id="btnQuickAddTeacherToClass" title="Thêm Huynh Trưởng / GLV vào lớp này">
-            <i class="fa-solid fa-user-plus"></i> + Thêm GLV Đứng Lớp
+          <button type="button" class="btn-detail-add-glv" id="btnQuickAddTeacherToClass" title="Thêm Huynh Trưởng / GLV vào lớp này">
+            <i class="fa-solid fa-plus-circle"></i> Thêm GLV Đứng Lớp
           </button>
           ` : ''}
         </div>
@@ -3531,6 +3531,8 @@ function openClassDetailModal(classId) {
           const rInfo = getRoleBadge(t.role);
           const holyUpper = (t.holyName || '').trim().toUpperCase();
           const nameUpper = `${t.lastName || ''} ${t.firstName || ''}`.trim().toUpperCase();
+          const roleClass = (t.role === 'Chủ nhiệm') ? 'role-cn' : ((t.role === 'Hỗ trợ') ? 'role-ht' : 'role-dh');
+          const roleIcon = (t.role === 'Chủ nhiệm') ? 'fa-solid fa-crown' : ((t.role === 'Hỗ trợ') ? 'fa-solid fa-seedling' : 'fa-solid fa-link');
           return `
           <div class="teacher-detail-card" data-tid="${t.id}">
             <img class="teacher-card-avatar" src="${getGlvAvatar(t)}" alt="avatar">
@@ -3538,32 +3540,33 @@ function openClassDetailModal(classId) {
               <span class="teacher-card-holy">${holyUpper}</span>
               <span class="teacher-card-name">${nameUpper}</span>
               <span class="teacher-card-meta">
-                Mã: <strong>${t.id}</strong> &bull; ${t.gender === 'Nam' ? '♂ Nam' : '♀ Nữ'} &bull; ${t.cert ? 'Chứng chỉ Cấp ' + t.cert : 'Chưa có chứng chỉ'}
+                Mã: <strong>${t.id}</strong> &bull; ${t.gender === 'Nam' ? '♂ Nam' : '♀ Nữ'} &bull; ${t.cert ? 'Chứng chỉ ' + t.cert : 'Chưa có CC'}
               </span>
-              <div style="margin-top: 0.35rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <div class="teacher-card-role-wrap">
                 ${(currentUserRole === 'admin') ? `
-                <div class="role-inline-select-wrap">
-                  <i class="fa-solid fa-shield-halved" style="font-size: 0.72rem; color: #b45309;"></i>
-                  <select class="select-teacher-role-inline" data-teacher-id="${t.id}" title="Đổi vai trò phụ trách">
-                    <option value="Chủ nhiệm" ${t.role === 'Chủ nhiệm' ? 'selected' : ''}>👑 Chủ nhiệm</option>
-                    <option value="Đồng hành" ${t.role === 'Đồng hành' ? 'selected' : ''}>🔗 Đồng hành</option>
-                    <option value="Hỗ trợ" ${t.role === 'Hỗ trợ' ? 'selected' : ''}>🌱 Hỗ trợ</option>
+                <div class="role-badge-select-box ${roleClass}">
+                  <i class="${roleIcon}"></i>
+                  <select class="select-teacher-role-inline" data-teacher-id="${t.id}" title="Bấm để đổi vai trò">
+                    <option value="Chủ nhiệm" ${t.role === 'Chủ nhiệm' ? 'selected' : ''}>Chủ nhiệm</option>
+                    <option value="Đồng hành" ${t.role === 'Đồng hành' ? 'selected' : ''}>Đồng hành</option>
+                    <option value="Hỗ trợ" ${t.role === 'Hỗ trợ' ? 'selected' : ''}>Hỗ trợ</option>
                   </select>
+                  <i class="fa-solid fa-chevron-down select-caret"></i>
                 </div>
                 ` : `
-                <span class="badge-role ${rInfo.cls}" style="font-size: 0.78rem; padding: 0.15rem 0.6rem;">
+                <span class="badge-role ${rInfo.cls}">
                   ${rInfo.text}
                 </span>
                 `}
               </div>
             </div>
             <div class="teacher-detail-actions">
-              <button class="btn-view-teacher-glv" data-glv-id="${t.id}" title="Xem thẻ Giáo Lý Viên">
-                <i class="fa-solid fa-id-badge"></i> Xem Thẻ
+              <button type="button" class="btn-detail-glv-view" data-glv-id="${t.id}" title="Xem thẻ Giáo Lý Viên">
+                <i class="fa-solid fa-id-card"></i> Xem Thẻ
               </button>
               ${(currentUserRole === 'admin') ? `
-              <button class="btn-remove-teacher-from-class" data-teacher-id="${t.id}" data-teacher-name="${holyUpper} ${nameUpper}" title="Gỡ anh/chị này khỏi lớp học">
-                <i class="fa-solid fa-user-xmark"></i> Gỡ
+              <button type="button" class="btn-detail-glv-remove" data-teacher-id="${t.id}" data-teacher-name="${holyUpper} ${nameUpper}" title="Gỡ anh/chị này khỏi lớp học">
+                <i class="fa-solid fa-user-minus"></i> Gỡ
               </button>
               ` : ''}
             </div>
@@ -3575,7 +3578,7 @@ function openClassDetailModal(classId) {
             <p>Chưa có Huynh Trưởng / Giáo Lý Viên phân công cho lớp học này.</p>
             ${(currentUserRole === 'admin') ? `
             <button type="button" class="btn-secondary-add-teacher" id="btnEmptyAddTeacher">
-              <i class="fa-solid fa-user-plus"></i> Phân Công Ngay
+              <i class="fa-solid fa-plus-circle"></i> Phân Công Ngay
             </button>
             ` : ''}
           </div>
@@ -3647,12 +3650,20 @@ function openClassDetailModal(classId) {
       sel.addEventListener('change', (e) => {
         const tId = sel.getAttribute('data-teacher-id');
         const newRole = sel.value;
+        const box = sel.closest('.role-badge-select-box');
+        if (box) {
+          box.className = `role-badge-select-box ${(newRole === 'Chủ nhiệm') ? 'role-cn' : ((newRole === 'Hỗ trợ') ? 'role-ht' : 'role-dh')}`;
+          const icon = box.querySelector('i:first-child');
+          if (icon) {
+            icon.className = (newRole === 'Chủ nhiệm') ? 'fa-solid fa-crown' : ((newRole === 'Hỗ trợ') ? 'fa-solid fa-seedling' : 'fa-solid fa-link');
+          }
+        }
         changeTeacherRoleInClass(cls.id, tId, newRole);
       });
     });
 
     // Sự kiện gỡ GLV khỏi lớp
-    classDetailBody.querySelectorAll('.btn-remove-teacher-from-class').forEach(btn => {
+    classDetailBody.querySelectorAll('.btn-detail-glv-remove').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const tId = btn.getAttribute('data-teacher-id');
@@ -3662,7 +3673,7 @@ function openClassDetailModal(classId) {
     });
 
     // Sự kiện nút "Xem Thẻ" của từng GLV trong modal chi tiết lớp -> Mở xem nhanh thẻ GLV trên modal
-    classDetailBody.querySelectorAll('.btn-view-teacher-glv').forEach(btn => {
+    classDetailBody.querySelectorAll('.btn-detail-glv-view').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const glvId = btn.getAttribute('data-glv-id');

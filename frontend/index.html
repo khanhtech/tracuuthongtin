@@ -39,7 +39,7 @@
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <link rel="stylesheet" href="css/styles.css?v=4.5.0">
+  <link rel="stylesheet" href="css/styles.css?v=4.8.0">
 </head>
 
 <body>
@@ -1181,16 +1181,18 @@
       </div>
 
       <div class="modal-footer class-detail-footer">
-        <button class="btn-tool btn-gradebook-class" id="btnOpenGradebookFromDetail" title="Mở Sổ Điểm & Chuyên Cần của lớp này">
+        <button class="btn-gradebook-class" id="btnOpenGradebookFromDetail" title="Mở Sổ Điểm & Chuyên Cần của lớp này">
           <i class="fa-solid fa-graduation-cap"></i> Sổ Điểm & Chuyên Cần
         </button>
-        <button class="btn-tool btn-edit-class-from-detail" id="btnEditClassFromDetail">
+        <button class="btn-edit-class-from-detail" id="btnEditClassFromDetail">
           <i class="fa-solid fa-pen-to-square"></i> Chỉnh Sửa Lớp
         </button>
-        <button class="btn-tool btn-danger-soft" id="btnDeleteClassFromDetail" style="display: none;" title="Xóa lớp học này khỏi hệ thống">
+        <button class="btn-delete-class-from-detail" id="btnDeleteClassFromDetail" style="display: none;" title="Xóa lớp học này khỏi hệ thống">
           <i class="fa-solid fa-trash-can"></i> Xóa Lớp
         </button>
-        <button class="btn-cancel" id="closeClassDetailFooterBtn" onclick="document.getElementById('classDetailModal').style.display='none';">Đóng</button>
+        <button class="btn-cancel-modal" id="closeClassDetailFooterBtn" onclick="document.getElementById('classDetailModal').style.display='none';">
+          <i class="fa-solid fa-xmark"></i> Đóng
+        </button>
       </div>
     </div>
   </div>
@@ -2317,8 +2319,8 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-  <script src="js/api.js?v=4.7.0"></script>
-  <script src="js/app.js?v=4.7.0"></script>
+  <script src="js/api.js?v=4.8.0"></script>
+  <script src="js/app.js?v=4.8.0"></script>
 </body>
 
 </html>
