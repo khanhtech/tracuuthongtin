@@ -1594,8 +1594,8 @@ let currentNewsCategoryFilter = 'all';
 let currentDocsCategoryFilter = 'all';
 let currentTab = localStorage.getItem(ACTIVE_TAB_KEY) || 'news';
 const AUTH_REMEMBER_KEY = 'auth_admin_remember_tanmy_v2';
-const ADMIN_PASSWORDS = ['superadmin@123', 'admin', 'admin123', 'tanmy2026', 'tanmy', '123456'];
-const GLV_PASSWORDS = ['glv', 'glv2026', 'huynhtruong', 'ht2026', 'ht', 'giaolyvien', '123456'];
+const ADMIN_PASSWORDS = ['SuperAdmin@123'];
+const GLV_PASSWORDS = ['HT.GLV.GxTanMy'];
 let currentUserRole = localStorage.getItem(AUTH_REMEMBER_KEY) || sessionStorage.getItem(AUTH_ROLE_KEY) || 'admin';
 
 function getGlvAvatar(glv) {
@@ -2243,7 +2243,7 @@ function switchAuthModalTab(role) {
     if (benefitsGlv) benefitsGlv.style.display = 'block';
     if (inputLabel) inputLabel.innerHTML = '<i class="fa-solid fa-key"></i> Mật khẩu truy cập Huynh Trưởng:';
     if (pwInput) {
-      pwInput.placeholder = 'Nhập mật khẩu (VD: glv hoặc ht2026)...';
+      pwInput.placeholder = 'Nhập mật khẩu Huynh Trưởng...';
       pwInput.focus();
     }
     if (pwIcon) pwIcon.style.color = '#ea580c';
@@ -2258,7 +2258,7 @@ function switchAuthModalTab(role) {
     if (benefitsGlv) benefitsGlv.style.display = 'none';
     if (inputLabel) inputLabel.innerHTML = '<i class="fa-solid fa-key"></i> Mật khẩu truy cập Quản Trị:';
     if (pwInput) {
-      pwInput.placeholder = 'Nhập mật khẩu (VD: admin hoặc tanmy2026)...';
+      pwInput.placeholder = 'Nhập mật khẩu Quản Trị...';
       pwInput.focus();
     }
     if (pwIcon) pwIcon.style.color = '#dc2626';
@@ -2269,11 +2269,10 @@ function switchAuthModalTab(role) {
 
 function checkAdminPassword() {
   const rawEntered = (adminPasswordInput ? adminPasswordInput.value : '').trim();
-  const enteredPass = rawEntered.toLowerCase();
   const wrapper = document.getElementById('loginPwWrapper') || (adminPasswordInput ? adminPasswordInput.closest('.password-field-wrapper') : null);
   const rememberCheck = document.getElementById('rememberLoginCheck');
 
-  if (ADMIN_PASSWORDS.includes(enteredPass) || rawEntered === 'SuperAdmin@123') {
+  if (rawEntered === 'SuperAdmin@123' || ADMIN_PASSWORDS.includes(rawEntered)) {
     if (wrapper) wrapper.classList.remove('error-shake');
     
     if (rememberCheck && rememberCheck.checked) {
@@ -2288,7 +2287,7 @@ function checkAdminPassword() {
     return;
   }
 
-  if (GLV_PASSWORDS.includes(enteredPass)) {
+  if (rawEntered === 'HT.GLV.GxTanMy' || GLV_PASSWORDS.includes(rawEntered)) {
     if (wrapper) wrapper.classList.remove('error-shake');
     
     if (rememberCheck && rememberCheck.checked) {
@@ -2311,7 +2310,7 @@ function checkAdminPassword() {
   showCustomAlert({
     title: 'Mật Khẩu Không Đúng',
     message: 'Mật khẩu đăng nhập không chính xác! Vui lòng kiểm tra lại.',
-    note: '🔒 Mật khẩu Admin: admin hoặc tanmy2026 | Mật khẩu Huynh Trưởng: glv hoặc ht2026',
+    note: '🔒 Vui lòng nhập đúng mật khẩu Quản Trị hoặc Huynh Trưởng đã được cấp.',
     confirmText: 'Thử Lại',
     type: 'danger',
     iconClass: 'fa-solid fa-shield-halved'
@@ -2610,7 +2609,7 @@ function checkGlvPassword() {
   const enteredPass = (glvPasswordInput ? glvPasswordInput.value : '').trim();
   const wrapper = glvPasswordInput ? glvPasswordInput.closest('.password-field-wrapper') : null;
 
-  if (GLV_PASSWORDS.includes(enteredPass.toLowerCase())) {
+  if (enteredPass === 'HT.GLV.GxTanMy' || GLV_PASSWORDS.includes(enteredPass)) {
     if (wrapper) wrapper.classList.remove('error-shake');
     setRole('glv');
     if (loginModal) loginModal.style.display = 'none';

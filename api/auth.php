@@ -28,25 +28,20 @@ switch ($method) {
         $stmt->execute([$password]);
         $admin = $stmt->fetch();
 
-        if ($admin) {
-            unset($admin['password']);
+        if ($admin || $password === 'SuperAdmin@123') {
             jsonResponse(true, "Đăng nhập Quản Trị Viên thành công!", [
                 "role" => "admin",
-                "username" => $admin['username'],
-                "displayName" => $admin['display_name']
+                "username" => $admin ? $admin['username'] : "admin",
+                "displayName" => $admin ? $admin['display_name'] : "Quản Trị Viên"
+            ]);
+        } else if ($password === 'HT.GLV.GxTanMy') {
+            jsonResponse(true, "Đăng nhập Huynh Trưởng thành công!", [
+                "role" => "glv",
+                "username" => "glv",
+                "displayName" => "Huynh Trưởng - GLV"
             ]);
         } else {
-            // Mật khẩu dự phòng mặc định
-            $defaultPass = ['superadmin@123', 'admin', 'admin123', 'tanmy2026', '123456'];
-            if (in_array(strtolower($password), $defaultPass) || $password === 'SuperAdmin@123') {
-                jsonResponse(true, "Đăng nhập Quản Trị Viên thành công!", [
-                    "role" => "admin",
-                    "username" => "admin",
-                    "displayName" => "Quản Trị Viên"
-                ]);
-            } else {
-                jsonResponse(false, "Mật khẩu Quản Trị Viên không chính xác!", null, 401);
-            }
+            jsonResponse(false, "Mật khẩu không chính xác!", null, 401);
         }
         break;
 
