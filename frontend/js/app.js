@@ -1157,21 +1157,22 @@ function getStudentRoleBadge(roleOrNote) {
 }
 
 function getRoleBadge(role) {
-  const norm = removeVietnameseTones(role || '').toLowerCase().trim();
+  const rawRole = (role || '').trim();
+  const norm = removeVietnameseTones(rawRole).toLowerCase().trim();
   if (norm.includes('chu nhiem') || norm.includes('phu trach') || norm.includes('truong lop')) {
     return {
       text: '👑 Chủ Nhiệm',
       cls: 'role-chunhiem',
-      raw: 'Chủ nhiệm',
+      raw: rawRole || 'Chủ nhiệm',
       short: 'CN',
       icon: 'fa-solid fa-crown',
       chipHtml: '<span class="teacher-role-tag role-chunhiem" title="Vai trò: Chủ nhiệm"><i class="fa-solid fa-crown"></i> CN</span>'
     };
-  } else if (norm.includes('dong hanh') || norm.includes('dung lop') || norm.includes('giang day')) {
+  } else if (norm.includes('dong hanh') || norm.includes('dung lop') || norm.includes('giang day') || norm.includes('phu ta') || norm.includes('pho lop')) {
     return {
-      text: '🤝 Đồng Hành',
+      text: '🤝 Đồng Hành / Phụ Tá',
       cls: 'role-donghanh',
-      raw: 'Đồng hành',
+      raw: rawRole || 'Đồng hành',
       short: 'ĐH',
       icon: 'fa-solid fa-handshake-angle',
       chipHtml: '<span class="teacher-role-tag role-donghanh" title="Vai trò: Đồng hành"><i class="fa-solid fa-handshake-angle"></i> ĐH</span>'
@@ -1180,19 +1181,19 @@ function getRoleBadge(role) {
     return {
       text: '🌱 Hỗ Trợ',
       cls: 'role-hotro',
-      raw: 'Hỗ trợ',
+      raw: rawRole || 'Hỗ trợ',
       short: 'HT',
       icon: 'fa-solid fa-seedling',
       chipHtml: '<span class="teacher-role-tag role-hotro" title="Vai trò: Hỗ trợ"><i class="fa-solid fa-seedling"></i> HT</span>'
     };
   }
   return {
-    text: 'Chưa phân công',
-    cls: 'role-unassigned',
-    raw: 'Chưa phân công',
-    short: '-',
-    icon: 'fa-solid fa-circle-question',
-    chipHtml: '<span class="teacher-role-tag role-unassigned" title="Chưa phân công">-</span>'
+    text: rawRole ? rawRole : 'Chưa phân công',
+    cls: rawRole ? 'role-donghanh' : 'role-unassigned',
+    raw: rawRole || 'Chưa phân công',
+    short: rawRole ? rawRole.slice(0, 2).toUpperCase() : '-',
+    icon: rawRole ? 'fa-solid fa-user-tag' : 'fa-solid fa-circle-question',
+    chipHtml: `<span class="teacher-role-tag ${rawRole ? 'role-donghanh' : 'role-unassigned'}" title="Vai trò: ${rawRole || 'Chưa phân công'}">${rawRole ? rawRole.slice(0, 2).toUpperCase() : '-'}</span>`
   };
 }
 
@@ -3365,43 +3366,84 @@ function openGlvQuickView(glvId) {
   const isMale = (glv.gender === 'Nam');
   const roleInfo = getRoleBadge(glv.role);
   const statusInfo = getGlvStatusBadge(glv.status || 'Đang dạy học');
-  const certText = glv.cert ? `Cấp ${glv.cert}` : 'Chưa có';
-  const blockText = glv.block ? `Khối ${glv.block}` : 'Chưa phân khối';
+  const certText = glv.cert ? (glv.cert.toString().startsWith('Cấp') ? glv.cert : `Cấp ${glv.cert}`) : 'Chưa có cấp';
+  const blockText = glv.block ? (glv.block.startsWith('Khối') ? glv.block : `Khối ${glv.block}`) : 'Chưa phân khối';
+  const avatarSrc = getGlvAvatar(glv);
+  const defaultFallback = isMale ? DEFAULT_AVATAR_MALE : DEFAULT_AVATAR_FEMALE;
+  const fullName = `${glv.lastName || ''} ${glv.firstName || ''}`.trim().toUpperCase();
 
   quickGlvBody.innerHTML = `
-    <div class="quick-profile-header">
-      <img class="quick-profile-avatar" src="${getGlvAvatar(glv)}" alt="avatar">
-      <div class="quick-profile-info">
-        <span class="quick-holy">${glv.holyName || ''}</span>
-        <h3 class="quick-name">${glv.lastName} ${glv.firstName}</h3>
-        <div class="quick-meta-row">
-          <span class="quick-badge id">${glv.id}</span>
-          <span class="quick-badge ${isMale ? 'male' : 'female'}">${isMale ? '♂ Nam' : '♀ Nữ'}</span>
-          <span class="quick-badge cert">${certText}</span>
+    <div class="quick-glv-card-inner">
+      <div class="quick-card-top-bar">
+        <div class="quick-card-emblem">
+          <i class="fa-solid fa-cross"></i>
+          <span>ĐOÀN TNTT &bull; XỨ ĐOÀN TÂN MỸ</span>
+        </div>
+        <span class="quick-card-type-chip"><i class="fa-solid fa-id-badge"></i> THẺ GLV</span>
+      </div>
+
+      <div class="quick-card-hero">
+        <div class="quick-card-avatar-wrapper">
+          <img class="quick-card-avatar" src="${avatarSrc}" alt="${fullName}" onerror="this.onerror=null; this.src='${defaultFallback}';">
+          <span class="quick-card-gender-badge ${isMale ? 'male' : 'female'}" title="Giới tính: ${glv.gender || 'Chưa rõ'}">
+            <i class="${isMale ? 'fa-solid fa-mars' : 'fa-solid fa-venus'}"></i>
+          </span>
+        </div>
+
+        <div class="quick-card-identity">
+          <div class="quick-card-holy">${glv.holyName ? glv.holyName.toUpperCase() : 'GIÁO LÝ VIÊN'}</div>
+          <h3 class="quick-card-fullname" title="${fullName}">${fullName}</h3>
+          <div class="quick-card-badges-row">
+            <span class="qbadge qbadge-id"><i class="fa-solid fa-hashtag"></i> ${glv.id}</span>
+            <span class="qbadge qbadge-cert"><i class="fa-solid fa-award"></i> ${certText}</span>
+            <span class="qbadge qbadge-status"><i class="${statusInfo.icon}"></i> ${statusInfo.text}</span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="quick-details-grid">
-      <table class="quick-info-table">
-        <tbody>
-          <tr>
-            <td><i class="fa-solid fa-chalkboard-user"></i> Lớp phụ trách:</td>
-            <td><strong>${glv.teachingClass || 'Chưa phân công'}</strong></td>
-          </tr>
-          <tr>
-            <td><i class="fa-solid fa-layer-group"></i> Khối phụ trách:</td>
-            <td><strong>${blockText}</strong></td>
-          </tr>
-          <tr>
-            <td><i class="fa-solid fa-user-tag"></i> Vai trò:</td>
-          </tr>
-          <tr>
-            <td><i class="fa-solid fa-user-check"></i> Trạng thái:</td>
-            <td><span class="status-badge ${(getGlvStatusBadge(glv.status)).badgeClass}" style="font-size: 0.8rem; padding: 0.2rem 0.65rem;"><i class="${(getGlvStatusBadge(glv.status)).icon}"></i> ${(getGlvStatusBadge(glv.status)).text}</span></td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="quick-card-info-grid">
+        <div class="quick-info-tile">
+          <div class="quick-tile-icon icon-class"><i class="fa-solid fa-chalkboard-user"></i></div>
+          <div class="quick-tile-content">
+            <span class="quick-tile-label">Lớp Phụ Trách</span>
+            <span class="quick-tile-value highlight">${glv.teachingClass || 'Chưa phân công'}</span>
+          </div>
+        </div>
+
+        <div class="quick-info-tile">
+          <div class="quick-tile-icon icon-block"><i class="fa-solid fa-layer-group"></i></div>
+          <div class="quick-tile-content">
+            <span class="quick-tile-label">Khối Lớp</span>
+            <span class="quick-tile-value">${blockText}</span>
+          </div>
+        </div>
+
+        <div class="quick-info-tile">
+          <div class="quick-tile-icon icon-role"><i class="${roleInfo.icon}"></i></div>
+          <div class="quick-tile-content">
+            <span class="quick-tile-label">Vai Trò Đảm Nhiệm</span>
+            <span class="quick-tile-value ${roleInfo.cls}">${roleInfo.text}</span>
+          </div>
+        </div>
+
+        <div class="quick-info-tile">
+          <div class="quick-tile-icon icon-phone"><i class="fa-solid fa-phone"></i></div>
+          <div class="quick-tile-content">
+            <span class="quick-tile-label">Số Điện Thoại</span>
+            <span class="quick-tile-value">${glv.phone ? `<a href="tel:${glv.phone}" class="quick-phone-link"><i class="fa-solid fa-phone-volume"></i> ${glv.phone}</a>` : '<span style="color: #94a3b8; font-weight: 500;">Chưa cập nhật</span>'}</span>
+          </div>
+        </div>
+
+        ${glv.patronDate ? `
+        <div class="quick-info-tile full-width">
+          <div class="quick-tile-icon icon-patron"><i class="fa-solid fa-church"></i></div>
+          <div class="quick-tile-content">
+            <span class="quick-tile-label">Ngày Lễ Bổn Mạng</span>
+            <span class="quick-tile-value" style="color: #15803d;">${glv.patronDate}</span>
+          </div>
+        </div>
+        ` : ''}
+      </div>
     </div>
   `;
 

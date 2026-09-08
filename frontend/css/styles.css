@@ -5154,27 +5154,361 @@ input[readonly].input-locked-code {
 }
 
 /* ==========================================================================
-   QUICK GLV PROFILE MODAL (HIỂN THỊ THẺ TRÊN MODAL LỚP HỌC)
+   QUICK GLV PROFILE MODAL (HIỂN THỊ THẺ XEM NHANH TRÊN MODAL LỚP HỌC)
    ========================================================================== */
 .modal-backdrop-top {
   z-index: 10000000;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background: rgba(15, 23, 42, 0.65);
 }
 
 .modal-quick-glv {
   max-width: 480px;
+  width: 92%;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.45);
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.2);
+  animation: quickModalPop 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes quickModalPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.quick-glv-modal-header {
+  background: linear-gradient(135deg, #991b1b 0%, #b91c1c 50%, #dc2626 100%);
+  color: #ffffff;
+  padding: 1rem 1.35rem;
+  border-bottom: 2px solid rgba(253, 224, 71, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.quick-glv-modal-header .modal-title {
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  letter-spacing: 0.01em;
+}
+
+.quick-glv-modal-header .modal-title i {
+  color: #fde047;
+  font-size: 1.2rem;
+}
+
+.quick-glv-modal-header .modal-close-btn {
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.15);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-glv-modal-header .modal-close-btn:hover {
+  background: rgba(0, 0, 0, 0.3);
+  color: #ffffff;
+  transform: rotate(90deg);
 }
 
 .quick-glv-body {
   padding: 1.25rem;
   overflow-y: auto;
   flex: 1;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
 }
 
+.quick-glv-card-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+/* Header Emblem Ribbon */
+.quick-card-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.85rem;
+  background: linear-gradient(90deg, #fef2f2 0%, #fff1f2 100%);
+  border: 1px dashed #fecaca;
+  border-radius: 12px;
+}
+
+.quick-card-emblem {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #991b1b;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.quick-card-emblem i {
+  color: #d97706;
+  font-size: 0.85rem;
+}
+
+.quick-card-type-chip {
+  font-size: 0.7rem;
+  font-weight: 800;
+  background: #dc2626;
+  color: #ffffff;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.2);
+}
+
+/* Hero Profile Section */
+.quick-card-hero {
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+  background: #ffffff;
+  padding: 1.1rem;
+  border-radius: 16px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.06);
+}
+
+.quick-card-avatar-wrapper {
+  position: relative;
+  width: 86px;
+  height: 86px;
+  flex-shrink: 0;
+}
+
+.quick-card-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #ffffff;
+  box-shadow: 0 0 0 3px #fecaca, 0 8px 20px rgba(185, 28, 28, 0.2);
+  background: #f1f5f9;
+}
+
+.quick-card-gender-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.quick-card-gender-badge.male {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.quick-card-gender-badge.female {
+  background: linear-gradient(135deg, #ec4899, #db2777);
+}
+
+.quick-card-identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.quick-card-holy {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #b45309;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 0.15rem;
+}
+
+.quick-card-fullname {
+  font-size: 1.22rem;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1.25;
+  margin: 0 0 0.5rem 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quick-card-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.qbadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+}
+
+.qbadge-id {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.qbadge-cert {
+  background: #fefce8;
+  color: #a16207;
+  border: 1px solid #fef08a;
+}
+
+.qbadge-status {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+/* Info Tiles Grid */
+.quick-card-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
+}
+
+.quick-info-tile {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.quick-info-tile:hover {
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.quick-info-tile.full-width {
+  grid-column: span 2;
+}
+
+.quick-tile-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.quick-tile-icon.icon-class {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.quick-tile-icon.icon-block {
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+
+.quick-tile-icon.icon-role {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.quick-tile-icon.icon-phone {
+  background: #fdf2f8;
+  color: #db2777;
+}
+
+.quick-tile-icon.icon-patron {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.quick-tile-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.quick-tile-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.15rem;
+}
+
+.quick-tile-value {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quick-tile-value.highlight {
+  color: #dc2626;
+}
+
+.quick-phone-link {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: color 0.2s;
+}
+
+.quick-phone-link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+/* Footer Actions */
 .quick-glv-footer {
   padding: 0.85rem 1.25rem;
   background: #f8fafc;
@@ -5188,94 +5522,44 @@ input[readonly].input-locked-code {
 .btn-goto-glv-profile {
   background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   color: #ffffff;
+  font-weight: 800;
+  font-size: 0.88rem;
+  padding: 0.65rem 1.15rem;
+  border-radius: 10px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
 }
 
 .btn-goto-glv-profile:hover {
+  transform: translateY(-1px);
   filter: brightness(1.1);
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  box-shadow: 0 6px 18px rgba(220, 38, 38, 0.35);
 }
 
-.quick-profile-card {
-  background: linear-gradient(180deg, #fffafa 0%, #ffffff 100%);
-  border: 1.5px solid #fecaca;
-  border-radius: var(--radius-md);
-  padding: 1.25rem 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 0.65rem;
-}
-
-.quick-card-emblem {
-  display: flex;
+.btn-close-quick-glv {
+  background: #ffffff;
+  color: #475569;
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 0.65rem 1.15rem;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  cursor: pointer;
+  display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: #7f1d1d;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  transition: all 0.2s ease;
 }
 
-.quick-card-emblem i {
-  color: var(--primary-gold-dark);
-}
-
-.quick-card-avatar {
-  width: 88px;
-  height: 88px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid #fee2e2;
-  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.15);
-  margin: 0.25rem 0;
-}
-
-.quick-card-holy {
-  font-size: 0.82rem;
-  font-weight: 800;
-  color: var(--primary-gold-dark);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.quick-card-name {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: #1e293b;
-  line-height: 1.2;
-}
-
-.quick-card-info-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 0.4rem;
-  text-align: left;
-  font-size: 0.84rem;
-}
-
-.quick-card-info-table tr {
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.quick-card-info-table tr:last-child {
-  border-bottom: none;
-}
-
-.quick-card-info-table td {
-  padding: 0.45rem 0.5rem;
-}
-
-.quick-card-info-table td:first-child {
-  color: var(--text-dim);
-  font-weight: 600;
-  width: 38%;
-}
-
-.quick-card-info-table td:last-child {
-  color: var(--text-main);
-  font-weight: 700;
+.btn-close-quick-glv:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #94a3b8;
 }
 
 /* Teacher Multi-Select Checkboxes in Form */
