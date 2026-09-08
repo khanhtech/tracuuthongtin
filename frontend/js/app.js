@@ -2746,7 +2746,6 @@ function showConfirmDialog({
       }, 220);
       okBtn.removeEventListener('click', onOk);
       if (cancelBtn) cancelBtn.removeEventListener('click', onCancel);
-      if (backdrop) backdrop.removeEventListener('click', onCancel);
       resolve(result);
     }
 
@@ -2755,7 +2754,6 @@ function showConfirmDialog({
 
     okBtn.addEventListener('click', onOk);
     if (cancelBtn) cancelBtn.addEventListener('click', onCancel);
-    if (backdrop) backdrop.addEventListener('click', onCancel);
   });
 }
 
@@ -5953,11 +5951,6 @@ function initAvatarCropperEvents() {
 
   if (btnClose) btnClose.addEventListener('click', closeAvatarCropper);
   if (btnCancel) btnCancel.addEventListener('click', closeAvatarCropper);
-  if (modal) {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeAvatarCropper();
-    });
-  }
 
   // Thanh trượt Zoom
   if (zoomRange) {
@@ -6310,12 +6303,6 @@ function setupEventListeners() {
     });
   }
 
-  if (loginModal) {
-    loginModal.addEventListener('click', (e) => {
-      if (e.target === loginModal) loginModal.style.display = 'none';
-    });
-  }
-
   const authTabAdmin = document.getElementById('authTabAdmin');
   const authTabGlv = document.getElementById('authTabGlv');
   if (authTabAdmin) {
@@ -6404,14 +6391,6 @@ function setupEventListeners() {
     });
   }
 
-  if (appointmentLetterModal) {
-    appointmentLetterModal.addEventListener('click', (e) => {
-      if (e.target === appointmentLetterModal) {
-        appointmentLetterModal.style.display = 'none';
-      }
-    });
-  }
-
   if (printBtn) {
     printBtn.addEventListener('click', () => {
       window.print();
@@ -6485,14 +6464,6 @@ function setupEventListeners() {
     });
   }
 
-  if (allGlvModal) {
-    allGlvModal.addEventListener('click', (e) => {
-      if (e.target === allGlvModal) {
-        allGlvModal.style.display = 'none';
-      }
-    });
-  }
-
   if (modalFilterInput) {
     modalFilterInput.addEventListener('input', applyModalFilters);
   }
@@ -6520,11 +6491,6 @@ function setupEventListeners() {
   if (modalAddGlvBtn) modalAddGlvBtn.addEventListener('click', openAddModal);
   if (closeEditModalBtn) closeEditModalBtn.addEventListener('click', closeEditModal);
   if (cancelEditBtn) cancelEditBtn.addEventListener('click', closeEditModal);
-  if (editGlvModal) {
-    editGlvModal.addEventListener('click', (e) => {
-      if (e.target === editGlvModal) closeEditModal();
-    });
-  }
 
   if (formGender) {
     formGender.addEventListener('change', () => {
@@ -6640,11 +6606,6 @@ function setupEventListeners() {
       if (classDetailModal) classDetailModal.style.display = 'none';
     });
   }
-  if (classDetailModal) {
-    classDetailModal.addEventListener('click', (e) => {
-      if (e.target === classDetailModal) classDetailModal.style.display = 'none';
-    });
-  }
   if (btnEditClassFromDetail) {
     btnEditClassFromDetail.addEventListener('click', () => {
       if (currentDisplayedClass) {
@@ -6664,11 +6625,6 @@ function setupEventListeners() {
       if (editClassModal) editClassModal.style.display = 'none';
     });
   }
-  if (editClassModal) {
-    editClassModal.addEventListener('click', (e) => {
-      if (e.target === editClassModal) editClassModal.style.display = 'none';
-    });
-  }
 
   // Modal Thêm GLV Vào Lớp (Picker)
   const addTeacherToClassModal = document.getElementById('addTeacherToClassModal');
@@ -6681,11 +6637,6 @@ function setupEventListeners() {
   }
   if (closeAddTeacherFooterBtn) {
     closeAddTeacherFooterBtn.addEventListener('click', closeAddTeacherToClassModal);
-  }
-  if (addTeacherToClassModal) {
-    addTeacherToClassModal.addEventListener('click', (e) => {
-      if (e.target === addTeacherToClassModal) closeAddTeacherToClassModal();
-    });
   }
   if (pickerGlvSearchInput) {
     pickerGlvSearchInput.addEventListener('input', renderPickerGlvList);
@@ -6777,11 +6728,6 @@ function setupEventListeners() {
   if (closeQuickGlvFooterBtn) {
     closeQuickGlvFooterBtn.addEventListener('click', closeGlvQuickView);
   }
-  if (quickGlvModal) {
-    quickGlvModal.addEventListener('click', (e) => {
-      if (e.target === quickGlvModal) closeGlvQuickView();
-    });
-  }
     if (btnGoToGlvProfile) {
     btnGoToGlvProfile.addEventListener('click', () => {
       if (currentQuickViewGlvId) {
@@ -6806,11 +6752,6 @@ function setupEventListeners() {
 
   if (closeClassesModalBtn) {
     closeClassesModalBtn.addEventListener('click', closeAllClassesModal);
-  }
-  if (allClassesModal) {
-    allClassesModal.addEventListener('click', (e) => {
-      if (e.target === allClassesModal) closeAllClassesModal();
-    });
   }
   if (modalToolbarAddClassBtn) {
     modalToolbarAddClassBtn.addEventListener('click', () => {
@@ -6867,11 +6808,6 @@ function setupEventListeners() {
   if (cancelEditStudentBtn) {
     cancelEditStudentBtn.addEventListener('click', closeEditStudentModal);
   }
-  if (editStudentModal) {
-    editStudentModal.addEventListener('click', (e) => {
-      if (e.target === editStudentModal) closeEditStudentModal();
-    });
-  }
   if (studentEditForm) {
     studentEditForm.addEventListener('submit', handleStudentFormSubmit);
   }
@@ -6886,11 +6822,6 @@ function setupEventListeners() {
   }
   if (closeClassStudentsFooterBtn) {
     closeClassStudentsFooterBtn.addEventListener('click', closeClassStudentsRosterModal);
-  }
-  if (classStudentsModal) {
-    classStudentsModal.addEventListener('click', (e) => {
-      if (e.target === classStudentsModal) closeClassStudentsRosterModal();
-    });
   }
 
   // 8.1 Sự kiện Nhập Excel Thiếu Nhi (Student Excel Import)
@@ -6958,11 +6889,6 @@ function setupEventListeners() {
   }
   if (btnConfirmImportExcel) {
     btnConfirmImportExcel.addEventListener('click', confirmStudentExcelImport);
-  }
-  if (importExcelPreviewModal) {
-    importExcelPreviewModal.addEventListener('click', (e) => {
-      if (e.target === importExcelPreviewModal) closeStudentExcelImportModal();
-    });
   }
 
   // 8.2 Sự kiện Tab Thiếu Nhi Toàn Đoàn
@@ -10218,5 +10144,184 @@ async function deleteDoc(docId) {
   }
   showToast('Đã xóa tài liệu!');
 }
+
+// ==========================================================================
+// HỆ THỐNG ĐÓNG MODAL THÔNG MINH KHI NHẤN PHÍM ESC (ESCAPE KEY LISTENER)
+// ==========================================================================
+function closeTopmostModal() {
+  // 1. Modal xác nhận tuỳ chỉnh
+  const customConfirm = document.getElementById('customConfirmModal');
+  if (customConfirm && customConfirm.style.display !== 'none' && customConfirm.classList.contains('active')) {
+    const cancelBtn = document.getElementById('btnConfirmCancel');
+    if (cancelBtn && cancelBtn.style.display !== 'none') {
+      cancelBtn.click();
+    } else {
+      customConfirm.classList.remove('active');
+      setTimeout(() => { customConfirm.style.display = 'none'; }, 200);
+    }
+    return true;
+  }
+
+  // 2. Modal cắt / chỉnh sửa ảnh avatar
+  const avatarCropModal = document.getElementById('avatarCropModal');
+  if (avatarCropModal && avatarCropModal.style.display !== 'none') {
+    if (typeof closeAvatarCropper === 'function') closeAvatarCropper();
+    else avatarCropModal.style.display = 'none';
+    return true;
+  }
+
+  // 3. Modal phiếu liên lạc / báo điểm cá nhân
+  const reportCardModal = document.getElementById('studentReportCardModal');
+  if (reportCardModal && reportCardModal.style.display !== 'none') {
+    reportCardModal.style.display = 'none';
+    return true;
+  }
+
+  // 4. Modal điểm danh chuyên cần
+  const attendanceModal = document.getElementById('classAttendanceModal');
+  if (attendanceModal && attendanceModal.style.display !== 'none') {
+    attendanceModal.style.display = 'none';
+    return true;
+  }
+
+  // 5. Modal sổ điểm & chuyên cần
+  const gradebookModal = document.getElementById('classGradebookModal');
+  if (gradebookModal && gradebookModal.style.display !== 'none') {
+    gradebookModal.style.display = 'none';
+    return true;
+  }
+
+  // 6. Modal nạp Excel thiếu nhi
+  const importModal = document.getElementById('importExcelPreviewModal');
+  if (importModal && importModal.style.display !== 'none') {
+    if (typeof closeStudentExcelImportModal === 'function') closeStudentExcelImportModal();
+    else importModal.style.display = 'none';
+    return true;
+  }
+
+  // 7. Modal thêm / sửa thiếu nhi
+  const editStudentModal = document.getElementById('editStudentModal');
+  if (editStudentModal && editStudentModal.style.display !== 'none') {
+    if (typeof closeEditStudentModal === 'function') closeEditStudentModal();
+    else editStudentModal.style.display = 'none';
+    return true;
+  }
+
+  // 8. Modal danh sách thiếu nhi lớp học (roster)
+  const rosterModal = document.getElementById('classStudentsModal');
+  if (rosterModal && rosterModal.style.display !== 'none') {
+    if (typeof closeClassStudentsRosterModal === 'function') closeClassStudentsRosterModal();
+    else rosterModal.style.display = 'none';
+    return true;
+  }
+
+  // 9. Modal chọn / phân công GLV vào lớp
+  const addTeacherModal = document.getElementById('addTeacherToClassModal');
+  if (addTeacherModal && addTeacherModal.style.display !== 'none') {
+    if (typeof closeAddTeacherToClassModal === 'function') closeAddTeacherToClassModal();
+    else addTeacherModal.style.display = 'none';
+    return true;
+  }
+
+  // 10. Modal thêm / sửa lớp học
+  const editClassModal = document.getElementById('editClassModal');
+  if (editClassModal && editClassModal.style.display !== 'none') {
+    editClassModal.style.display = 'none';
+    return true;
+  }
+
+  // 11. Modal chi tiết lớp học
+  const classDetailModal = document.getElementById('classDetailModal');
+  if (classDetailModal && classDetailModal.style.display !== 'none') {
+    classDetailModal.style.display = 'none';
+    return true;
+  }
+
+  // 12. Modal xem thẻ nhanh GLV
+  const quickGlvModal = document.getElementById('glvQuickViewModal');
+  if (quickGlvModal && quickGlvModal.style.display !== 'none') {
+    if (typeof closeGlvQuickView === 'function') closeGlvQuickView();
+    else quickGlvModal.style.display = 'none';
+    return true;
+  }
+
+  // 13. Modal thư bổ nhiệm Huynh Trưởng
+  const appointmentModal = document.getElementById('appointmentLetterModal');
+  if (appointmentModal && appointmentModal.style.display !== 'none') {
+    appointmentModal.style.display = 'none';
+    return true;
+  }
+
+  // 14. Modal thêm / sửa thông tin GLV
+  const editGlvModal = document.getElementById('editGlvModal');
+  if (editGlvModal && editGlvModal.style.display !== 'none') {
+    if (typeof closeEditModal === 'function') closeEditModal();
+    else editGlvModal.style.display = 'none';
+    return true;
+  }
+
+  // 15. Modal danh sách toàn bộ lớp học
+  const allClassesModal = document.getElementById('allClassesModal');
+  if (allClassesModal && allClassesModal.style.display !== 'none') {
+    if (typeof closeAllClassesModal === 'function') closeAllClassesModal();
+    else allClassesModal.style.display = 'none';
+    return true;
+  }
+
+  // 16. Modal danh sách toàn bộ GLV
+  const allGlvModal = document.getElementById('allGlvModal');
+  if (allGlvModal && allGlvModal.style.display !== 'none') {
+    allGlvModal.style.display = 'none';
+    return true;
+  }
+
+  // 17. Modal đăng / sửa thông báo
+  const newsEditModal = document.getElementById('newsEditModal');
+  if (newsEditModal && newsEditModal.style.display !== 'none') {
+    newsEditModal.style.display = 'none';
+    return true;
+  }
+
+  // 18. Modal xem chi tiết thông báo
+  const newsDetailModal = document.getElementById('newsDetailModal');
+  if (newsDetailModal && newsDetailModal.style.display !== 'none') {
+    newsDetailModal.style.display = 'none';
+    return true;
+  }
+
+  // 19. Modal đăng / sửa tài liệu
+  const docEditModal = document.getElementById('docEditModal');
+  if (docEditModal && docEditModal.style.display !== 'none') {
+    docEditModal.style.display = 'none';
+    if (typeof clearSelectedDocFile === 'function') clearSelectedDocFile();
+    return true;
+  }
+
+  // 20. Modal xem nhanh tài liệu
+  const docPreviewModal = document.getElementById('docPreviewModal');
+  if (docPreviewModal && docPreviewModal.style.display !== 'none') {
+    docPreviewModal.style.display = 'none';
+    return true;
+  }
+
+  // 21. Modal đăng nhập
+  const loginModal = document.getElementById('loginModal');
+  if (loginModal && loginModal.style.display !== 'none') {
+    loginModal.style.display = 'none';
+    return true;
+  }
+
+  return false;
+}
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' || e.keyCode === 27) {
+    const closed = closeTopmostModal();
+    if (closed) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }
+});
 
 
