@@ -1927,7 +1927,7 @@ async function initApiSync() {
 
     // Cập nhật Docs từ MySQL
     const dbDocs = await API.getDocs();
-    if (dbDocs && dbDocs.length > 0) {
+    if (dbDocs && Array.isArray(dbDocs)) {
       docsDatabase = dbDocs;
       saveDocsDatabase();
       if (currentTab === 'docs') renderDocsView();
@@ -9620,7 +9620,15 @@ function handleDocFormSubmit(e) {
       targetDocItem = doc;
     }
   } else {
-    const newId = `DOC${String(docsDatabase.length + 1).padStart(2, '0')}`;
+    let maxNum = 0;
+    docsDatabase.forEach(d => {
+      const m = (d.id || '').match(/DOC(\d+)/i);
+      if (m) {
+        const val = parseInt(m[1], 10);
+        if (val > maxNum) maxNum = val;
+      }
+    });
+    const newId = `DOC${String(maxNum + 1).padStart(2, '0')}`;
     targetDocItem = {
       id: newId,
       title: title,
@@ -9643,7 +9651,11 @@ function handleDocFormSubmit(e) {
   renderDocsView();
   if (typeof API !== 'undefined' && targetDocItem) {
     API.saveDoc(targetDocItem, !isEdit).then(ok => {
-      if (ok) console.log('✅ Đã đồng bộ tài liệu vào MySQL Database thành công!');
+      if (ok) {
+        console.log('✅ Đã đồng bộ tài liệu vào MySQL Database thành công!');
+      } else {
+        console.warn('⚠️ Lỗi đồng bộ tài liệu lên Database!');
+      }
     });
   }
   document.getElementById('docEditModal').style.display = 'none';
@@ -9715,7 +9727,7 @@ async function deleteDoc(docId) {
   saveDocsDatabase();
   renderDocsView();
   if (typeof API !== 'undefined') {
-    API.deleteDoc(docId);
+    await API.deleteDoc(docId);
   }
   showToast('Đã xóa tài liệu!');
 }
