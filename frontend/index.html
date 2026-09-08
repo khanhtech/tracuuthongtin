@@ -1141,15 +1141,20 @@
                 <img id="formPhotoPreview" src="assets/avatar_male.jpg" alt="Ảnh thẻ GLV">
               </div>
               <div class="photo-upload-controls">
-                <label for="formPhotoInput" class="btn-upload-photo">
-                  <i class="fa-solid fa-cloud-arrow-up"></i> Tải ảnh từ máy tính...
-                </label>
+                <div class="photo-upload-btn-group">
+                  <label for="formPhotoInput" class="btn-upload-photo">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Tải ảnh từ máy tính...
+                  </label>
+                  <button type="button" id="btnOpenAvatarCrop" class="btn-crop-existing-photo" title="Thu phóng và căn chỉnh góc ảnh">
+                    <i class="fa-solid fa-crop-simple"></i> Thu phóng / Căn chỉnh ảnh
+                  </button>
+                </div>
                 <input type="file" id="formPhotoInput" accept="image/*" style="display: none;">
                 <button type="button" id="formPhotoResetBtn" class="btn-reset-photo"
-                  title="Xóa ảnh riêng và dùng ảnh chibi mặc định">
+                  title="Xóa ảnh riêng và dùng ảnh mặc định">
                   <i class="fa-solid fa-rotate-left"></i> Dùng ảnh mặc định theo giới tính
                 </button>
-                <span class="photo-hint">Chấp nhận định dạng JPG, PNG. Ảnh sẽ được hiển thị trên thẻ và bảng danh sách.</span>
+                <span class="photo-hint"><i class="fa-solid fa-circle-info"></i> Bạn có thể phóng to, thu nhỏ và kéo để căn giữa khuôn mặt trước khi lưu.</span>
               </div>
             </div>
           </div>
@@ -2043,6 +2048,68 @@
             <i class="fa-solid fa-check"></i> Vào Hệ Thống
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: THU PHÓNG & CĂN CHỈNH ẢNH THẺ (AVATAR ZOOM & CROP MODAL)
+       ========================================================================== -->
+  <div class="modal-backdrop modal-backdrop-top" id="avatarCropModal" style="display: none; z-index: 10000005;">
+    <div class="modal-content modal-avatar-crop">
+      <div class="modal-header avatar-crop-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-crop-simple"></i>
+          <span>Thu Phóng & Căn Chỉnh Ảnh Thẻ</span>
+        </div>
+        <button type="button" class="modal-close-btn" id="closeAvatarCropBtn" title="Đóng"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="avatar-crop-body">
+        <div class="avatar-crop-stage-container">
+          <!-- Canvas / Viewport for Dragging & Zooming -->
+          <div class="avatar-crop-viewport" id="avatarCropViewport">
+            <canvas id="avatarCropCanvas" width="260" height="260"></canvas>
+            <div class="avatar-crop-circle-guide"></div>
+          </div>
+          <div class="avatar-crop-tip">
+            <i class="fa-solid fa-hand-pointer"></i> Kéo để di chuyển, cuộn chuột hoặc dùng thanh trượt để phóng to / thu nhỏ.
+          </div>
+        </div>
+
+        <!-- Live Preview and Controls -->
+        <div class="avatar-crop-side-controls">
+          <div class="crop-preview-box-wrapper">
+            <span class="crop-preview-label">Xem trước trên thẻ bo tròn:</span>
+            <div class="crop-live-preview-circle">
+              <canvas id="avatarLivePreviewCanvas" width="72" height="72"></canvas>
+            </div>
+          </div>
+
+          <div class="crop-slider-group">
+            <label for="cropZoomRange">
+              <span><i class="fa-solid fa-magnifying-glass-plus"></i> Độ thu phóng:</span>
+              <span id="cropZoomValueText">100%</span>
+            </label>
+            <div class="crop-zoom-slider-row">
+              <button type="button" class="btn-crop-zoom-step" id="btnCropZoomOut" title="Thu nhỏ"><i class="fa-solid fa-minus"></i></button>
+              <input type="range" id="cropZoomRange" min="0.5" max="3.5" step="0.05" value="1">
+              <button type="button" class="btn-crop-zoom-step" id="btnCropZoomIn" title="Phóng to"><i class="fa-solid fa-plus"></i></button>
+            </div>
+          </div>
+
+          <div class="crop-tools-row">
+            <button type="button" class="btn-crop-tool" id="btnCropRotate"><i class="fa-solid fa-rotate-right"></i> Xoay 90°</button>
+            <button type="button" class="btn-crop-tool" id="btnCropReset"><i class="fa-solid fa-arrows-to-circle"></i> Căn Giữa</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer avatar-crop-footer">
+        <button type="button" class="btn-cancel" id="cancelAvatarCropBtn">Hủy Bỏ</button>
+        <button type="button" class="btn-save btn-apply-avatar-crop" id="applyAvatarCropBtn">
+          <i class="fa-solid fa-check"></i> Áp Dụng Ảnh Này
+        </button>
       </div>
     </div>
   </div>
