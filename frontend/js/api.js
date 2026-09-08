@@ -472,18 +472,47 @@ const API = {
     return null;
   },
 
-  async saveDoc(doc, isNew = false) {
+  async saveDoc(doc, isNew = false, rawFile = null) {
     try {
-      const method = isNew ? 'POST' : 'PUT';
-      const url = isNew ? `${API_CONFIG.BASE_URL}/docs.php` : `${API_CONFIG.BASE_URL}/docs.php?id=${encodeURIComponent(doc.id)}`;
-      const res = await fetch(url, {
-        method: method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(doc)
-      });
+      const url = `${API_CONFIG.BASE_URL}/docs.php`;
+      let res;
+
+      if (rawFile instanceof File || rawFile instanceof Blob) {
+        const formData = new FormData();
+        formData.append('id', doc.id || '');
+        formData.append('title', doc.title || '');
+        formData.append('category', doc.category || 'Giáo Trình');
+        formData.append('format', doc.format || 'PDF');
+        formData.append('target', doc.target || 'Toàn Đoàn');
+        formData.append('size', doc.size || '');
+        formData.append('author', doc.author || 'Ban Giáo Lý Tân Mỹ');
+        formData.append('downloads', doc.downloads || 1);
+        formData.append('desc', doc.desc || '');
+        formData.append('content', doc.content || '');
+        formData.append('fileUrl', doc.fileUrl || '');
+        formData.append('fileName', doc.fileName || rawFile.name || '');
+        formData.append('file', rawFile);
+
+        res = await fetch(url, {
+          method: 'POST',
+          body: formData
+        });
+      } else {
+        const method = isNew ? 'POST' : 'PUT';
+        const targetUrl = isNew ? url : `${url}?id=${encodeURIComponent(doc.id)}`;
+        res = await fetch(targetUrl, {
+          method: method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(doc)
+        });
+      }
+
       const json = await res.json();
-      if (json.success) this.isOnline = true;
-      return json.success;
+      if (json.success) {
+        this.isOnline = true;
+        return json;
+      }
+      return false;
     } catch (e) {
       console.warn('Lỗi lưu Doc qua API:', e);
       return false;

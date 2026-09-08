@@ -1,11 +1,25 @@
 <?php
 // ==============================================================================
-// REST API: QUẢN LÝ KHO TÀI LIỆU & GIÁO TRÌNH (DOCUMENTS)
+// REST API: QUẢN LÝ KHO TÀI LIỆU & GIÁO TRÌNH (DOCUMENTS) - HỖ TRỢ UPLOAD FILE LỚN
 // ==============================================================================
 
 require_once __DIR__ . '/config/database.php';
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$uploadDir = __DIR__ . '/../frontend/uploads/docs/';
+if (!is_dir($uploadDir)) {
+    @mkdir($uploadDir, 0777, true);
+}
+
+// Hàm format dung lượng file
+function formatBytes($bytes, $precision = 1) {
+    $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    $bytes = max($bytes, 0);
+    $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+    $pow = min($pow, count($units) - 1);
+    $bytes /= pow(1024, $pow);
+    return round($bytes, $precision) . ' ' . $units[$pow];
+}
 
 switch ($method) {
     case 'GET':
@@ -20,16 +34,18 @@ switch ($method) {
                 jsonResponse(false, "Không tìm thấy tài liệu", null, 404);
             }
         } else {
-            $stmt = $pdo->query("SELECT doc_id as id, title, category, format, target, size, author, downloads, `desc`, content, file_url as fileUrl, file_name as fileName, file_data as fileData FROM documents ORDER BY id ASC");
+            $stmt = $pdo->query("SELECT doc_id as id, title, category, format, target, size, author, downloads, `desc`, content, file_url as fileUrl, file_name as fileName, file_data as fileData FROM documents ORDER BY id DESC");
             $list = $stmt->fetchAll();
             jsonResponse(true, "Lấy danh sách tài liệu thành công", $list);
         }
         break;
 
     case 'POST':
-        $data = getJsonInput();
-        $title = trim($data['title'] ?? '');
+        // Hỗ trợ cả multipart/form-data (FormData) và JSON
+        $isMultipart = !empty($_FILES) || (!empty($_POST) && !empty($_POST['title']));
+        $data = $isMultipart ? $_POST : getJsonInput();
 
+        $title = trim($data['title'] ?? '');
         if (empty($title)) {
             jsonResponse(false, "Tên tài liệu không được để trống", null, 400);
         }
@@ -60,6 +76,45 @@ switch ($method) {
         $fileName = trim($data['fileName'] ?? ($data['file_name'] ?? ''));
         $fileData = $data['fileData'] ?? ($data['file_data'] ?? null);
 
+        // 1. Xử lý upload file vật lý trực tiếp từ FormData
+        if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
+            $origName = basename($_FILES['file']['name']);
+            $ext = pathinfo($origName, PATHINFO_EXTENSION);
+            $cleanBase = preg_replace('/[^a-zA-Z0-9_-]/', '_', pathinfo($origName, PATHINFO_FILENAME));
+            $savedFileName = "doc_{$id}_{$cleanBase}." . strtolower($ext);
+            $destPath = $uploadDir . $savedFileName;
+
+            if (move_uploaded_file($_FILES['file']['tmp_name'], $destPath)) {
+                $fileUrl = "uploads/docs/" . $savedFileName;
+                $fileName = $origName;
+                $size = formatBytes($_FILES['file']['size']);
+                $fileData = null; // Không cần lưu base64 khi đã có file vật lý
+            }
+        }
+        // 2. Xử lý nếu gửi base64 data URL lớn -> lưu thành file vật lý để tối ưu CSDL
+        else if ($fileData && strpos($fileData, 'data:') === 0) {
+            if (preg_match('/^data:([a-zA-Z0-9\/+-]+);base64,(.+)$/s', $fileData, $matches)) {
+                $binaryData = base64_decode($matches[2]);
+                if ($binaryData !== false && strlen($binaryData) > 0) {
+                    $ext = strtolower($format);
+                    if ($fileName && pathinfo($fileName, PATHINFO_EXTENSION)) {
+                        $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                    }
+                    $cleanBase = $fileName ? preg_replace('/[^a-zA-Z0-9_-]/', '_', pathinfo($fileName, PATHINFO_FILENAME)) : 'file';
+                    $savedFileName = "doc_{$id}_{$cleanBase}." . $ext;
+                    $destPath = $uploadDir . $savedFileName;
+
+                    if (@file_put_contents($destPath, $binaryData)) {
+                        $fileUrl = "uploads/docs/" . $savedFileName;
+                        if (!$size || $size === 'Đính kèm') {
+                            $size = formatBytes(strlen($binaryData));
+                        }
+                        $fileData = null;
+                    }
+                }
+            }
+        }
+
         $stmt = $pdo->prepare("
             INSERT INTO documents (doc_id, title, category, format, target, size, author, downloads, `desc`, content, file_url, file_name, file_data, created_at, updated_at) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
@@ -80,7 +135,12 @@ switch ($method) {
         ");
         $stmt->execute([$id, $title, $category, $format, $target, $size, $author, $downloads, $desc, $content, $fileUrl, $fileName, $fileData]);
 
-        jsonResponse(true, "Đã lưu tài liệu thành công", ['id' => $id]);
+        jsonResponse(true, "Đã lưu tài liệu thành công", [
+            'id' => $id,
+            'fileUrl' => $fileUrl,
+            'fileName' => $fileName,
+            'size' => $size
+        ]);
         break;
 
     case 'PUT':
@@ -141,3 +201,4 @@ switch ($method) {
         jsonResponse(false, "Phương thức HTTP không được hỗ trợ", null, 405);
         break;
 }
+?>

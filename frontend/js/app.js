@@ -1588,7 +1588,13 @@ function loadSavedDocsDatabase() {
 
 function saveDocsDatabase() {
   try {
-    localStorage.setItem(DOCS_STORAGE_KEY, JSON.stringify(docsDatabase));
+    const cleanDocs = docsDatabase.map(d => {
+      if (d.fileData && d.fileData.length > 200000) {
+        return { ...d, fileData: null };
+      }
+      return d;
+    });
+    localStorage.setItem(DOCS_STORAGE_KEY, JSON.stringify(cleanDocs));
   } catch (e) {
     console.warn('Lỗi lưu dữ liệu Tài Liệu vào localStorage:', e);
   }
@@ -9777,6 +9783,7 @@ function renderDocsView() {
   });
 }
 
+let currentDocRawFile = null;
 let currentDocFileData = null;
 let currentDocFileName = '';
 let currentDocFileSize = '';
@@ -9796,6 +9803,7 @@ function getFileIconByExtension(ext) {
   if (['xls', 'xlsx'].includes(e)) return 'fa-solid fa-file-excel';
   if (['ppt', 'pptx'].includes(e)) return 'fa-solid fa-file-powerpoint';
   if (['mp3', 'wav', 'ogg', 'm4a'].includes(e)) return 'fa-solid fa-file-audio';
+  if (['mp4', 'mov', 'avi'].includes(e)) return 'fa-solid fa-file-video';
   if (['zip', 'rar', '7z'].includes(e)) return 'fa-solid fa-file-zipper';
   if (['png', 'jpg', 'jpeg', 'webp'].includes(e)) return 'fa-solid fa-file-image';
   return 'fa-solid fa-file-lines';
@@ -9852,6 +9860,7 @@ function initDocUploadListeners() {
 
 function handleSelectedDocFile(file) {
   if (!file) return;
+  currentDocRawFile = file;
   currentDocFileName = file.name;
   currentDocFileSize = formatDocFileSize(file.size);
 
@@ -9887,15 +9896,20 @@ function handleSelectedDocFile(file) {
   if (sizeEl) sizeEl.textContent = `Dung lượng thực: ${currentDocFileSize}`;
   if (iconEl) iconEl.className = getFileIconByExtension(ext);
 
-  // Đọc file sang Base64 Data URL để lưu trữ và tải về
-  const reader = new FileReader();
-  reader.onload = (evt) => {
-    currentDocFileData = evt.target.result;
-  };
-  reader.readAsDataURL(file);
+  // Với file vừa phải (<= 3MB), đọc Base64 để hỗ trợ xem trước offline
+  if (file.size <= 3 * 1024 * 1024) {
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      currentDocFileData = evt.target.result;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    currentDocFileData = null;
+  }
 }
 
 function clearSelectedDocFile() {
+  currentDocRawFile = null;
   currentDocFileData = null;
   currentDocFileName = '';
   currentDocFileSize = '';
@@ -10029,7 +10043,7 @@ function openDocEditModal(docId = null) {
   modal.style.display = 'flex';
 }
 
-function handleDocFormSubmit(e) {
+async function handleDocFormSubmit(e) {
   e.preventDefault();
   const idInput = document.getElementById('docEditId');
   const titleInput = document.getElementById('docFormTitle');
@@ -10038,6 +10052,7 @@ function handleDocFormSubmit(e) {
   const targetInput = document.getElementById('docFormTarget');
   const fileUrlInput = document.getElementById('docFormFileUrl');
   const descInput = document.getElementById('docFormDesc');
+  const submitBtn = e.target.querySelector('button[type="submit"]');
 
   const title = (titleInput.value || '').trim();
   if (!title) {
@@ -10048,6 +10063,11 @@ function handleDocFormSubmit(e) {
   const isEdit = !!idInput.value;
   const fileUrl = fileUrlInput ? fileUrlInput.value.trim() : '';
   const calculatedSize = currentDocFileSize || 'Đính kèm';
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang Lưu...';
+  }
 
   let targetDocItem = null;
   if (isEdit) {
@@ -10082,7 +10102,7 @@ function handleDocFormSubmit(e) {
       format: formatSelect.value,
       target: targetInput.value.trim() || 'Toàn Đoàn',
       size: calculatedSize,
-      author: (currentUser && currentUser.name) ? currentUser.name : 'Ban Giáo Lý Tân Mỹ',
+      author: 'Ban Giáo Lý Tân Mỹ',
       downloads: 1,
       desc: descInput.value.trim(),
       content: descInput.value.trim(),
@@ -10095,16 +10115,30 @@ function handleDocFormSubmit(e) {
 
   saveDocsDatabase();
   renderDocsView();
+
+  // Đồng bộ lưu trực tiếp vào MySQL Database (kèm file vật lý nếu có)
   if (typeof API !== 'undefined' && targetDocItem) {
-    API.saveDoc(targetDocItem, !isEdit).then(ok => {
-      if (ok) {
-        console.log('✅ Đã đồng bộ tài liệu vào MySQL Database thành công!');
-      } else {
-        console.warn('⚠️ Lỗi đồng bộ tài liệu lên Database!');
+    try {
+      const res = await API.saveDoc(targetDocItem, !isEdit, currentDocRawFile);
+      if (res && res.success && res.data) {
+        if (res.data.fileUrl) targetDocItem.fileUrl = res.data.fileUrl;
+        if (res.data.fileName) targetDocItem.fileName = res.data.fileName;
+        if (res.data.size) targetDocItem.size = res.data.size;
+        saveDocsDatabase();
+        renderDocsView();
       }
-    });
+    } catch (err) {
+      console.warn('Lỗi lưu tài liệu lên API:', err);
+    }
   }
+
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Lưu Tài Liệu';
+  }
+
   document.getElementById('docEditModal').style.display = 'none';
+  clearSelectedDocFile();
   showToast(isEdit ? 'Đã cập nhật tài liệu thành công!' : 'Đã đăng tài liệu và đính kèm file thành công!');
 }
 
@@ -10121,7 +10155,7 @@ function downloadDoc(docId) {
   showToast(`Đang tải về tài liệu: "${doc.title}"...`);
 
   // 1. Nếu có file đính kèm thực tế dạng Base64/Data URL
-  if (doc.fileData) {
+  if (doc.fileData && doc.fileData.startsWith('data:')) {
     const a = document.createElement('a');
     a.href = doc.fileData;
     a.download = doc.fileName || `${doc.title}.${(doc.format || 'pdf').toLowerCase()}`;
@@ -10131,9 +10165,16 @@ function downloadDoc(docId) {
     return;
   }
 
-  // 2. Nếu có đường dẫn file online (Google Drive, Web URL)
-  if (doc.fileUrl && doc.fileUrl.startsWith('http')) {
-    window.open(doc.fileUrl, '_blank');
+  // 2. Nếu có đường dẫn file trên server (uploads/docs/...) hoặc link trực tuyến
+  if (doc.fileUrl) {
+    const href = doc.fileUrl.startsWith('http') ? doc.fileUrl : doc.fileUrl;
+    const a = document.createElement('a');
+    a.href = href;
+    a.download = doc.fileName || `${doc.title}.${(doc.format || 'pdf').toLowerCase()}`;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     return;
   }
 
