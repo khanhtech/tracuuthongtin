@@ -2770,47 +2770,108 @@ function updateStatsDisplay() {
   if (filterResultCount) filterResultCount.textContent = count;
 }
 
+function tokenize(str) {
+  return removeVietnameseTones(str || '')
+    .toLowerCase()
+    .split(/[\s,._\-\/\\()]+/)
+    .filter(t => t.length > 0);
+}
+
 function searchGLV(query) {
   if (!query || query.trim() === '') return (glvDatabase || []);
-  const q = removeVietnameseTones(query.trim().toLowerCase());
-  const rawQ = query.trim().toUpperCase();
+  const rawQ = query.trim();
+  const qNorm = removeVietnameseTones(rawQ).toLowerCase();
+  const qTokens = tokenize(rawQ);
+  const rawQUpper = rawQ.toUpperCase();
 
-  return (glvDatabase || []).filter(glv => {
-    if (!glv) return false;
+  const scored = [];
 
-    // Tìm theo ID (ví dụ: GLV01, GLV1,...)
+  (glvDatabase || []).forEach(glv => {
+    if (!glv) return;
+
     const glvId = String(glv.id || glv.teacher_id || '').toUpperCase();
-    if (glvId.includes(rawQ)) return true;
-    
-    // Tìm theo ID dạng số
+    const stt = String(glv.stt || '');
     const numPart = glvId.replace(/\D/g, '');
-    if (rawQ === numPart || rawQ === String(parseInt(numPart, 10))) return true;
 
-    // Tìm theo Tên Thánh
-    const holyNorm = removeVietnameseTones(glv.holyName || glv.holy_name || '');
-    if (holyNorm.includes(q)) return true;
-
-    // Tìm theo Họ tên đầy đủ
+    const holyName = glv.holyName || glv.holy_name || '';
     const lastName = glv.lastName || glv.last_name || '';
     const firstName = glv.firstName || glv.first_name || '';
-    const fullNameNorm = removeVietnameseTones(`${lastName} ${firstName}`);
-    if (fullNameNorm.includes(q)) return true;
+    const fullName = `${lastName} ${firstName}`.trim();
+    const holyFullName = `${holyName} ${fullName}`.trim();
+    const teachingClass = glv.teachingClass || glv.teaching_class || '';
+    const block = glv.block || '';
+    const role = glv.role || '';
+    const phone = glv.phone || '';
 
-    // Tìm theo Tên gọi
-    const firstNameNorm = removeVietnameseTones(firstName);
-    if (firstNameNorm.includes(q)) return true;
+    const fullNameNorm = removeVietnameseTones(fullName).toLowerCase();
+    const holyFullNameNorm = removeVietnameseTones(holyFullName).toLowerCase();
+    const firstNameNorm = removeVietnameseTones(firstName).toLowerCase();
+    const holyNameNorm = removeVietnameseTones(holyName).toLowerCase();
+    const classNorm = removeVietnameseTones(teachingClass).toLowerCase();
 
-    // Tìm theo Khối / Lớp
-    const blockNorm = removeVietnameseTones(glv.block || '');
-    const classNorm = removeVietnameseTones(glv.teachingClass || glv.teaching_class || '');
-    if (blockNorm.includes(q) || classNorm.includes(q)) return true;
+    let score = 0;
 
-    // Tìm theo Chức vụ
-    const roleNorm = removeVietnameseTones(glv.role || '');
-    if (roleNorm.includes(q)) return true;
+    // Highest Priority: Exact ID or STT
+    if (glvId === rawQUpper) {
+      score += 1000;
+    } else if (glvId.startsWith(rawQUpper)) {
+      score += 500;
+    } else if (rawQ === numPart || rawQ === stt) {
+      score += 600;
+    }
 
-    return false;
+    // Exact full name match
+    if (fullNameNorm === qNorm || holyFullNameNorm === qNorm) {
+      score += 800;
+    } else if (firstNameNorm === qNorm) {
+      score += 700; // Exact first name match (e.g. "Anh", "Khanh", "Hải")
+    } else if (holyNameNorm === qNorm) {
+      score += 600; // Exact holy name match (e.g. "Maria", "Giuse")
+    } else if (fullNameNorm.startsWith(qNorm) || holyFullNameNorm.startsWith(qNorm)) {
+      score += 500;
+    } else if (fullNameNorm.includes(qNorm) || holyFullNameNorm.includes(qNorm)) {
+      score += 400;
+    }
+
+    // Exact Class match
+    if (classNorm === qNorm || classNorm.includes(qNorm)) {
+      score += 300;
+    }
+
+    // Token-based matching across all relevant fields
+    const holyTokens = tokenize(holyName);
+    const lastTokens = tokenize(lastName);
+    const firstTokens = tokenize(firstName);
+    const nameTokens = [...holyTokens, ...lastTokens, ...firstTokens];
+    const classTokens = tokenize(teachingClass);
+    const blockTokens = tokenize(block);
+    const roleTokens = tokenize(role);
+    const phoneTokens = tokenize(phone);
+    const allTokens = [...nameTokens, ...classTokens, ...blockTokens, ...roleTokens, ...phoneTokens, glvId.toLowerCase(), numPart];
+
+    const allTokensMatch = qTokens.every(qToken => {
+      return allTokens.some(fieldToken => {
+        if (fieldToken === qToken) return true;
+        if (fieldToken.startsWith(qToken)) return true;
+        return false;
+      });
+    });
+
+    if (allTokensMatch && score === 0) {
+      score += 200;
+    }
+
+    if (score > 0) {
+      scored.push({ glv, score });
+    }
   });
+
+  scored.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return (a.glv.stt || 0) - (b.glv.stt || 0);
+  });
+
+  return scored.map(s => s.glv);
 }
 
 function getSuggestions(query) {
@@ -2830,16 +2891,23 @@ function renderSuggestions(list) {
 
   list.forEach(item => {
     const isMale = (item.gender === 'Nam');
+    const defaultFallback = isMale ? DEFAULT_AVATAR_MALE : DEFAULT_AVATAR_FEMALE;
+    const certText = item.cert ? (item.cert.toString().startsWith('Cấp') ? item.cert : `Cấp ${item.cert}`) : '';
+    const classText = item.teachingClass || (item.block ? `Khối ${item.block}` : '');
+
     const div = document.createElement('div');
     div.className = 'suggestion-item';
     div.innerHTML = `
       <div class="sugg-left">
-        <img class="sugg-avatar-img" src="${getGlvAvatar(item)}" alt="avatar">
+        <img class="sugg-avatar-img" src="${getGlvAvatar(item)}" alt="avatar" onerror="this.onerror=null; this.src='${defaultFallback}';">
         <span class="sugg-id">${item.id}</span>
-        <span class="sugg-name">${item.holyName ? item.holyName + ' ' : ''}${item.lastName} ${item.firstName}</span>
+        <div style="display: flex; flex-direction: column; min-width: 0;">
+          <span class="sugg-name">${item.holyName ? item.holyName + ' ' : ''}${item.lastName} ${item.firstName}</span>
+          ${classText ? `<span style="font-size: 0.73rem; color: #dc2626; font-weight: 700;"><i class="fa-solid fa-chalkboard-user"></i> ${classText}</span>` : ''}
+        </div>
       </div>
       <div class="sugg-right">
-        <span class="sugg-cert">${isMale ? '♂ Nam' : '♀ Nữ'}${item.cert ? ' • Cấp ' + item.cert : ''}</span>
+        <span class="sugg-cert">${isMale ? '♂ Nam' : '♀ Nữ'}${certText ? ' • ' + certText : ''}</span>
       </div>
     `;
 
@@ -2858,7 +2926,7 @@ function renderSuggestions(list) {
         });
         return;
       }
-      if (searchInput) searchInput.value = item.id;
+      if (searchInput) searchInput.value = `${item.holyName ? item.holyName + ' ' : ''}${item.lastName} ${item.firstName}`;
       if (clearSearchBtn) clearSearchBtn.style.display = 'flex';
       if (suggestionsBox) suggestionsBox.style.display = 'none';
       displayProfileCard(item);
