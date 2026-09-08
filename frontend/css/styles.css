@@ -2094,7 +2094,8 @@ input[readonly].input-locked-code {
   overflow-y: auto;
 }
 
-.form-grid {
+.form-grid,
+.form-row {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1.1rem;
@@ -2121,27 +2122,57 @@ input[readonly].input-locked-code {
 }
 
 .form-group input,
-.form-group select {
-  background: #fffdfa;
+.form-group select,
+.form-group textarea,
+.modal-body-form input,
+.modal-body-form select,
+.modal-body-form textarea {
+  background: #ffffff;
   border: 1.5px solid #cbd5e1;
-  border-radius: var(--radius-sm);
-  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  padding: 0.65rem 0.9rem;
   color: #0f172a;
-  font-size: 0.95rem;
-  font-family: inherit;
+  font-size: 0.92rem;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
   outline: none;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.form-group select {
+.form-group textarea,
+.modal-body-form textarea {
+  min-height: 130px;
+  resize: vertical;
+  line-height: 1.6;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+}
+
+.form-group select,
+.modal-body-form select {
   cursor: pointer;
 }
 
 .form-group input:focus,
-.form-group select:focus {
-  border-color: var(--primary-red);
+.form-group select:focus,
+.form-group textarea:focus,
+.modal-body-form input:focus,
+.modal-body-form select:focus,
+.modal-body-form textarea:focus {
+  border-color: #ea580c;
   background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder,
+.modal-body-form input::placeholder,
+.modal-body-form textarea::placeholder {
+  color: #94a3b8;
+  font-size: 0.88rem;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  opacity: 0.85;
 }
 
 /* Upload Ảnh Thẻ */
