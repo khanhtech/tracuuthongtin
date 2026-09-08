@@ -21,7 +21,7 @@ switch ($method) {
                     FROM class_assignments ca
                     JOIN teachers t ON ca.teacher_id = t.teacher_id
                     WHERE ca.class_id = ?
-                    ORDER BY CASE WHEN ca.role = 'Chủ nhiệm' THEN 1 WHEN ca.role = 'Đồng hành' THEN 2 ELSE 3 END, t.stt ASC
+                    ORDER BY CASE WHEN ca.role = 'Chủ nhiệm' THEN 1 WHEN ca.role = 'Đồng hành' THEN 2 WHEN ca.role = 'Hỗ trợ' THEN 3 ELSE 4 END, t.stt ASC
                 ");
                 $tStmt->execute([$id]);
                 $teachersDetailed = $tStmt->fetchAll();
@@ -86,7 +86,7 @@ switch ($method) {
                     FROM class_assignments ca
                     JOIN teachers t ON ca.teacher_id = t.teacher_id
                     WHERE ca.class_id = ?
-                    ORDER BY CASE WHEN ca.role = 'Chủ nhiệm' THEN 1 WHEN ca.role = 'Đồng hành' THEN 2 ELSE 3 END, t.stt ASC
+                    ORDER BY CASE WHEN ca.role = 'Chủ nhiệm' THEN 1 WHEN ca.role = 'Đồng hành' THEN 2 WHEN ca.role = 'Hỗ trợ' THEN 3 ELSE 4 END, t.stt ASC
                 ");
                 $tStmt->execute([$c['id']]);
                 $c['teachers'] = $tStmt->fetchAll() ?? [];

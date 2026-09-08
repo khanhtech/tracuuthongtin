@@ -1197,6 +1197,20 @@ function getRoleBadge(role) {
   };
 }
 
+function getRolePriority(role) {
+  const norm = removeVietnameseTones(role || '').toLowerCase().trim();
+  if (norm.includes('chu nhiem') || norm.includes('phu trach') || norm.includes('truong lop') || norm === 'cn') {
+    return 1; // 👑 Chủ nhiệm
+  }
+  if (norm.includes('dong hanh') || norm.includes('dung lop') || norm.includes('giang day') || norm.includes('phu ta') || norm.includes('pho lop') || norm === 'dh') {
+    return 2; // 🤝 Đồng hành
+  }
+  if (norm.includes('ho tro') || norm.includes('tro ta') || norm.includes('du truong') || norm.includes('tap su') || norm === 'ht') {
+    return 3; // 🌱 Hỗ trợ
+  }
+  return 4; // Khác / Chưa phân công
+}
+
 function getGlvStatusBadge(status) {
   const s = String(status || '').trim();
   const norm = removeVietnameseTones(s).toLowerCase();
@@ -3201,14 +3215,15 @@ function getBlockBadgeClass(blockName) {
 
 function getTeachersByClass(teacherIds) {
   if (!Array.isArray(teacherIds)) return [];
-  return teacherIds.map((item, idx) => {
+  const list = teacherIds.map((item, idx) => {
     const tid = (typeof item === 'object' && item !== null) ? (item.id || '') : item;
     const itemRole = (typeof item === 'object' && item !== null) ? (item.role || '') : '';
     const glv = glvDatabase.find(g => g.id.toUpperCase() === String(tid).toUpperCase());
+    const role = itemRole || (glv ? glv.role : '') || (idx === 0 ? 'Chủ nhiệm' : 'Đồng hành');
     if (glv) {
       return {
         ...glv,
-        role: itemRole || glv.role || (idx === 0 ? 'Chủ nhiệm' : 'Đồng hành')
+        role: role
       };
     }
     return {
@@ -3219,8 +3234,19 @@ function getTeachersByClass(teacherIds) {
       gender: 'Nữ',
       cert: '',
       photo: '',
-      role: itemRole || (idx === 0 ? 'Chủ nhiệm' : 'Đồng hành')
+      role: role
     };
+  });
+
+  // Luôn sắp xếp thứ tự chuẩn theo vai trò: 1. Chủ nhiệm -> 2. Đồng hành -> 3. Hỗ trợ
+  return list.sort((a, b) => {
+    const pA = getRolePriority(a.role);
+    const pB = getRolePriority(b.role);
+    if (pA !== pB) return pA - pB;
+    const sttA = parseInt((a.id || '').replace(/\D/g, '')) || 0;
+    const sttB = parseInt((b.id || '').replace(/\D/g, '')) || 0;
+    if (sttA && sttB && sttA !== sttB) return sttA - sttB;
+    return (a.firstName || '').localeCompare(b.firstName || '', 'vi');
   });
 }
 
@@ -3837,6 +3863,9 @@ async function changeTeacherRoleInClass(classId, teacherId, newRole) {
 
   // Render lại giao diện
   renderClassesView();
+  if (classDetailModal && classDetailModal.style.display !== 'none' && currentDisplayedClass && currentDisplayedClass.id === cls.id) {
+    openClassDetailModal(cls.id);
+  }
   if (typeof renderGlvGrid === 'function') renderGlvGrid();
 
   const glvName = glv ? `${glv.holyName ? glv.holyName + ' ' : ''}${glv.lastName} ${glv.firstName}`.trim() : teacherId;
