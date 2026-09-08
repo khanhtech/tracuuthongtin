@@ -1170,7 +1170,7 @@ function getRoleBadge(role) {
     };
   } else if (norm.includes('dong hanh') || norm.includes('dung lop') || norm.includes('giang day') || norm.includes('phu ta') || norm.includes('pho lop')) {
     return {
-      text: '🤝 Đồng Hành / Phụ Tá',
+      text: '🤝 Đồng Hành',
       cls: 'role-donghanh',
       raw: rawRole || 'Đồng hành',
       short: 'ĐH',
