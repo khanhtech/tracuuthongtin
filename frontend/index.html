@@ -39,7 +39,7 @@
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <link rel="stylesheet" href="css/styles.css?v=5.6.0">
+  <link rel="stylesheet" href="css/styles.css?v=5.7.0">
 </head>
 
 <body>
@@ -88,7 +88,7 @@
             <span class="nav-title">Thông Báo</span>
             <span class="nav-desc">Trang chủ & tin tức</span>
           </div>
-          <span class="nav-badge" id="sidebarNewsCount">6</span>
+          <span class="nav-badge" id="sidebarNewsCount"></span>
         </button>
 
         <button class="nav-item nav-item-glv" id="navItemGlv" data-tab="glv">
@@ -99,7 +99,7 @@
             <span class="nav-title">Giáo Lý Viên</span>
             <span class="nav-desc">Tra cứu hồ sơ & thẻ</span>
           </div>
-          <span class="nav-badge" id="sidebarGlvCount">41</span>
+          <span class="nav-badge" id="sidebarGlvCount"></span>
         </button>
 
         <button class="nav-item nav-item-classes" id="navItemClasses" data-tab="classes">
@@ -110,7 +110,7 @@
             <span class="nav-title">Lớp Giáo Lý</span>
             <span class="nav-desc">Khối lớp & phân công</span>
           </div>
-          <span class="nav-badge" id="sidebarClassCount">14</span>
+          <span class="nav-badge" id="sidebarClassCount"></span>
         </button>
 
         <button class="nav-item nav-item-students" id="navItemStudents" data-tab="students">
@@ -121,7 +121,7 @@
             <span class="nav-title">Thiếu Nhi</span>
             <span class="nav-desc">Tra cứu & danh sách</span>
           </div>
-          <span class="nav-badge" id="sidebarStudentCount">0</span>
+          <span class="nav-badge" id="sidebarStudentCount"></span>
         </button>
 
         <button class="nav-item nav-item-docs" id="navItemDocs" data-tab="docs">
@@ -132,7 +132,7 @@
             <span class="nav-title">Tài Liệu</span>
             <span class="nav-desc">Giáo trình & biểu mẫu</span>
           </div>
-          <span class="nav-badge" id="sidebarDocsCount">10</span>
+          <span class="nav-badge" id="sidebarDocsCount"></span>
         </button>
 
         <!-- Tiện ích nhanh cho Tab Thông Báo -->
@@ -299,12 +299,12 @@
 
             <div class="news-actions-bar">
               <div class="news-filter-pills" id="newsFilterPills">
-                <button class="pill-btn active" data-category="all">Tất cả (<span id="countNewsAll">6</span>)</button>
-                <button class="pill-btn" data-category="Khẩn">Thông Tri Khẩn (<span id="countNewsUrgent">1</span>)</button>
-                <button class="pill-btn" data-category="Lịch Lễ">Lịch Sinh Hoạt (<span id="countNewsSchedule">2</span>)</button>
-                <button class="pill-btn" data-category="Sự Kiện">Lễ Trọng & Sự Kiện (<span id="countNewsEvent">1</span>)</button>
-                <button class="pill-btn" data-category="GLV">Huynh Trưởng (<span id="countNewsGLV">1</span>)</button>
-                <button class="pill-btn" data-category="Phụ Huynh">Phụ Huynh (<span id="countNewsParents">1</span>)</button>
+                <button class="pill-btn active" data-category="all">Tất cả (<span id="countNewsAll"></span>)</button>
+                <button class="pill-btn" data-category="Khẩn">Thông Tri Khẩn (<span id="countNewsUrgent"></span>)</button>
+                <button class="pill-btn" data-category="Lịch Lễ">Lịch Sinh Hoạt (<span id="countNewsSchedule"></span>)</button>
+                <button class="pill-btn" data-category="Sự Kiện">Lễ Trọng & Sự Kiện (<span id="countNewsEvent"></span>)</button>
+                <button class="pill-btn" data-category="GLV">Huynh Trưởng (<span id="countNewsGLV"></span>)</button>
+                <button class="pill-btn" data-category="Phụ Huynh">Phụ Huynh (<span id="countNewsParents"></span>)</button>
               </div>
 
               <button class="btn-primary-add" id="btnAddNews" style="display: none; white-space: nowrap;">
@@ -538,7 +538,7 @@
               <div class="quick-stats-row">
                 <div class="stat-pill">
                   <i class="fa-solid fa-users"></i>
-                  <span>Tổng số: <strong id="totalGLVCount">41</strong> GLV</span>
+                  <span>Tổng số: <strong id="totalGLVCount">--</strong> GLV</span>
                 </div>
               </div>
 
@@ -578,7 +578,7 @@
                 <i class="fa-solid fa-chalkboard-user"></i>
               </div>
               <div class="stat-info">
-                <span class="stat-num" id="classStatTotalClasses">14</span>
+                <span class="stat-num" id="classStatTotalClasses">--</span>
                 <span class="stat-label">Tổng số lớp học</span>
               </div>
             </div>
@@ -588,7 +588,7 @@
                 <i class="fa-solid fa-layer-group"></i>
               </div>
               <div class="stat-info">
-                <span class="stat-num" id="classStatTotalBlocks">5</span>
+                <span class="stat-num" id="classStatTotalBlocks">--</span>
                 <span class="stat-label">Khối Giáo Lý</span>
               </div>
             </div>
@@ -598,7 +598,7 @@
                 <i class="fa-solid fa-children"></i>
               </div>
               <div class="stat-info">
-                <span class="stat-num" id="classStatTotalStudents">380+</span>
+                <span class="stat-num" id="classStatTotalStudents">--</span>
                 <span class="stat-label">Sĩ số ước tính</span>
               </div>
             </div>
@@ -608,7 +608,7 @@
                 <i class="fa-solid fa-fire"></i>
               </div>
               <div class="stat-info">
-                <span class="stat-num" id="classStatAssignedTeachers">32</span>
+                <span class="stat-num" id="classStatAssignedTeachers">--</span>
                 <span class="stat-label">GLV đứng lớp</span>
               </div>
             </div>
@@ -627,12 +627,12 @@
             <div class="class-actions-bar">
               <!-- Bộ Lọc Khối (Pills) -->
               <div class="block-filter-pills" id="blockFilterPills">
-                <button class="pill-btn active" data-block="all">Tất cả (<span id="countBlockAll">13</span>)</button>
-                <button class="pill-btn" data-block="Khai Tâm">Khai Tâm (<span id="countBlockKT">2</span>)</button>
-                <button class="pill-btn" data-block="Rước Lễ">Rước Lễ (<span id="countBlockRL">3</span>)</button>
-                <button class="pill-btn" data-block="Thêm Sức">Thêm Sức (<span id="countBlockTS">3</span>)</button>
-                <button class="pill-btn" data-block="Bao Đồng">Bao Đồng (<span id="countBlockBD">3</span>)</button>
-                <button class="pill-btn" data-block="Vào Đời">Vào Đời (<span id="countBlockVD">2</span>)</button>
+                <button class="pill-btn active" data-block="all">Tất cả (<span id="countBlockAll"></span>)</button>
+                <button class="pill-btn" data-block="Khai Tâm">Khai Tâm (<span id="countBlockKT"></span>)</button>
+                <button class="pill-btn" data-block="Rước Lễ">Rước Lễ (<span id="countBlockRL"></span>)</button>
+                <button class="pill-btn" data-block="Thêm Sức">Thêm Sức (<span id="countBlockTS"></span>)</button>
+                <button class="pill-btn" data-block="Bao Đồng">Bao Đồng (<span id="countBlockBD"></span>)</button>
+                <button class="pill-btn" data-block="Vào Đời">Vào Đời (<span id="countBlockVD"></span>)</button>
               </div>
 
               <!-- Nút Thêm Lớp (Admin) -->
@@ -682,7 +682,7 @@
                 <i class="fa-solid fa-children"></i>
               </div>
               <div class="stat-info">
-                <span class="stat-num" id="studentStatTotalCount">0</span>
+                <span class="stat-num" id="studentStatTotalCount">--</span>
                 <span class="stat-label">Tổng số Thiếu Nhi</span>
               </div>
             </div>
@@ -692,7 +692,7 @@
                 <i class="fa-solid fa-mars"></i>
               </div>
               <div class="stat-info">
-                <span class="stat-num" id="studentStatMaleCount">0</span>
+                <span class="stat-num" id="studentStatMaleCount">--</span>
                 <span class="stat-label">Thiếu Nhi Nam</span>
               </div>
             </div>
@@ -702,7 +702,7 @@
                 <i class="fa-solid fa-venus"></i>
               </div>
               <div class="stat-info">
-                <span class="stat-num" id="studentStatFemaleCount">0</span>
+                <span class="stat-num" id="studentStatFemaleCount">--</span>
                 <span class="stat-label">Thiếu Nhi Nữ</span>
               </div>
             </div>
@@ -712,7 +712,7 @@
                 <i class="fa-solid fa-school"></i>
               </div>
               <div class="stat-info">
-                <span class="stat-num" id="studentStatClassesCount">13</span>
+                <span class="stat-num" id="studentStatClassesCount">--</span>
                 <span class="stat-label">Lớp học phân bổ</span>
               </div>
             </div>
@@ -844,11 +844,11 @@
 
             <div class="docs-actions-bar">
               <div class="docs-filter-pills" id="docsFilterPills">
-                <button class="pill-btn active" data-category="all">Tất cả (<span id="countDocsAll">10</span>)</button>
-                <button class="pill-btn" data-category="Giáo Trình">Giáo Trình Khối (<span id="countDocsGiaoTrinh">5</span>)</button>
-                <button class="pill-btn" data-category="Sổ Tay">Sổ Tay Huynh Trưởng (<span id="countDocsSoTay">2</span>)</button>
-                <button class="pill-btn" data-category="Kinh & Hát">Kinh & Bài Hát (<span id="countDocsKinhHat">2</span>)</button>
-                <button class="pill-btn" data-category="Biểu Mẫu">Biểu Mẫu & Sổ Điểm (<span id="countDocsBieuMau">1</span>)</button>
+                <button class="pill-btn active" data-category="all">Tất cả (<span id="countDocsAll"></span>)</button>
+                <button class="pill-btn" data-category="Giáo Trình">Giáo Trình Khối (<span id="countDocsGiaoTrinh"></span>)</button>
+                <button class="pill-btn" data-category="Sổ Tay">Sổ Tay Huynh Trưởng (<span id="countDocsSoTay"></span>)</button>
+                <button class="pill-btn" data-category="Kinh & Hát">Kinh & Bài Hát (<span id="countDocsKinhHat"></span>)</button>
+                <button class="pill-btn" data-category="Biểu Mẫu">Biểu Mẫu & Sổ Điểm (<span id="countDocsBieuMau"></span>)</button>
               </div>
 
               <button class="btn-primary-add" id="btnAddDoc" style="display: none; white-space: nowrap;">
@@ -941,7 +941,7 @@
         </div>
 
         <div class="filter-count">
-          <span>Hiển thị: <strong id="filterResultCount">41</strong> GLV</span>
+          <span>Hiển thị: <strong id="filterResultCount">--</strong> GLV</span>
         </div>
       </div>
 
@@ -1013,7 +1013,7 @@
         </div>
 
         <div class="filter-count">
-          <span>Hiển thị: <strong id="filterClassModalCount">13</strong> Lớp &bull; Tổng Sĩ Số: <strong id="filterClassModalStudents">344</strong> Em</span>
+          <span>Hiển thị: <strong id="filterClassModalCount">--</strong> Lớp &bull; Tổng Sĩ Số: <strong id="filterClassModalStudents">--</strong> Em</span>
         </div>
       </div>
 
@@ -1359,9 +1359,9 @@
           <input type="text" id="pickerGlvSearchInput" placeholder="Tìm theo tên, tên thánh hoặc mã GLV...">
         </div>
         <div class="picker-filter-tabs">
-          <button type="button" class="btn-picker-tab active" data-filter="all">Tất cả (<span id="pickerCountAll">0</span>)</button>
-          <button type="button" class="btn-picker-tab" data-filter="unassigned">Chưa phân công (<span id="pickerCountUnassigned">0</span>)</button>
-          <button type="button" class="btn-picker-tab" data-filter="block">Cùng Khối (<span id="pickerCountBlock">0</span>)</button>
+          <button type="button" class="btn-picker-tab active" data-filter="all">Tất cả (<span id="pickerCountAll"></span>)</button>
+          <button type="button" class="btn-picker-tab" data-filter="unassigned">Chưa phân công (<span id="pickerCountUnassigned"></span>)</button>
+          <button type="button" class="btn-picker-tab" data-filter="block">Cùng Khối (<span id="pickerCountBlock"></span>)</button>
         </div>
       </div>
 
@@ -1416,7 +1416,7 @@
       <!-- Thanh Thống Kê -->
       <div class="modal-filters-bar">
         <div class="filter-count">
-          <span>Tổng số: <strong id="rosterStudentCountDisplay">25</strong> Em &bull; Lớp: <strong id="rosterClassNameDisplay" style="color: #1e293b;">Dự Bị Khai Tâm</strong></span>
+          <span>Tổng số: <strong id="rosterStudentCountDisplay">--</strong> Em &bull; Lớp: <strong id="rosterClassNameDisplay" style="color: #1e293b;">Dự Bị Khai Tâm</strong></span>
         </div>
       </div>
 
@@ -2386,8 +2386,8 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-  <script src="js/api.js?v=5.6.0"></script>
-  <script src="js/app.js?v=5.6.0"></script>
+  <script src="js/api.js?v=5.7.0"></script>
+  <script src="js/app.js?v=5.7.0"></script>
 </body>
 
 </html>

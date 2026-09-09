@@ -3117,6 +3117,14 @@ input[readonly].input-locked-code {
   transition: all 0.2s ease;
 }
 
+.nav-badge:empty {
+  display: none !important;
+}
+
+.pill-btn span:empty {
+  display: none !important;
+}
+
 .nav-item.active::before {
   content: '';
   position: absolute;

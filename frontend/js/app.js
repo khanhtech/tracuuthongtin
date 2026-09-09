@@ -1867,13 +1867,19 @@ const btnOpenGradebookFromDetail = document.getElementById('btnOpenGradebookFrom
 // ==========================================================================
 // KHỞI ĐỘNG ỨNG DỤNG
 // ==========================================================================
+function updateAllBadgesAndStats() {
+  updateStatsDisplay();
+  if (typeof renderClassStats === 'function') renderClassStats();
+  if (typeof renderBlockFilterPillCounts === 'function') renderBlockFilterPillCounts();
+  updateStudentStatsDisplay();
+  if (typeof renderNewsFilterCounts === 'function') renderNewsFilterCounts();
+  if (typeof renderDocsFilterCounts === 'function') renderDocsFilterCounts();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   try {
     initUserRole();
     initSidebarState();
-    updateStatsDisplay();
-    initClassModule();
-    updateStudentStatsDisplay();
     populateGlvIdentitySelectors();
     setupEventListeners();
     switchTab(currentTab);
@@ -1890,75 +1896,76 @@ document.addEventListener('DOMContentLoaded', () => {
 async function initApiSync() {
   if (typeof API === 'undefined') {
     ensureDefaultStudentsForAllClasses();
-    updateStudentStatsDisplay();
+    updateAllBadgesAndStats();
     return;
   }
-  const isOnline = await API.checkBackendStatus();
-  if (isOnline) {
-    console.log('🟢 Kết nối MySQL Database Backend thành công (Online)!');
-    // Cập nhật teachers từ MySQL
-    const dbTeachers = await API.getTeachers();
-    if (dbTeachers && dbTeachers.length > 0) {
-      glvDatabase = dbTeachers;
-      saveDatabase();
-      updateStatsDisplay();
-      populateGlvIdentitySelectors();
-      if (currentTab === 'glv' && !currentDisplayedGLV) {
-        showWelcomeState();
-      }
-    }
-    // Cập nhật classes từ MySQL
-    const dbClasses = await API.getClasses();
-    if (dbClasses && dbClasses.length > 0) {
-      classDatabase = dbClasses;
+  try {
+    const isOnline = await API.checkBackendStatus();
+    if (isOnline) {
+      console.log('🟢 Kết nối MySQL Database Backend thành công (Online)!');
+      
+      // Đồng bộ toàn bộ dữ liệu song song (Promise.all)
+      const [dbTeachers, dbClasses, allDbStudents, dbNews, dbDocs] = await Promise.all([
+        API.getTeachers().catch(e => { console.warn('Lỗi tải Teachers:', e); return null; }),
+        API.getClasses().catch(e => { console.warn('Lỗi tải Classes:', e); return null; }),
+        API.getAllStudents().catch(e => { console.warn('Lỗi tải Students:', e); return null; }),
+        API.getNews().catch(e => { console.warn('Lỗi tải News:', e); return null; }),
+        API.getDocs().catch(e => { console.warn('Lỗi tải Docs:', e); return null; })
+      ]);
 
-      // Đồng bộ danh sách thiếu nhi trực tiếp từ bảng students trong MySQL
-      const allDbStudents = await API.getAllStudents();
-      if (allDbStudents && allDbStudents.length > 0) {
-        classDatabase.forEach(cls => {
-          const matchStudents = allDbStudents.filter(s => s.classId === cls.id || s.classId === cls.id.replace('CLASS_', ''));
-          if (matchStudents.length > 0) {
-            cls.students = matchStudents;
-            cls.studentCount = matchStudents.length;
-          }
-        });
-      } else {
-        for (const cls of classDatabase) {
-          const students = await API.getStudents(cls.id);
-          if (students && students.length > 0) {
-            cls.students = students;
-            cls.studentCount = students.length;
-          }
+      // 1. Giáo Lý Viên
+      if (dbTeachers && dbTeachers.length > 0) {
+        glvDatabase = dbTeachers;
+        saveDatabase();
+      }
+
+      // 2. Lớp Học & Thiếu Nhi
+      if (dbClasses && dbClasses.length > 0) {
+        classDatabase = dbClasses;
+        if (allDbStudents && allDbStudents.length > 0) {
+          classDatabase.forEach(cls => {
+            const matchStudents = allDbStudents.filter(s => s.classId === cls.id || s.classId === cls.id.replace('CLASS_', ''));
+            if (matchStudents.length > 0) {
+              cls.students = matchStudents;
+              cls.studentCount = matchStudents.length;
+            }
+          });
         }
+        saveClassesDatabase();
       }
 
-      saveClassesDatabase();
-      updateStudentStatsDisplay();
-      if (currentTab === 'classes') renderClassesView();
-      if (currentTab === 'students') renderAllStudentsView();
-    }
+      // 3. Thông Báo
+      if (dbNews && dbNews.length > 0) {
+        newsDatabase = dbNews;
+        saveNewsDatabase();
+      }
 
-    // Cập nhật News từ MySQL
-    const dbNews = await API.getNews();
-    if (dbNews && dbNews.length > 0) {
-      newsDatabase = dbNews;
-      saveNewsDatabase();
-      if (currentTab === 'news') renderNewsView();
+      // 4. Tài Liệu
+      if (dbDocs && Array.isArray(dbDocs)) {
+        docsDatabase = dbDocs;
+        saveDocsDatabase();
+      }
+    } else {
+      ensureDefaultStudentsForAllClasses();
     }
-
-    // Cập nhật Docs từ MySQL
-    const dbDocs = await API.getDocs();
-    if (dbDocs && Array.isArray(dbDocs)) {
-      docsDatabase = dbDocs;
-      saveDocsDatabase();
-      if (currentTab === 'docs') renderDocsView();
-    }
-  } else {
+  } catch (err) {
+    console.warn('Lỗi đồng bộ dữ liệu từ API:', err);
     ensureDefaultStudentsForAllClasses();
   }
-  updateStudentStatsDisplay();
+
+  // Cập nhật toàn bộ số lượng huy hiệu và số liệu thống kê sau khi toàn bộ dữ liệu thực tế đã nạp xong
+  updateAllBadgesAndStats();
+  populateGlvIdentitySelectors();
   populateStudentClassFilter();
-  if (currentTab === 'students') renderAllStudentsView();
+
+  // Hiển thị nội dung Tab đang kích hoạt
+  if (currentTab === 'news') renderNewsView();
+  else if (currentTab === 'glv') {
+    if (!currentDisplayedGLV) showWelcomeState();
+  }
+  else if (currentTab === 'classes') renderClassesView();
+  else if (currentTab === 'students') renderAllStudentsView();
+  else if (currentTab === 'docs') renderDocsView();
 }
 
 // ==========================================================================
