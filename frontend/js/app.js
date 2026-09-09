@@ -1865,8 +1865,10 @@ const rosterOpenGradebookBtn = document.getElementById('rosterOpenGradebookBtn')
 const btnOpenGradebookFromDetail = document.getElementById('btnOpenGradebookFromDetail');
 
 // ==========================================================================
-// KHỞI ĐỘNG ỨNG DỤNG
+// KHỞI ĐỘNG ỨNG DỤNG & ĐỒNG BỘ DỮ LIỆU
 // ==========================================================================
+let isInitialDataSyncDone = false;
+
 function updateAllBadgesAndStats() {
   updateStatsDisplay();
   if (typeof renderClassStats === 'function') renderClassStats();
@@ -1896,6 +1898,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function initApiSync() {
   if (typeof API === 'undefined') {
     ensureDefaultStudentsForAllClasses();
+    isInitialDataSyncDone = true;
     updateAllBadgesAndStats();
     return;
   }
@@ -1952,6 +1955,9 @@ async function initApiSync() {
     console.warn('Lỗi đồng bộ dữ liệu từ API:', err);
     ensureDefaultStudentsForAllClasses();
   }
+
+  // Đánh dấu dữ liệu đã nạp xong từ server
+  isInitialDataSyncDone = true;
 
   // Cập nhật toàn bộ số lượng huy hiệu và số liệu thống kê sau khi toàn bộ dữ liệu thực tế đã nạp xong
   updateAllBadgesAndStats();
@@ -2052,7 +2058,9 @@ function switchTab(tabName) {
     renderDocsView();
   }
 
-  updateStudentStatsDisplay();
+  if (isInitialDataSyncDone) {
+    updateStudentStatsDisplay();
+  }
 
   // Đồng bộ trạng thái Active trên thanh điều hướng Mobile Bottom Nav
   document.querySelectorAll('.mobile-nav-item').forEach(item => {
@@ -2790,8 +2798,8 @@ function showCustomAlert({
 // ==========================================================================
 function updateStatsDisplay() {
   const count = glvDatabase.length;
-  if (totalGLVCount) totalGLVCount.textContent = count;
-  if (sidebarGlvCount) sidebarGlvCount.textContent = count;
+  if (totalGLVCount) totalGLVCount.textContent = isInitialDataSyncDone ? count : '--';
+  if (sidebarGlvCount) sidebarGlvCount.textContent = isInitialDataSyncDone ? count : '';
   if (filterResultCount) filterResultCount.textContent = count;
 }
 
@@ -3182,11 +3190,11 @@ function renderClassStats() {
     (c.teacherIds || []).forEach(tid => assignedTeacherIds.add(tid));
   });
 
-  if (classStatTotalClasses) classStatTotalClasses.textContent = totalClasses;
-  if (sidebarClassCount) sidebarClassCount.textContent = totalClasses;
-  if (classStatTotalBlocks) classStatTotalBlocks.textContent = blocks.size;
-  if (classStatTotalStudents) classStatTotalStudents.textContent = `${totalStudents}+`;
-  if (classStatAssignedTeachers) classStatAssignedTeachers.textContent = assignedTeacherIds.size;
+  if (classStatTotalClasses) classStatTotalClasses.textContent = isInitialDataSyncDone ? totalClasses : '--';
+  if (sidebarClassCount) sidebarClassCount.textContent = isInitialDataSyncDone ? totalClasses : '';
+  if (classStatTotalBlocks) classStatTotalBlocks.textContent = isInitialDataSyncDone ? blocks.size : '--';
+  if (classStatTotalStudents) classStatTotalStudents.textContent = isInitialDataSyncDone ? `${totalStudents}+` : '--';
+  if (classStatAssignedTeachers) classStatAssignedTeachers.textContent = isInitialDataSyncDone ? assignedTeacherIds.size : '--';
 }
 
 function renderBlockFilterPillCounts() {
@@ -3206,12 +3214,12 @@ function renderBlockFilterPillCounts() {
   const elBD = document.getElementById('countBlockBD');
   const elVD = document.getElementById('countBlockVD');
 
-  if (elAll) elAll.textContent = counts.all;
-  if (elKT) elKT.textContent = counts.KT;
-  if (elRL) elRL.textContent = counts.RL;
-  if (elTS) elTS.textContent = counts.TS;
-  if (elBD) elBD.textContent = counts.BD;
-  if (elVD) elVD.textContent = counts.VD;
+  if (elAll) elAll.textContent = isInitialDataSyncDone ? counts.all : '';
+  if (elKT) elKT.textContent = isInitialDataSyncDone ? counts.KT : '';
+  if (elRL) elRL.textContent = isInitialDataSyncDone ? counts.RL : '';
+  if (elTS) elTS.textContent = isInitialDataSyncDone ? counts.TS : '';
+  if (elBD) elBD.textContent = isInitialDataSyncDone ? counts.BD : '';
+  if (elVD) elVD.textContent = isInitialDataSyncDone ? counts.VD : '';
 }
 
 function getBlockBadgeClass(blockName) {
@@ -5627,11 +5635,11 @@ function updateStudentStatsDisplay() {
   const maleCount = all.filter(s => s.gender === 'Nam').length;
   const femaleCount = all.filter(s => s.gender === 'Nữ').length;
 
-  if (studentStatTotalCount) studentStatTotalCount.textContent = all.length;
-  if (studentStatMaleCount) studentStatMaleCount.textContent = maleCount;
-  if (studentStatFemaleCount) studentStatFemaleCount.textContent = femaleCount;
-  if (studentStatClassesCount) studentStatClassesCount.textContent = classDatabase.length;
-  if (sidebarStudentCount) sidebarStudentCount.textContent = all.length;
+  if (studentStatTotalCount) studentStatTotalCount.textContent = isInitialDataSyncDone ? all.length : '--';
+  if (studentStatMaleCount) studentStatMaleCount.textContent = isInitialDataSyncDone ? maleCount : '--';
+  if (studentStatFemaleCount) studentStatFemaleCount.textContent = isInitialDataSyncDone ? femaleCount : '--';
+  if (studentStatClassesCount) studentStatClassesCount.textContent = isInitialDataSyncDone ? classDatabase.length : '--';
+  if (sidebarStudentCount) sidebarStudentCount.textContent = isInitialDataSyncDone ? all.length : '';
 }
 
 function populateStudentClassFilter() {
@@ -9248,13 +9256,13 @@ function renderNewsFilterCounts() {
   const elParents = document.getElementById('countNewsParents');
   const elSidebarNews = document.getElementById('sidebarNewsCount');
 
-  if (elAll) elAll.textContent = countAll;
-  if (elUrgent) elUrgent.textContent = countUrgent;
-  if (elSchedule) elSchedule.textContent = countSchedule;
-  if (elEvent) elEvent.textContent = countEvent;
-  if (elGLV) elGLV.textContent = countGLV;
-  if (elParents) elParents.textContent = countParents;
-  if (elSidebarNews) elSidebarNews.textContent = countAll;
+  if (elAll) elAll.textContent = isInitialDataSyncDone ? countAll : '';
+  if (elUrgent) elUrgent.textContent = isInitialDataSyncDone ? countUrgent : '';
+  if (elSchedule) elSchedule.textContent = isInitialDataSyncDone ? countSchedule : '';
+  if (elEvent) elEvent.textContent = isInitialDataSyncDone ? countEvent : '';
+  if (elGLV) elGLV.textContent = isInitialDataSyncDone ? countGLV : '';
+  if (elParents) elParents.textContent = isInitialDataSyncDone ? countParents : '';
+  if (elSidebarNews) elSidebarNews.textContent = isInitialDataSyncDone ? countAll : '';
 }
 
 function getNewsCategoryTagClass(cat) {
@@ -9597,12 +9605,12 @@ function renderDocsFilterCounts() {
   const elBM = document.getElementById('countDocsBieuMau');
   const elSidebarDocs = document.getElementById('sidebarDocsCount');
 
-  if (elAll) elAll.textContent = countAll;
-  if (elGT) elGT.textContent = countGT;
-  if (elST) elST.textContent = countST;
-  if (elKH) elKH.textContent = countKH;
-  if (elBM) elBM.textContent = countBM;
-  if (elSidebarDocs) elSidebarDocs.textContent = countAll;
+  if (elAll) elAll.textContent = isInitialDataSyncDone ? countAll : '';
+  if (elGT) elGT.textContent = isInitialDataSyncDone ? countGT : '';
+  if (elST) elST.textContent = isInitialDataSyncDone ? countST : '';
+  if (elKH) elKH.textContent = isInitialDataSyncDone ? countKH : '';
+  if (elBM) elBM.textContent = isInitialDataSyncDone ? countBM : '';
+  if (elSidebarDocs) elSidebarDocs.textContent = isInitialDataSyncDone ? countAll : '';
 }
 
 function getDocFormatIcon(format) {
