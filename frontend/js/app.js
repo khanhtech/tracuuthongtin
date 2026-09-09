@@ -2649,11 +2649,7 @@ function checkGlvPassword() {
     setRole('glv');
     if (loginModal) loginModal.style.display = 'none';
 
-    // Tự động bật Modal Bổ Nhiệm Thư của Huynh Trưởng được chọn
-    const selectedGlvId = (glvIdentitySelect ? glvIdentitySelect.value : '') || (currentDisplayedGLV ? currentDisplayedGLV.id : 'GLV03');
-    openAppointmentLetterModal(selectedGlvId);
-
-    showToast('Đăng nhập thành công! Đang hiển thị Bổ Nhiệm Thư và Trao Sứ Vụ.');
+    showToast('Đăng nhập tài khoản Huynh Trưởng thành công!');
   } else {
     if (wrapper) {
       wrapper.classList.remove('error-shake');
@@ -2963,7 +2959,6 @@ function renderSuggestions(list) {
       if (clearSearchBtn) clearSearchBtn.style.display = 'flex';
       if (suggestionsBox) suggestionsBox.style.display = 'none';
       displayProfileCard(item);
-      openAppointmentLetterModal(item.id);
     });
 
     suggestionsBox.appendChild(div);
@@ -3162,7 +3157,6 @@ function displayMultipleResults(list) {
       searchInput.value = item.id;
       if (clearSearchBtn) clearSearchBtn.style.display = 'block';
       displayProfileCard(item);
-      openAppointmentLetterModal(item.id);
     });
 
     glvGridList.appendChild(div);
@@ -7792,7 +7786,6 @@ function renderAllGlvTable(list) {
         if (searchInput) searchInput.value = item.id;
         if (clearSearchBtn) clearSearchBtn.style.display = 'flex';
         displayProfileCard(item);
-        openAppointmentLetterModal(item.id);
       });
     }
 
