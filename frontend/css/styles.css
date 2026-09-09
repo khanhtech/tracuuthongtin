@@ -8937,6 +8937,13 @@ span.flatpickr-weekday {
   text-transform: uppercase;
 }
 
+.letter-signature-single-block .sig-role {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #b91c1c;
+  margin-top: 0.25rem;
+}
+
 .letter-signature-single-block .sig-sub {
   font-size: 0.76rem;
   color: #64748b;
@@ -8945,15 +8952,34 @@ span.flatpickr-weekday {
 }
 
 .letter-signature-single-block .sig-space {
-  height: 60px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.letter-signature-single-block .sig-signed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1rem;
+  font-style: italic;
+  font-weight: 700;
+  color: #1d4ed8;
+  background: #eff6ff;
+  border: 1px dashed #bfdbfe;
+  padding: 0.2rem 0.75rem;
+  border-radius: 9999px;
+  letter-spacing: 0.3px;
 }
 
 .letter-signature-single-block .sig-name {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 800;
-  color: #991b1b;
-  border-top: 1px dashed #cbd5e1;
-  padding-top: 0.4rem;
+  color: #0f172a;
+  border-top: 1.5px dashed #cbd5e1;
+  padding-top: 0.45rem;
   width: 100%;
 }
 
